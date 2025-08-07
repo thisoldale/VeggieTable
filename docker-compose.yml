@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Your backend service
+  backend:
+    build: ./backend
+    ports:
+      - "8445:8000" # Correct mapping: Host 8445 to Container's Uvicorn 8000
+    volumes:
+      - ./backend:/app      # <-- ADD THIS LINE to mount your backend code
+      - db_data:/app/data   # This line is for the persistent database
+    environment:
+      - DATABASE_URL=sqlite:///./data/gardening.db
+    restart: "unless-stopped"
+
+  # Your existing frontend service (for production build)
+  frontend_prod:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile # Refers to your existing Nginx Dockerfile
+    ports:
+      - "8444:80" # Nginx serves on port 80, map to 8444 on host
+    depends_on:
+      - backend # Frontend depends on backend
+
+  # NEW: Frontend development service
+  frontend_dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev # Use the new development Dockerfile
+    ports:
+      - "8444:8444" # Map Vite's dev server port to the host machine
+    environment:
+      NODE_ENV: development
+      # Set the backend URL for the dev environment specifically for Vite's proxy
+      VITE_APP_BACKEND_URL: http://backend:8000
+    volumes:
+      - ./frontend:/app # Mount your frontend source code for hot reloading
+      - /app/node_modules # Anonymous volume to keep container's node_modules isolated
+    restart: "on-failure"
+    depends_on:
+      - backend # Frontend dev needs backend to be up
+    # THIS IS THE CRITICAL LINE ADDED FOR THE 'ERR_MODULE_NOT_FOUND' FIX:
+    command: sh -c "npm install && npm run dev"
+
+volumes:
+  db_data: # Define the named volume for database persistence

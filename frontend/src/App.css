@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* TanStack Table Resizer CSS */
+.resizer {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 5px;
+  background: rgba(0, 0, 0, 0.2);
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+  opacity: 0;
+  z-index: 20;
+  transition: opacity 0.2s ease;
+}
+
+/* For devices with a fine pointer (like a mouse), allow default browser actions */
+@media (pointer: fine) {
+  .resizer {
+    touch-action: auto;
+  }
+}
+
+/* Show the resizer when hovering over the table header cell */
+th:hover .resizer {
+  opacity: 1;
+}
+
+.resizer.isResizing {
+  background: #0ea5e9;
+  opacity: 1;
+}
+
+/* Table layout fix for resizing */
+.table-fixed {
+  table-layout: fixed;
+}
+
+/* Keyframes for selection mode animation */
+@keyframes fast-shake {
+  0%, 100% { transform: rotate(0deg); }
+  25%, 75% { transform: rotate(-5.5deg); }
+  50% { transform: rotate(5.5deg); }
+}
+
+.fast-shake-infinite {
+  animation: fast-shake 0.4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* General table styling */
+table {
+  border-collapse: collapse;
+}
+
+th, td {
+  position: relative; /* Crucial for absolute positioning of the resizer */
+}

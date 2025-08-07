@@ -1,0 +1,19 @@
+# frontend/Dockerfile.dev
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package.json and package-lock.json first
+# This allows Docker to cache the npm install step if only package files change
+COPY package*.json ./
+
+# *** THIS IS THE CRITICAL LINE THAT MUST BE PRESENT AND UNCOMMENTED ***
+RUN npm install
+
+# Copy the rest of your application code
+COPY . .
+
+EXPOSE 8444
+
+# Keep the CMD simple, just run the dev server
+CMD ["npm", "run", "dev"]

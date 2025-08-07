@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8444:80" # Maps host's port 80 to container's port 80
+    depends_on:
+      - backend
+    # If your React app needs to know the backend URL, uncomment and set this:
+    # environment:
+    #   - VITE_APP_BACKEND_URL=http://backend:8000 # For Vite, or REACT_APP_BACKEND_URL for CRA
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8445:8000" # Maps host's port 8000 to container's port 8000
+    volumes:
+      - db_data:/app/data # Persistent storage for SQLite database
+    environment:
+      - DATABASE_URL=sqlite:///./data/gardening.db # Database path inside the container
+
+volumes:
+  db_data: # Define the named volume for persistence
