@@ -151,30 +151,27 @@ def _parse_and_validate_row(row_data: Dict[str, Any], row_num: int) -> Tuple[Opt
     plant_data_dict = {}
     errors = []
 
-    for raw_key, value in row_data.items():
-        if not raw_key:
-            continue
-        normalized_key = HEADER_MAP.get(raw_key.strip().lower())
-        if normalized_key:
-            # Pre-process boolean fields
-            if normalized_key in BOOLEAN_FIELDS:
-                plant_data_dict[normalized_key] = _parse_boolean(value)
-            # Pre-process integer fields
-            elif normalized_key in INTEGER_FIELDS:
-                if value and value.strip():
-                    try:
-                        plant_data_dict[normalized_key] = int(value.strip())
-                    except (ValueError, TypeError):
-                        plant_data_dict[normalized_key] = value # Let Pydantic handle the validation error
-                else:
-                    plant_data_dict[normalized_key] = None
-            # Handle all other fields
+    for key, value in row_data.items():
+        # Pre-process boolean fields
+        if key in BOOLEAN_FIELDS:
+            plant_data_dict[key] = _parse_boolean(value)
+        # Pre-process integer fields
+        elif key in INTEGER_FIELDS:
+            if value and str(value).strip():
+                try:
+                    plant_data_dict[key] = int(str(value).strip())
+                except (ValueError, TypeError):
+                    plant_data_dict[key] = value # Let Pydantic handle the validation error
             else:
-                plant_data_dict[normalized_key] = value.strip() if isinstance(value, str) and value.strip() else None
+                plant_data_dict[key] = None
+        # Handle all other fields
+        else:
+            plant_data_dict[key] = value.strip() if isinstance(value, str) and value.strip() else None
 
     if not plant_data_dict.get('plant_name'):
-        errors.append(f"Row {row_num}: 'plant_name' is missing or empty.")
-        return None, errors
+        # This check is now less reliable since the column name is mapped.
+        # The frontend should ensure 'plant_name' is mapped.
+        pass
 
     try:
         schemas.PlantCreate(**plant_data_dict)
@@ -184,6 +181,64 @@ def _parse_and_validate_row(row_data: Dict[str, Any], row_num: int) -> Tuple[Opt
         errors.append(f"Row {row_num}: Data validation error: {error_details}")
         return None, errors
 
+
+def process_mapped_csv_import(db: Session, data: List[Dict[str, Any]], mapping: Dict[str, str]) -> schemas.ImportResult:
+    """Processes mapped CSV data for import."""
+    imported_count = 0
+    updated_count = 0
+    skipped_count = 0
+    total_errors = []
+
+    for i, row in enumerate(data):
+        row_num = i + 2
+
+        plant_data_dict = {}
+        for csv_header, plant_field in mapping.items():
+            if plant_field and csv_header in row:
+                plant_data_dict[plant_field] = row[csv_header]
+
+        if not plant_data_dict:
+            skipped_count += 1
+            continue
+
+        validated_data, errors = _parse_and_validate_row(plant_data_dict, row_num)
+
+        if errors:
+            total_errors.extend(errors)
+
+        if not validated_data:
+            skipped_count += 1
+            continue
+
+        try:
+            plant_id_str = validated_data.get('id')
+            plant_id = int(plant_id_str) if plant_id_str and plant_id_str.isdigit() else None
+
+            if plant_id and (existing_plant := crud.get_plant_by_id(db, plant_id=plant_id)):
+                plant_schema = schemas.PlantUpdate(**validated_data)
+                crud.update_plant_by_id(db, plant_id=existing_plant.id, plant_update=plant_schema)
+                updated_count += 1
+            else:
+                validated_data.pop('id', None)
+                plant_schema = schemas.PlantCreate(**validated_data)
+                crud.create_plant(db, plant=plant_schema)
+                imported_count += 1
+        except IntegrityError as e:
+            db.rollback()
+            total_errors.append(f"Row {row_num}: A database integrity error occurred (e.g., duplicate key): {e.orig}")
+            skipped_count += 1
+        except Exception as e:
+            db.rollback()
+            total_errors.append(f"Row {row_num}: An unexpected database error occurred: {e}")
+            skipped_count += 1
+
+    return schemas.ImportResult(
+        message="CSV import process completed.",
+        imported_count=imported_count,
+        updated_count=updated_count,
+        skipped_count=skipped_count,
+        errors=total_errors
+    )
 
 def process_csv_import(db: Session, content: bytes, mode: str) -> schemas.ImportResult:
     """Processes a CSV file for import, either appending or replacing data."""

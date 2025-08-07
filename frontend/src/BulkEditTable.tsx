@@ -26,6 +26,7 @@ import DeleteConfirmModal from './components/DeleteConfirmModal';
 import ImportChoiceModal from './components/ImportChoiceModal';
 import YieldGraphModal from './components/YieldGraphModal';
 import AddToPlanModal from './components/AddToPlanModal';
+import CsvImportModal from './components/CsvImportModal';
 import { getColumns } from './components/columns';
 
 const BulkEditTable: React.FC = () => {
@@ -53,6 +54,7 @@ const BulkEditTable: React.FC = () => {
   // --- Modal State ---
   const [isYieldModalOpen, setIsYieldModalOpen] = useState(false);
   const [isAddToPlanModalOpen, setIsAddToPlanModalOpen] = useState(false);
+  const [isCsvImportModalOpen, setIsCsvImportModalOpen] = useState(false);
   const [currentPlant, setCurrentPlant] = useState<Plant | null>(null);
   const [statusMessage, setStatusMessage] = useState<{type: 'success' | 'error', message: string} | null>(null);
 
@@ -356,27 +358,19 @@ const BulkEditTable: React.FC = () => {
 
   const handleImportClick = () => {
       setShowCsvDropdown(false);
-      fileInputRef.current?.click();
+      setIsCsvImportModalOpen(true);
   }
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      modals.importChoice.open(file);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
+  const [importMappedPlants, { isLoading: isImportingMapped }] = useImportMappedPlantsMutation();
 
-  const handleImport = async (mode: 'append' | 'replace') => {
-    if (modals.importChoice.data) {
-        const promise = importPlants({ file: modals.importChoice.data, mode }).unwrap();
-        toast.promise(promise, {
-            loading: 'Importing CSV...',
-            success: 'CSV imported successfully!',
-            error: (err) => err.data?.detail || 'Failed to import CSV.',
-        });
-    }
-    modals.importChoice.close();
+  const handleImport = async (data: any[], mapping: Record<string, string>) => {
+    const promise = importMappedPlants({ data, mapping }).unwrap();
+    toast.promise(promise, {
+        loading: 'Importing data...',
+        success: 'Data imported successfully!',
+        error: (err) => err.data?.detail || 'Failed to import data.',
+    });
+    setIsCsvImportModalOpen(false);
   };
   
   const handleSaveChanges = async () => {
@@ -556,7 +550,7 @@ const BulkEditTable: React.FC = () => {
         {/* Modals */}
         <SavePresetModal isOpen={modals.savePreset.isOpen} onClose={modals.savePreset.close} onSave={saveCurrentPreset} modalRef={modals.savePreset.ref} />
         <DeleteConfirmModal isOpen={modals.deletePreset.isOpen} onClose={modals.deletePreset.close} onConfirm={() => { if (modals.deletePreset.data) deletePreset(modals.deletePreset.data); modals.deletePreset.close(); }} modalRef={modals.deletePreset.ref} title="Confirm Deletion" message={<p>Are you sure you want to delete the view "<strong>{modals.deletePreset.data}</strong>"?</p>} />
-        <ImportChoiceModal isOpen={modals.importChoice.isOpen} onClose={modals.importChoice.close} onAppend={() => handleImport('append')} onReplace={() => handleImport('replace')} modalRef={modals.importChoice.ref} />
+        <CsvImportModal isOpen={isCsvImportModalOpen} onClose={() => setIsCsvImportModalOpen(false)} onImport={handleImport} />
         <DeleteConfirmModal isOpen={modals.deleteRows.isOpen} onClose={modals.deleteRows.close} onConfirm={handleConfirmDeleteRows} modalRef={modals.deleteRows.ref} title="Confirm Deletion" message={<p>Are you sure you want to delete the <strong>{numSelectedRows}</strong> selected plant(s)? This action cannot be undone.</p>} />
         {isYieldModalOpen && currentPlant && (
             <YieldGraphModal

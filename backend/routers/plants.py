@@ -60,3 +60,20 @@ async def import_plants_endpoint(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result.errors)
 
     return result
+
+@router.post("/plants/import-mapped", response_model=schemas.ImportResult)
+async def import_mapped_plants_endpoint(
+    payload: dict,
+    db: Session = Depends(get_db),
+):
+    data = payload.get('data')
+    mapping = payload.get('mapping')
+    if not data or not mapping:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing data or mapping")
+
+    result = csv_importer.process_mapped_csv_import(db=db, data=data, mapping=mapping)
+
+    if result.errors and not result.imported_count and not result.updated_count:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result.errors)
+
+    return result

@@ -234,6 +234,14 @@ export const plantApi = createApi({
             body: userInfo,
         }),
     }),
+    importMappedPlants: builder.mutation<{ message: string }, { data: any[], mapping: Record<string, string> }>({
+        query: (body) => ({
+            url: 'plants/import-mapped',
+            method: 'POST',
+            body,
+        }),
+        invalidatesTags: [{ type: 'Plant', id: 'LIST' }],
+    }),
   }),
 });
 
@@ -261,4 +269,5 @@ export const {
   useDeleteTaskMutation,
   useLoginMutation,
   useRegisterMutation,
+  useImportMappedPlantsMutation,
 } = plantApi;
