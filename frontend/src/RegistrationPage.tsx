@@ -62,9 +62,10 @@ const RegistrationPage: React.FC = () => {
                     <div className="flex items-center justify-between">
                         <button
                             type="submit"
-                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
+                            disabled={isLoading}
                         >
-                            Register
+                            {isLoading ? 'Registering...' : 'Register'}
                         </button>
                     </div>
                 </form>

@@ -30,10 +30,10 @@ import { getColumns } from './components/columns';
 
 const BulkEditTable: React.FC = () => {
   const { data: serverData, error, isLoading } = useGetPlantsQuery();
-  const [updatePlant] = useUpdatePlantMutation();
-  const [addPlant] = useAddPlantMutation();
-  const [deletePlant] = useDeletePlantMutation();
-  const [importPlants] = useImportPlantsMutation();
+  const [updatePlant, { isLoading: isUpdatingPlant }] = useUpdatePlantMutation();
+  const [addPlant, { isLoading: isAddingPlant }] = useAddPlantMutation();
+  const [deletePlant, { isLoading: isDeletingPlant }] = useDeletePlantMutation();
+  const [importPlants, { isLoading: isImporting }] = useImportPlantsMutation();
   const { data: recentPlan } = useGetMostRecentGardenPlanQuery();
 
 
@@ -425,6 +425,7 @@ const BulkEditTable: React.FC = () => {
   if (error) return <div className="text-center py-8 text-red-500">Error: {'message' in error ? error.message : 'An error occurred'}</div>;
 
   const numSelectedRows = Object.keys(rowSelection).length;
+  const isSaving = isAddingPlant || isUpdatingPlant;
 
   return (
     <div className="p-4 md:p-8 bg-gray-100 min-h-screen font-sans text-sm">
@@ -434,7 +435,9 @@ const BulkEditTable: React.FC = () => {
             {/* Toolbar */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-3 md:space-y-0">
                 <div className="flex items-center flex-wrap gap-2">
-                    <button onClick={handleSaveChanges} disabled={!hasUnsavedChanges} className="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 text-sm disabled:opacity-50">Save Changes</button>
+                    <button onClick={handleSaveChanges} disabled={!hasUnsavedChanges || isSaving} className="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 text-sm disabled:opacity-50">
+                        {isSaving ? 'Saving...' : 'Save Changes'}
+                    </button>
                     
                     <button onClick={handleOpenAddToPlan} disabled={numSelectedRows !== 1 || !recentPlan} className="px-3 py-1.5 rounded-md bg-green-600 text-white hover:bg-green-700 text-sm disabled:opacity-50">
                         Add to Plan
@@ -447,7 +450,9 @@ const BulkEditTable: React.FC = () => {
                             <div ref={rowDropdownRef} className="absolute z-20 bg-white shadow-lg rounded-md border py-1 mt-2 top-full left-0" style={{minWidth: '160px'}}>
                                 <button onClick={handleAddRow} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Add Row</button>
                                 <button onClick={handleCopyRows} disabled={numSelectedRows === 0} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50">Copy Selected ({numSelectedRows})</button>
-                                <button onClick={handleDeleteSelectedClick} disabled={numSelectedRows === 0} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50">Delete Selected ({numSelectedRows})</button>
+                                <button onClick={handleDeleteSelectedClick} disabled={numSelectedRows === 0 || isDeletingPlant} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50">
+                                    {isDeletingPlant ? 'Deleting...' : `Delete Selected (${numSelectedRows})`}
+                                </button>
                                 <div className="border-t my-1"></div>
                                 <button onClick={handleAutofitColumns} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Autofit Columns</button>
                             </div>

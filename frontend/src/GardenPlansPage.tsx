@@ -9,7 +9,7 @@ import DeleteConfirmModal from './components/DeleteConfirmModal';
 const GardenPlansPage: React.FC = () => {
   const { data: plans, error: queryError, isLoading } = useGetGardenPlansQuery();
   const [addGardenPlan, { isLoading: isAdding, isSuccess, data: newPlanData }] = useAddGardenPlanMutation();
-  const [deleteGardenPlan] = useDeleteGardenPlanMutation();
+  const [deleteGardenPlan, { isLoading: isDeleting }] = useDeleteGardenPlanMutation();
   const { activePlan, setActivePlan, clearActivePlan } = usePlan();
   const navigate = useNavigate();
 
@@ -135,9 +135,10 @@ const GardenPlansPage: React.FC = () => {
                 </Link>
                 <button 
                   onClick={(e) => { e.stopPropagation(); openDeleteModal(plan); }} 
-                  className="ml-4 px-3 py-1 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors"
+                  className="ml-4 px-3 py-1 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors disabled:opacity-50"
+                  disabled={isDeleting}
                 >
-                  Delete
+                  {isDeleting ? 'Deleting...' : 'Delete'}
                 </button>
               </div>
             ))
