@@ -23,7 +23,6 @@ import { useTableModals } from './hooks/useTableModals';
 
 import SavePresetModal from './components/SavePresetModal';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
-import ImportChoiceModal from './components/ImportChoiceModal';
 import YieldGraphModal from './components/YieldGraphModal';
 import AddToPlanModal from './components/AddToPlanModal';
 import CsvImportModal from './components/CsvImportModal';
@@ -82,7 +81,6 @@ const BulkEditTable: React.FC = () => {
   const columnSelectorRef = useRef<HTMLDivElement>(null);
   const csvDropdownRef = useRef<HTMLDivElement>(null);
   const rowDropdownRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const tableRef = useRef<HTMLTableElement>(null);
 
   // --- Unsaved Changes Warning ---
