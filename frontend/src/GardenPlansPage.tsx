@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useGetGardenPlansQuery, useAddGardenPlanMutation, useDeleteGardenPlanMutation } from './store/plantApi';
 import { usePlan } from './context/PlanContext';
 import { GardenPlan } from './types';
@@ -28,24 +29,27 @@ const GardenPlansPage: React.FC = () => {
   const handleAddPlan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPlanName.trim()) {
-      setError('Plan name is required.');
+      toast.error('Plan name is required.');
       return;
     }
     setError(null);
 
-    try {
-      await addGardenPlan({
-        name: newPlanName,
-        description: newPlanDescription,
-      }).unwrap();
-      
-      setNewPlanName('');
-      setNewPlanDescription('');
+    const promise = addGardenPlan({
+      name: newPlanName,
+      description: newPlanDescription,
+    }).unwrap();
 
-    } catch (err: any) {
-      console.error('Error adding garden plan:', err);
-      setError(err.data?.detail || 'Failed to add plan. Please try again.');
-    }
+    toast.promise(promise, {
+        loading: 'Creating new plan...',
+        success: (newPlan) => {
+            setNewPlanName('');
+            setNewPlanDescription('');
+            setActivePlan(newPlan);
+            navigate('/');
+            return `Plan "${newPlan.name}" created successfully!`;
+        },
+        error: (err) => err.data?.detail || 'Failed to add plan. Please try again.',
+    });
   };
 
   const openDeleteModal = (plan: GardenPlan) => {
@@ -55,17 +59,22 @@ const GardenPlansPage: React.FC = () => {
 
   const handleConfirmDelete = async () => {
     if (!planToDelete) return;
-    try {
-      await deleteGardenPlan(planToDelete.id).unwrap();
-      if (activePlan?.id === planToDelete.id) {
-        clearActivePlan();
-      }
-    } catch (err) {
-      console.error("Failed to delete plan", err);
-    } finally {
-      setIsDeleteModalOpen(false);
-      setPlanToDelete(null);
-    }
+
+    const promise = deleteGardenPlan(planToDelete.id).unwrap();
+
+    toast.promise(promise, {
+        loading: 'Deleting plan...',
+        success: () => {
+            if (activePlan?.id === planToDelete.id) {
+                clearActivePlan();
+            }
+            return 'Plan deleted successfully!';
+        },
+        error: 'Failed to delete plan.',
+    });
+
+    setIsDeleteModalOpen(false);
+    setPlanToDelete(null);
   };
 
   return (

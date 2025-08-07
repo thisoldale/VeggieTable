@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 import { useRegisterMutation } from './store/plantApi';
 
@@ -14,12 +15,16 @@ const RegistrationPage: React.FC = () => {
         event.preventDefault();
         setError('');
 
-        try {
-            await register({ username, password }).unwrap();
-            navigate('/login');
-        } catch (err) {
-            setError('Failed to register. Please try another username.');
-        }
+        const promise = register({ username, password }).unwrap();
+
+        toast.promise(promise, {
+            loading: 'Registering...',
+            success: () => {
+                navigate('/login');
+                return 'Successfully registered! Please login.';
+            },
+            error: 'Failed to register. Please try another username.',
+        });
     };
 
     return (

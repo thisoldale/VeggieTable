@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 import { useLoginMutation } from './store/plantApi';
 import { useAppDispatch } from './store';
@@ -19,16 +20,21 @@ const LoginPage: React.FC = () => {
         event.preventDefault();
         setError('');
 
-        try {
-            const formData = new FormData();
-            formData.append('username', username);
-            formData.append('password', password);
-            const data = await login(formData).unwrap();
-            dispatch(setToken(data.access_token));
-            navigate(from, { replace: true });
-        } catch (err) {
-            setError('Failed to login. Please check your credentials.');
-        }
+        const formData = new FormData();
+        formData.append('username', username);
+        formData.append('password', password);
+
+        const promise = login(formData).unwrap();
+
+        toast.promise(promise, {
+            loading: 'Logging in...',
+            success: (data) => {
+                dispatch(setToken(data.access_token));
+                navigate(from, { replace: true });
+                return 'Successfully logged in!';
+            },
+            error: 'Failed to login. Please check your credentials.',
+        });
     };
 
     return (

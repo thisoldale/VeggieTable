@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { PlantingStatus } from './types';
 import { useGetGardenPlanByIdQuery, useDeleteGardenPlanMutation } from './store/plantApi';
 import { usePlan } from './context/PlanContext';
@@ -22,18 +23,22 @@ const GardenPlanDetailPage: React.FC = () => {
   
   const handleConfirmDeletePlan = async () => {
     if (!plan) return;
-    try {
-      await deleteGardenPlan(plan.id).unwrap();
-      if (activePlan?.id === plan.id) {
-        clearActivePlan();
-      }
-      navigate('/plans');
-    } catch (err) {
-      console.error("Failed to delete plan", err);
-      setMutationError("Could not delete the plan.");
-    } finally {
-      setIsDeletePlanModalOpen(false);
-    }
+
+    const promise = deleteGardenPlan(plan.id).unwrap();
+
+    toast.promise(promise, {
+        loading: 'Deleting plan...',
+        success: () => {
+            if (activePlan?.id === plan.id) {
+                clearActivePlan();
+            }
+            navigate('/plans');
+            return 'Plan deleted successfully!';
+        },
+        error: 'Failed to delete plan.',
+    });
+
+    setIsDeletePlanModalOpen(false);
   };
 
   const getStatusBadgeColor = (status: PlantingStatus) => {

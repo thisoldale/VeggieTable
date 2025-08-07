@@ -183,6 +183,7 @@ const PlanLoader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './LoginPage';
 import RegistrationPage from './RegistrationPage';
+import { Toaster } from 'react-hot-toast';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -245,6 +246,7 @@ function App() {
     <AuthProvider>
       <PlanProvider>
         <PlanLoader>
+          <Toaster position="top-center" reverseOrder={false} />
           <RouterProvider router={router} />
         </PlanLoader>
       </PlanProvider>

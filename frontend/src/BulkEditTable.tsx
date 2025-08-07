@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import toast from 'react-hot-toast';
 import {
   useReactTable,
   getCoreRowModel,
@@ -252,8 +253,17 @@ const BulkEditTable: React.FC = () => {
 
   const handleConfirmDeleteRows = async () => {
     const selectedIds = Object.keys(rowSelection).map(id => parseInt(id, 10)).filter(id => id > 0);
-    await Promise.all(selectedIds.map(id => deletePlant(id)));
-    setRowSelection({});
+    const promise = Promise.all(selectedIds.map(id => deletePlant(id).unwrap()));
+
+    toast.promise(promise, {
+        loading: 'Deleting rows...',
+        success: () => {
+            setRowSelection({});
+            return 'Selected rows deleted successfully!';
+        },
+        error: 'Failed to delete some rows.',
+    });
+
     modals.deleteRows.close();
   };
 
@@ -359,12 +369,12 @@ const BulkEditTable: React.FC = () => {
 
   const handleImport = async (mode: 'append' | 'replace') => {
     if (modals.importChoice.data) {
-      try {
-        await importPlants({ file: modals.importChoice.data, mode }).unwrap();
-        setStatusMessage({type: 'success', message: 'CSV imported successfully!'});
-      } catch (err: any) {
-        setStatusMessage({type: 'error', message: err.data?.detail || 'Failed to import CSV.'});
-      }
+        const promise = importPlants({ file: modals.importChoice.data, mode }).unwrap();
+        toast.promise(promise, {
+            loading: 'Importing CSV...',
+            success: 'CSV imported successfully!',
+            error: (err) => err.data?.detail || 'Failed to import CSV.',
+        });
     }
     modals.importChoice.close();
   };
@@ -372,7 +382,7 @@ const BulkEditTable: React.FC = () => {
   const handleSaveChanges = async () => {
     const editedPlants = Object.values(editedRows);
     if (editedPlants.length === 0) {
-        setStatusMessage({ type: 'error', message: 'No changes to save.' });
+        toast.error('No changes to save.');
         return;
     }
 
@@ -380,20 +390,23 @@ const BulkEditTable: React.FC = () => {
         .filter(p => p.id <= 0)
         .map(p => {
             const { id, ...plantData } = p;
-            return addPlant(plantData as Omit<Plant, 'id'>);
+            return addPlant(plantData as Omit<Plant, 'id'>).unwrap();
         });
 
     const updatePromises = editedPlants
         .filter(p => p.id > 0)
-        .map(p => updatePlant(p));
+        .map(p => updatePlant(p).unwrap());
 
-    try {
-        await Promise.all([...createPromises, ...updatePromises]);
-        setStatusMessage({ type: 'success', message: 'All changes saved successfully!' });
-        setEditedRows({});
-    } catch (err) {
-        setStatusMessage({ type: 'error', message: 'Failed to save some changes.' });
-    }
+    const promise = Promise.all([...createPromises, ...updatePromises]);
+
+    toast.promise(promise, {
+        loading: 'Saving changes...',
+        success: () => {
+            setEditedRows({});
+            return 'All changes saved successfully!';
+        },
+        error: 'Failed to save some changes.',
+    });
   }
 
   // --- Effect for closing dropdowns on outside click ---
