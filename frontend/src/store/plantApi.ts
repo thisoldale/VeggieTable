@@ -45,16 +45,42 @@ export const plantApi = createApi({
         method: 'PUT',
         body: patch,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Plant', id }],
+      async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          plantApi.util.updateQueryData('getPlants', undefined, (draft) => {
+            const plant = draft.find((p) => p.id === id);
+            if (plant) {
+              Object.assign(plant, patch);
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
     }),
     deletePlant: builder.mutation<{ success: boolean; id: number }, number>({
-      query(id) {
-        return {
-          url: `plants/${id}`,
-          method: 'DELETE',
-        };
+      query: (id) => ({
+        url: `plants/${id}`,
+        method: 'DELETE',
+      }),
+      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          plantApi.util.updateQueryData('getPlants', undefined, (draft) => {
+            const index = draft.findIndex((p) => p.id === id);
+            if (index !== -1) {
+              draft.splice(index, 1);
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
       },
-      invalidatesTags: (result, error, id) => [{ type: 'Plant', id }],
     }),
     importPlants: builder.mutation<{ message: string }, { file: File; mode: 'append' | 'replace' }>({
         query: ({ file, mode }) => {
@@ -97,13 +123,25 @@ export const plantApi = createApi({
         invalidatesTags: [{ type: 'GardenPlan', id: 'LIST' }],
     }),
     deleteGardenPlan: builder.mutation<{ success: boolean; id: number }, number>({
-        query(id) {
-            return {
-                url: `garden-plans/${id}`,
-                method: 'DELETE',
-            };
-        },
-        invalidatesTags: (result, error, id) => [{ type: 'GardenPlan', id }, { type: 'GardenPlan', id: 'LIST' }],
+      query: (id) => ({
+        url: `garden-plans/${id}`,
+        method: 'DELETE',
+      }),
+      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          plantApi.util.updateQueryData('getGardenPlans', undefined, (draft) => {
+            const index = draft.findIndex((p) => p.id === id);
+            if (index !== -1) {
+              draft.splice(index, 1);
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
     }),
     touchGardenPlan: builder.mutation<GardenPlan, number>({
         query: (id) => ({
