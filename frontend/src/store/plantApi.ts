@@ -1,10 +1,19 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Plant, GardenPlan, Planting, PlantingCreatePayload, Task } from '../types';
+import { Plant, GardenPlan, Planting, PlantingCreatePayload, Task, User } from '../types';
 
 // Define a service using a base URL and expected endpoints
 export const plantApi = createApi({
   reducerPath: 'plantApi',
-  baseQuery: fetchBaseQuery({ baseUrl: '/api/' }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: '/api/',
+    prepareHeaders: (headers, { getState }) => {
+      const token = (getState() as any).auth.token;
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
   tagTypes: ['Plant', 'GardenPlan', 'Planting', 'Task'], // Used for cache invalidation
   endpoints: (builder) => ({
     // --- Plant Library Endpoints ---
@@ -171,6 +180,22 @@ export const plantApi = createApi({
         },
         invalidatesTags: (result, error, id) => [{ type: 'Task', id }, { type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: 'LIST' }],
     }),
+
+    // --- Auth Endpoints ---
+    login: builder.mutation<{ access_token: string }, any>({
+        query: (credentials) => ({
+            url: 'token',
+            method: 'POST',
+            body: credentials,
+        }),
+    }),
+    register: builder.mutation<User, any>({
+        query: (userInfo) => ({
+            url: 'users/',
+            method: 'POST',
+            body: userInfo,
+        }),
+    }),
   }),
 });
 
@@ -196,4 +221,6 @@ export const {
   useAddTaskMutation,
   useUpdateTaskMutation,
   useDeleteTaskMutation,
+  useLoginMutation,
+  useRegisterMutation,
 } = plantApi;

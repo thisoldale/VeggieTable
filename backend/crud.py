@@ -8,6 +8,20 @@ from models import Base
 
 import models, schemas
 
+import security
+
+# --- User CRUD ---
+def get_user(db: Session, username: str):
+    return db.query(models.User).filter(models.User.username == username).first()
+
+def create_user(db: Session, user: schemas.UserCreate):
+    hashed_password = security.get_password_hash(user.password)
+    db_user = models.User(username=user.username, hashed_password=hashed_password)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
 # --- Generic Helpers ---
 def _get_by_id(db: Session, model: Type[Base], item_id: int) -> Optional[Base]:
     """Generic function to get an item by its ID."""
@@ -62,9 +76,10 @@ def get_garden_plan_by_id(db: Session, plan_id: int):
         .first()
     )
 
-def get_all_garden_plans(db: Session, skip: int = 0, limit: int = 100):
+def get_all_garden_plans(db: Session, user_id: int, skip: int = 0, limit: int = 100):
     return (
         db.query(models.GardenPlan)
+        .filter(models.GardenPlan.owner_id == user_id)
         .options(*_get_garden_plan_load_options())
         .order_by(desc(models.GardenPlan.last_accessed_date))
         .offset(skip)
@@ -72,8 +87,8 @@ def get_all_garden_plans(db: Session, skip: int = 0, limit: int = 100):
         .all()
     )
     
-def create_garden_plan(db: Session, plan: schemas.GardenPlanCreate):
-    db_plan = models.GardenPlan(**plan.model_dump())
+def create_garden_plan(db: Session, plan: schemas.GardenPlanCreate, user_id: int):
+    db_plan = models.GardenPlan(**plan.model_dump(), owner_id=user_id)
     db.add(db_plan)
     db.commit()
     db.refresh(db_plan)

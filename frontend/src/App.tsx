@@ -7,6 +7,8 @@ import {
   Outlet,
   useBlocker,
   useNavigate,
+  Navigate,
+  useLocation,
 } from 'react-router-dom';
 import BulkEditTable from './BulkEditTable';
 import PlantDetail from './PlantDetail';
@@ -24,12 +26,18 @@ function SideMenu() {
   const { activePlan } = usePlan();
   const [isChangePlanModalOpen, setChangePlanModalOpen] = useState(false);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const openChangePlanModal = () => setChangePlanModalOpen(true);
   const closeChangePlanModal = () => setChangePlanModalOpen(false);
 
   const handleCreatePlanClick = () => {
     navigate('/plans');
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -73,6 +81,14 @@ function SideMenu() {
             </li>
           </ul>
         </nav>
+        <div className="absolute bottom-0 left-0 w-full p-4">
+          <button
+            onClick={handleLogout}
+            className="w-full text-left p-2 text-xl hover:bg-green-700 rounded transition duration-200"
+          >
+            Logout
+          </button>
+        </div>
       </div>
       <ChangePlanModal isOpen={isChangePlanModalOpen} onClose={closeChangePlanModal} />
     </>
@@ -142,10 +158,47 @@ function AppLayout() {
 }
 
 
+// This component now handles the initial loading of the active plan.
+const PlanLoader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { activePlan, setActivePlan } = usePlan();
+  // We only fetch if there isn't an active plan already in the state.
+  const { data: mostRecentPlan, isLoading } = useGetMostRecentGardenPlanQuery(undefined, {
+    skip: !!activePlan,
+  });
+
+  useEffect(() => {
+    if (mostRecentPlan) {
+      setActivePlan(mostRecentPlan);
+    }
+  }, [mostRecentPlan, setActivePlan]);
+
+  // Show a loading indicator while we're fetching the initial plan.
+  if (isLoading) {
+    return <div className="p-8 text-center">Loading your garden...</div>;
+  }
+
+  return <>{children}</>;
+};
+
+import { AuthProvider, useAuth } from './context/AuthContext';
+import LoginPage from './LoginPage';
+import RegistrationPage from './RegistrationPage';
+
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+};
+
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <AppLayout />,
+    element: <ProtectedRoute><AppLayout /></ProtectedRoute>,
     children: [
       {
         index: true,
@@ -177,37 +230,25 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: "/login",
+    element: <LoginPage />,
+  },
+  {
+    path: "/register",
+    element: <RegistrationPage />,
+  },
 ]);
-
-// This component now handles the initial loading of the active plan.
-const PlanLoader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { activePlan, setActivePlan } = usePlan();
-  // We only fetch if there isn't an active plan already in the state.
-  const { data: mostRecentPlan, isLoading } = useGetMostRecentGardenPlanQuery(undefined, {
-    skip: !!activePlan,
-  });
-
-  useEffect(() => {
-    if (mostRecentPlan) {
-      setActivePlan(mostRecentPlan);
-    }
-  }, [mostRecentPlan, setActivePlan]);
-
-  // Show a loading indicator while we're fetching the initial plan.
-  if (isLoading) {
-    return <div className="p-8 text-center">Loading your garden...</div>;
-  }
-
-  return <>{children}</>;
-};
 
 function App() {
   return (
-    <PlanProvider>
-      <PlanLoader>
-        <RouterProvider router={router} />
-      </PlanLoader>
-    </PlanProvider>
+    <AuthProvider>
+      <PlanProvider>
+        <PlanLoader>
+          <RouterProvider router={router} />
+        </PlanLoader>
+      </PlanProvider>
+    </AuthProvider>
   );
 }
 
