@@ -40,8 +40,6 @@ services:
     restart: "on-failure"
     depends_on:
       - backend # Frontend dev needs backend to be up
-    # THIS IS THE CRITICAL LINE ADDED FOR THE 'ERR_MODULE_NOT_FOUND' FIX:
-    command: sh -c "npm install && npm run dev"
 
 volumes:
   db_data: # Define the named volume for database persistence
