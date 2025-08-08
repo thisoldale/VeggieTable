@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 import { useLoginMutation } from './store/plantApi';
@@ -79,6 +79,12 @@ const LoginPage: React.FC = () => {
                         </button>
                     </div>
                 </form>
+                <p className="text-center text-gray-500 text-xs mt-4">
+                    Don't have an account?{' '}
+                    <Link to="/register" className="text-blue-500 hover:text-blue-700">
+                        Register
+                    </Link>
+                </p>
             </div>
         </div>
     );

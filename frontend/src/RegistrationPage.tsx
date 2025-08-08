@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 import { useRegisterMutation } from './store/plantApi';
@@ -69,6 +69,12 @@ const RegistrationPage: React.FC = () => {
                         </button>
                     </div>
                 </form>
+                <p className="text-center text-gray-500 text-xs mt-4">
+                    Already have an account?{' '}
+                    <Link to="/login" className="text-blue-500 hover:text-blue-700">
+                        Login
+                    </Link>
+                </p>
             </div>
         </div>
     );
