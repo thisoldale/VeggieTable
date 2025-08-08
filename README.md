@@ -1,6 +1,6 @@
 # Garden Planner
 
-Garden Planner is a full-stack web application designed to help users plan and manage their gardens. It provides tools for managing a personal plant library, creating detailed garden plans, and tracking tasks.
+Garden Planner is a full-stack web application designed to help users plan and manage their gardens. It provides tools for managing a personal plant library, creating detailed garden plans, and tracking tasks. This project is under active development.
 
 ## Features
 
