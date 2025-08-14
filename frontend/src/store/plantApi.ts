@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { Plant, GardenPlan, Planting, PlantingCreatePayload, Task, User } from '../types';
-import { RootState } from './index'; // Import RootState
+import type { RootState } from './index'; // Import RootState
 
 // Define a service using a base URL and expected endpoints
 export const plantApi = createApi({
@@ -286,3 +286,29 @@ export const {
   useRegisterMutation,
   useImportMappedPlantsMutation,
 } = plantApi;
+
+console.log('Exporting from plantApi:', {
+    useGetPlantsQuery,
+    useGetPlantByIdQuery,
+    useAddPlantMutation,
+    useUpdatePlantMutation,
+    useDeletePlantMutation,
+    useImportPlantsMutation,
+    useGetGardenPlansQuery,
+    useGetGardenPlanByIdQuery,
+    useGetMostRecentGardenPlanQuery,
+    useAddGardenPlanMutation,
+    useDeleteGardenPlanMutation,
+    useTouchGardenPlanMutation,
+    useGetPlantingByIdQuery,
+    useAddPlantingMutation,
+    useUpdatePlantingMutation,
+    useDeletePlantingMutation,
+    useGetTasksForPlanQuery,
+    useAddTaskMutation,
+    useUpdateTaskMutation,
+    useDeleteTaskMutation,
+    useLoginMutation,
+    useRegisterMutation,
+    useImportMappedPlantsMutation,
+});

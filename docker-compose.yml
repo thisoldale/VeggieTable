@@ -12,6 +12,8 @@ services:
     environment:
       - DATABASE_URL=sqlite:///./data/gardening.db
     restart: "unless-stopped"
+    networks:
+      - garden_net
 
   # # Your existing frontend service (for production build)
   # frontend_prod:
@@ -40,6 +42,12 @@ services:
     restart: "on-failure"
     depends_on:
       - backend # Frontend dev needs backend to be up
+    networks:
+      - garden_net
 
 volumes:
   db_data: # Define the named volume for database persistence
+
+networks:
+  garden_net:
+    driver: bridge

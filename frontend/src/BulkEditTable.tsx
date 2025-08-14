@@ -17,7 +17,8 @@ import Papa from 'papaparse';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 
 import { Plant, AppContextType, GardenPlan } from './types';
-import { useGetPlantsQuery, useUpdatePlantMutation, useAddPlantMutation, useDeletePlantMutation, useImportPlantsMutation, useGetMostRecentGardenPlanQuery, useImportMappedPlantsMutation } from './store/plantApi';
+import { useGetPlantsQuery, useUpdatePlantMutation, useAddPlantMutation, useDeletePlantMutation, useGetMostRecentGardenPlanQuery, useImportMappedPlantsMutation } from './store/plantApi';
+import * as plantApiHooks from './store/plantApi';
 import { useColumnPresets } from './hooks/useColumnPresets';
 import { useTableModals } from './hooks/useTableModals';
 
@@ -28,12 +29,13 @@ import AddToPlanModal from './components/AddToPlanModal';
 import CsvImportModal from './components/CsvImportModal';
 import { getColumns } from './components/columns';
 
+console.log('Imported plantApiHooks:', plantApiHooks);
+
 const BulkEditTable: React.FC = () => {
   const { data: serverData, error, isLoading } = useGetPlantsQuery();
   const [updatePlant, { isLoading: isUpdatingPlant }] = useUpdatePlantMutation();
   const [addPlant, { isLoading: isAddingPlant }] = useAddPlantMutation();
   const [deletePlant, { isLoading: isDeletingPlant }] = useDeletePlantMutation();
-  const [importPlants, { isLoading: isImporting }] = useImportPlantsMutation();
   const { data: recentPlan } = useGetMostRecentGardenPlanQuery();
 
 
