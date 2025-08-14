@@ -13,18 +13,18 @@ services:
       - DATABASE_URL=sqlite:///./data/gardening.db
     restart: "unless-stopped"
 
-  # Your existing frontend service (for production build)
-  frontend_prod:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile # Refers to your existing Nginx Dockerfile
-    ports:
-      - "8444:80" # Nginx serves on port 80, map to 8444 on host
-    depends_on:
-      - backend # Frontend depends on backend
+  # # Your existing frontend service (for production build)
+  # frontend_prod:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile # Refers to your existing Nginx Dockerfile
+  #   ports:
+  #     - "8444:80" # Nginx serves on port 80, map to 8444 on host
+  #   depends_on:
+  #     - backend # Frontend depends on backend
 
   # NEW: Frontend development service
-  frontend_dev:
+  frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev # Use the new development Dockerfile

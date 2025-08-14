@@ -1,11 +1,7 @@
-import React,
-{
-    createContext,
-    useContext,
-    useState,
-    ReactNode,
-    useEffect
-} from 'react';
+import React, { createContext, useContext, ReactNode } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, useAppDispatch } from '../store';
+import { setToken } from '../store/authSlice';
 
 interface AuthContextType {
     token: string | null;
@@ -17,23 +13,15 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-
-    useEffect(() => {
-        const storedToken = localStorage.getItem('token');
-        if (storedToken) {
-            setToken(storedToken);
-        }
-    }, []);
+    const dispatch = useAppDispatch();
+    const token = useSelector((state: RootState) => state.auth.token);
 
     const login = (newToken: string) => {
-        setToken(newToken);
-        localStorage.setItem('token', newToken);
+        dispatch(setToken(newToken));
     };
 
     const logout = () => {
-        setToken(null);
-        localStorage.removeItem('token');
+        dispatch(setToken(null));
     };
 
     const isAuthenticated = !!token;

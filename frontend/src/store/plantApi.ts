@@ -195,30 +195,43 @@ export const plantApi = createApi({
                 ]
             : [{ type: 'Task', id: 'LIST' }],
     }),
-    addTask: builder.mutation<Task, Partial<Task>>({
+    addTask: builder.mutation<Task, Partial<Task> & { garden_plan_id: number }>({
         query: (body) => ({
             url: 'tasks/',
             method: 'POST',
             body,
         }),
-        invalidatesTags: [{ type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: 'LIST' }],
+        invalidatesTags: (result, error, { garden_plan_id }) => [
+            { type: 'Task', id: 'LIST' },
+            { type: 'GardenPlan', id: garden_plan_id }
+        ],
     }),
-    updateTask: builder.mutation<Task, Partial<Task> & Pick<Task, 'id'>>({
+    updateTask: builder.mutation<Task, Partial<Task> & Pick<Task, 'id'> & { garden_plan_id: number }>({
         query: ({ id, ...patch }) => ({
             url: `tasks/${id}`,
             method: 'PUT',
             body: patch,
         }),
-        invalidatesTags: (result, error, { id }) => [{ type: 'Task', id }, { type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: 'LIST' }],
+        invalidatesTags: (result, error, { id, garden_plan_id }) => [
+            { type: 'Task', id },
+            { type: 'Task', id: 'LIST' },
+            { type: 'GardenPlan', id: garden_plan_id }
+        ],
     }),
-    deleteTask: builder.mutation<{ success: boolean; id: number }, number>({
+    deleteTask: builder.mutation<{ success: boolean; id: number, garden_plan_id: number }, number>({
         query(id) {
             return {
                 url: `tasks/${id}`,
                 method: 'DELETE',
             };
         },
-        invalidatesTags: (result, error, id) => [{ type: 'Task', id }, { type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: 'LIST' }],
+        invalidatesTags: (result, error, id) => [
+            { type: 'Task', id },
+            { type: 'Task', id: 'LIST' },
+            // We can't know the garden_plan_id here without more info from the server
+            // or changing the deleteTask signature. Invalidating the list is a safe fallback.
+            { type: 'GardenPlan', id: 'LIST' }
+        ],
     }),
 
     // --- Auth Endpoints ---

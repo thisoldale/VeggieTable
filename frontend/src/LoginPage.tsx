@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 import { useLoginMutation } from './store/plantApi';
-import { useAppDispatch } from './store';
-import { setToken } from './store/authSlice';
+import { useAuth } from './context/AuthContext';
 
 const LoginPage: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -13,8 +12,14 @@ const LoginPage: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const from = location.state?.from?.pathname || "/";
-    const [login, { isLoading }] = useLoginMutation();
-    const dispatch = useAppDispatch();
+    const [loginMutation, { isLoading }] = useLoginMutation();
+    const { login, isAuthenticated } = useAuth();
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate(from, { replace: true });
+        }
+    }, [isAuthenticated, navigate, from]);
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -24,14 +29,13 @@ const LoginPage: React.FC = () => {
         formData.append('username', username);
         formData.append('password', password);
 
-        const promise = login(formData).unwrap();
+        const promise = loginMutation(formData).unwrap();
 
         toast.promise(promise, {
             loading: 'Logging in...',
             success: (data) => {
-                dispatch(setToken(data.access_token));
-                navigate(from, { replace: true });
-                return 'Successfully logged in!';
+                login(data.access_token);
+                return 'Login Successful';
             },
             error: 'Failed to login. Please check your credentials.',
         });
@@ -79,6 +83,12 @@ const LoginPage: React.FC = () => {
                         </button>
                     </div>
                 </form>
+                <p className="text-center text-gray-500 text-xs mt-4">
+                    Don't have an account?{' '}
+                    <a href="/register" className="text-blue-500 hover:text-blue-800">
+                        Register
+                    </a>
+                </p>
             </div>
         </div>
     );

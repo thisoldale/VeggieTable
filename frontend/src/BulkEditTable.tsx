@@ -17,7 +17,7 @@ import Papa from 'papaparse';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 
 import { Plant, AppContextType, GardenPlan } from './types';
-import { useGetPlantsQuery, useUpdatePlantMutation, useAddPlantMutation, useDeletePlantMutation, useImportPlantsMutation, useGetMostRecentGardenPlanQuery } from './store/plantApi';
+import { useGetPlantsQuery, useUpdatePlantMutation, useAddPlantMutation, useDeletePlantMutation, useImportPlantsMutation, useGetMostRecentGardenPlanQuery, useImportMappedPlantsMutation } from './store/plantApi';
 import { useColumnPresets } from './hooks/useColumnPresets';
 import { useTableModals } from './hooks/useTableModals';
 
@@ -73,6 +73,7 @@ const BulkEditTable: React.FC = () => {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   // --- Refs ---
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const newRowCounter = useRef(0);
   const lastClickedRowId = useRef<string | null>(null);
   const longPressTimeout = useRef<number | undefined>();
@@ -223,6 +224,17 @@ const BulkEditTable: React.FC = () => {
     setData([newPlant, ...data]);
     setEditedRows(prev => ({ ...prev, [newPlant.id]: newPlant }));
     setShowRowDropdown(false);
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // You can now process the file, e.g., by passing it to your import handler
+      // For now, let's just log it.
+      console.log('Selected file:', file);
+      // Example: Open the import modal with this file
+      // onDrop([file]); // This assumes you have an onDrop function like in CsvImportModal
+    }
   };
 
   const handleCopyRows = () => {
