@@ -1,13 +1,11 @@
 # backend/crud.py
-# Removed PlantingGroup logic and updated create_planting function.
-from sqlalchemy.orm import Session, joinedload, raiseload
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import desc, inspect
 from typing import Optional, List, Type
 from datetime import datetime
 from models import Base
 
 import models, schemas
-
 import security
 
 # --- User CRUD ---
@@ -102,9 +100,11 @@ def delete_garden_plan_by_id(db: Session, plan_id: int):
         return True
     return False
 
-def get_most_recent_garden_plan(db: Session):
+# THIS IS THE CORRECTED FUNCTION
+def get_most_recent_garden_plan(db: Session, user_id: int):
     return (
         db.query(models.GardenPlan)
+        .filter(models.GardenPlan.owner_id == user_id)
         .options(*_get_garden_plan_load_options())
         .order_by(desc(models.GardenPlan.last_accessed_date))
         .first()

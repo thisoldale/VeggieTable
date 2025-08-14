@@ -7,7 +7,8 @@ import TaskDetailModal from './components/TaskDetailModal';
 
 const TasksPage: React.FC = () => {
   const { activePlan } = usePlan();
-  const { data: tasks, error, isLoading } = useGetTasksForPlanQuery(activePlan!.id, {
+  // The line below is the corrected one
+  const { data: tasks, error, isLoading } = useGetTasksForPlanQuery(activePlan ? activePlan.id : 0, {
     skip: !activePlan,
   });
   const [addTask] = useAddTaskMutation();

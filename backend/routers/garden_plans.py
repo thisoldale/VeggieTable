@@ -18,39 +18,82 @@ def get_db():
         db.close()
 
 @router.post("/garden-plans/", response_model=schemas.GardenPlan, status_code=status.HTTP_201_CREATED)
-def create_garden_plan_endpoint(plan: schemas.GardenPlanCreate, db: Session = Depends(get_db)):
-    return crud.create_garden_plan(db=db, plan=plan)
+def create_garden_plan_endpoint(
+    plan: schemas.GardenPlanCreate, 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(security.get_current_user)
+):
+    return crud.create_garden_plan(db=db, plan=plan, user_id=current_user.id)
 
 @router.get("/garden-plans/most-recent", response_model=Optional[schemas.GardenPlan])
-def read_most_recent_garden_plan_endpoint(db: Session = Depends(get_db)):
-    return crud.get_most_recent_garden_plan(db)
+def read_most_recent_garden_plan_endpoint(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    return crud.get_most_recent_garden_plan(db, user_id=current_user.id)
 
 @router.get("/garden-plans/", response_model=List[schemas.GardenPlan])
-def read_all_garden_plans_endpoint(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud.get_all_garden_plans(db, skip=skip, limit=limit)
+def read_all_garden_plans_endpoint(
+    skip: int = 0, 
+    limit: int = 100, 
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    return crud.get_all_garden_plans(db, user_id=current_user.id, skip=skip, limit=limit)
 
 @router.get("/garden-plans/{plan_id}", response_model=schemas.GardenPlan)
-def read_single_garden_plan_endpoint(plan_id: int, db: Session = Depends(get_db)):
+def read_single_garden_plan_endpoint(
+    plan_id: int, 
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
     db_plan = crud.get_garden_plan_by_id(db, plan_id=plan_id)
     if db_plan is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Garden Plan not found")
+    if db_plan.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
     return db_plan
 
 @router.delete("/garden-plans/{plan_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_garden_plan_endpoint(plan_id: int, db: Session = Depends(get_db)):
+def delete_garden_plan_endpoint(
+    plan_id: int, 
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    db_plan = crud.get_garden_plan_by_id(db, plan_id=plan_id)
+    if db_plan and db_plan.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
     if not crud.delete_garden_plan_by_id(db, plan_id=plan_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Garden Plan not found")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.put("/garden-plans/{plan_id}/touch", response_model=schemas.GardenPlan)
-def touch_garden_plan_endpoint(plan_id: int, db: Session = Depends(get_db)):
+def touch_garden_plan_endpoint(
+    plan_id: int, 
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    db_plan = crud.get_garden_plan_by_id(db, plan_id=plan_id)
+    if db_plan and db_plan.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
     db_plan = crud.touch_garden_plan(db, plan_id=plan_id)
     if db_plan is None:
         raise HTTPException(status_code=404, detail="Garden plan not found")
     return db_plan
 
 @router.post("/garden-plans/{plan_id}/plantings", response_model=schemas.Planting, status_code=status.HTTP_201_CREATED)
-def create_planting_for_plan_endpoint(plan_id: int, planting_details: schemas.PlantingCreate, db: Session = Depends(get_db)):
+def create_planting_for_plan_endpoint(
+    plan_id: int, 
+    planting_details: schemas.PlantingCreate, 
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    db_plan = crud.get_garden_plan_by_id(db, plan_id=plan_id)
+    if db_plan and db_plan.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
     created = crud.create_planting(db, garden_plan_id=plan_id, planting_details=planting_details)
     if created is None:
         raise HTTPException(status_code=404, detail="Library plant not found")

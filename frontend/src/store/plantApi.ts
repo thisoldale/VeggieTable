@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { Plant, GardenPlan, Planting, PlantingCreatePayload, Task, User } from '../types';
+import { RootState } from './index'; // Import RootState
 
 // Define a service using a base URL and expected endpoints
 export const plantApi = createApi({
@@ -7,7 +8,8 @@ export const plantApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: '/api/',
     prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as any).auth.token;
+      // Correctly access the token from the auth slice
+      const token = (getState() as RootState).auth.token;
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
