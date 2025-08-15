@@ -12,19 +12,21 @@ services:
     environment:
       - DATABASE_URL=sqlite:///./data/gardening.db
     restart: "unless-stopped"
+    networks:
+      - garden_net
 
-  # Your existing frontend service (for production build)
-  frontend_prod:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile # Refers to your existing Nginx Dockerfile
-    ports:
-      - "8444:80" # Nginx serves on port 80, map to 8444 on host
-    depends_on:
-      - backend # Frontend depends on backend
+  # # Your existing frontend service (for production build)
+  # frontend_prod:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile # Refers to your existing Nginx Dockerfile
+  #   ports:
+  #     - "8444:80" # Nginx serves on port 80, map to 8444 on host
+  #   depends_on:
+  #     - backend # Frontend depends on backend
 
   # NEW: Frontend development service
-  frontend_dev:
+  frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev # Use the new development Dockerfile
@@ -40,8 +42,12 @@ services:
     restart: "on-failure"
     depends_on:
       - backend # Frontend dev needs backend to be up
-    # THIS IS THE CRITICAL LINE ADDED FOR THE 'ERR_MODULE_NOT_FOUND' FIX:
-    command: sh -c "npm install && npm run dev"
+    networks:
+      - garden_net
 
 volumes:
   db_data: # Define the named volume for database persistence
+
+networks:
+  garden_net:
+    driver: bridge

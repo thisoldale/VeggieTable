@@ -8,6 +8,14 @@ import enum
 
 from database import Base
 
+class User(Base):
+    __tablename__ = "users"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    username: Mapped[str] = mapped_column(String, unique=True, index=True)
+    hashed_password: Mapped[str] = mapped_column(String)
+
+    garden_plans: Mapped[List["GardenPlan"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
+
 class Plant(Base):
     __tablename__ = "plants"
 
@@ -66,11 +74,13 @@ class Plant(Base):
 class GardenPlan(Base):
     __tablename__ = "garden_plans"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     name: Mapped[str] = mapped_column(String, index=True)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     created_date: Mapped[datetime] = mapped_column(Date, default=datetime.utcnow)
     last_accessed_date: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
     
+    owner: Mapped["User"] = relationship(back_populates="garden_plans")
     plantings: Mapped[List["Planting"]] = relationship(back_populates="garden_plan", cascade="all, delete-orphan")
     tasks: Mapped[List["Task"]] = relationship(back_populates="garden_plan", cascade="all, delete-orphan")
 

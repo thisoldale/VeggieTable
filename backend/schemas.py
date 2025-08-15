@@ -6,6 +6,25 @@ from datetime import date, datetime
 from models import PlantingStatus, PlantingMethod, TaskStatus
 import enum
 
+# --- Token Schemas ---
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+
+# --- User Schemas ---
+class UserBase(BaseModel):
+    username: str
+
+class UserCreate(UserBase):
+    password: str
+
+class User(UserBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
 # --- Helper function for creating update schemas ---
 def make_optional(model: Type[BaseModel]) -> Type[BaseModel]:
     """Creates a new Pydantic model with all fields from the original model made optional."""
@@ -157,6 +176,7 @@ GardenPlanUpdate = make_optional(GardenPlanBase)
 
 class GardenPlan(GardenPlanBase):
     id: int
+    owner_id: int
     created_date: date
     last_accessed_date: datetime
     plantings: List[Planting] = []

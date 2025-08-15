@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import toast from 'react-hot-toast';
 import {
   useReactTable,
   getCoreRowModel,
@@ -16,23 +17,25 @@ import Papa from 'papaparse';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 
 import { Plant, AppContextType, GardenPlan } from './types';
-import { useGetPlantsQuery, useUpdatePlantMutation, useAddPlantMutation, useDeletePlantMutation, useImportPlantsMutation, useGetMostRecentGardenPlanQuery } from './store/plantApi';
+import { useGetPlantsQuery, useUpdatePlantMutation, useAddPlantMutation, useDeletePlantMutation, useGetMostRecentGardenPlanQuery, useImportMappedPlantsMutation } from './store/plantApi';
+import * as plantApiHooks from './store/plantApi';
 import { useColumnPresets } from './hooks/useColumnPresets';
 import { useTableModals } from './hooks/useTableModals';
 
 import SavePresetModal from './components/SavePresetModal';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
-import ImportChoiceModal from './components/ImportChoiceModal';
 import YieldGraphModal from './components/YieldGraphModal';
 import AddToPlanModal from './components/AddToPlanModal';
+import CsvImportModal from './components/CsvImportModal';
 import { getColumns } from './components/columns';
+
+console.log('Imported plantApiHooks:', plantApiHooks);
 
 const BulkEditTable: React.FC = () => {
   const { data: serverData, error, isLoading } = useGetPlantsQuery();
-  const [updatePlant] = useUpdatePlantMutation();
-  const [addPlant] = useAddPlantMutation();
-  const [deletePlant] = useDeletePlantMutation();
-  const [importPlants] = useImportPlantsMutation();
+  const [updatePlant, { isLoading: isUpdatingPlant }] = useUpdatePlantMutation();
+  const [addPlant, { isLoading: isAddingPlant }] = useAddPlantMutation();
+  const [deletePlant, { isLoading: isDeletingPlant }] = useDeletePlantMutation();
   const { data: recentPlan } = useGetMostRecentGardenPlanQuery();
 
 
@@ -52,6 +55,7 @@ const BulkEditTable: React.FC = () => {
   // --- Modal State ---
   const [isYieldModalOpen, setIsYieldModalOpen] = useState(false);
   const [isAddToPlanModalOpen, setIsAddToPlanModalOpen] = useState(false);
+  const [isCsvImportModalOpen, setIsCsvImportModalOpen] = useState(false);
   const [currentPlant, setCurrentPlant] = useState<Plant | null>(null);
   const [statusMessage, setStatusMessage] = useState<{type: 'success' | 'error', message: string} | null>(null);
 
@@ -71,6 +75,7 @@ const BulkEditTable: React.FC = () => {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   // --- Refs ---
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const newRowCounter = useRef(0);
   const lastClickedRowId = useRef<string | null>(null);
   const longPressTimeout = useRef<number | undefined>();
@@ -79,7 +84,6 @@ const BulkEditTable: React.FC = () => {
   const columnSelectorRef = useRef<HTMLDivElement>(null);
   const csvDropdownRef = useRef<HTMLDivElement>(null);
   const rowDropdownRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const tableRef = useRef<HTMLTableElement>(null);
 
   // --- Unsaved Changes Warning ---
@@ -224,6 +228,17 @@ const BulkEditTable: React.FC = () => {
     setShowRowDropdown(false);
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // You can now process the file, e.g., by passing it to your import handler
+      // For now, let's just log it.
+      console.log('Selected file:', file);
+      // Example: Open the import modal with this file
+      // onDrop([file]); // This assumes you have an onDrop function like in CsvImportModal
+    }
+  };
+
   const handleCopyRows = () => {
     const selectedRows = table.getSelectedRowModel().rows;
     if (selectedRows.length === 0) return;
@@ -252,8 +267,17 @@ const BulkEditTable: React.FC = () => {
 
   const handleConfirmDeleteRows = async () => {
     const selectedIds = Object.keys(rowSelection).map(id => parseInt(id, 10)).filter(id => id > 0);
-    await Promise.all(selectedIds.map(id => deletePlant(id)));
-    setRowSelection({});
+    const promise = Promise.all(selectedIds.map(id => deletePlant(id).unwrap()));
+
+    toast.promise(promise, {
+        loading: 'Deleting rows...',
+        success: () => {
+            setRowSelection({});
+            return 'Selected rows deleted successfully!';
+        },
+        error: 'Failed to delete some rows.',
+    });
+
     modals.deleteRows.close();
   };
 
@@ -346,33 +370,25 @@ const BulkEditTable: React.FC = () => {
 
   const handleImportClick = () => {
       setShowCsvDropdown(false);
-      fileInputRef.current?.click();
+      setIsCsvImportModalOpen(true);
   }
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      modals.importChoice.open(file);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
+  const [importMappedPlants, { isLoading: isImportingMapped }] = useImportMappedPlantsMutation();
 
-  const handleImport = async (mode: 'append' | 'replace') => {
-    if (modals.importChoice.data) {
-      try {
-        await importPlants({ file: modals.importChoice.data, mode }).unwrap();
-        setStatusMessage({type: 'success', message: 'CSV imported successfully!'});
-      } catch (err: any) {
-        setStatusMessage({type: 'error', message: err.data?.detail || 'Failed to import CSV.'});
-      }
-    }
-    modals.importChoice.close();
+  const handleImport = async (data: any[], mapping: Record<string, string>) => {
+    const promise = importMappedPlants({ data, mapping }).unwrap();
+    toast.promise(promise, {
+        loading: 'Importing data...',
+        success: 'Data imported successfully!',
+        error: (err) => err.data?.detail || 'Failed to import data.',
+    });
+    setIsCsvImportModalOpen(false);
   };
   
   const handleSaveChanges = async () => {
     const editedPlants = Object.values(editedRows);
     if (editedPlants.length === 0) {
-        setStatusMessage({ type: 'error', message: 'No changes to save.' });
+        toast.error('No changes to save.');
         return;
     }
 
@@ -380,20 +396,23 @@ const BulkEditTable: React.FC = () => {
         .filter(p => p.id <= 0)
         .map(p => {
             const { id, ...plantData } = p;
-            return addPlant(plantData as Omit<Plant, 'id'>);
+            return addPlant(plantData as Omit<Plant, 'id'>).unwrap();
         });
 
     const updatePromises = editedPlants
         .filter(p => p.id > 0)
-        .map(p => updatePlant(p));
+        .map(p => updatePlant(p).unwrap());
 
-    try {
-        await Promise.all([...createPromises, ...updatePromises]);
-        setStatusMessage({ type: 'success', message: 'All changes saved successfully!' });
-        setEditedRows({});
-    } catch (err) {
-        setStatusMessage({ type: 'error', message: 'Failed to save some changes.' });
-    }
+    const promise = Promise.all([...createPromises, ...updatePromises]);
+
+    toast.promise(promise, {
+        loading: 'Saving changes...',
+        success: () => {
+            setEditedRows({});
+            return 'All changes saved successfully!';
+        },
+        error: 'Failed to save some changes.',
+    });
   }
 
   // --- Effect for closing dropdowns on outside click ---
@@ -412,6 +431,7 @@ const BulkEditTable: React.FC = () => {
   if (error) return <div className="text-center py-8 text-red-500">Error: {'message' in error ? error.message : 'An error occurred'}</div>;
 
   const numSelectedRows = Object.keys(rowSelection).length;
+  const isSaving = isAddingPlant || isUpdatingPlant;
 
   return (
     <div className="p-4 md:p-8 bg-gray-100 min-h-screen font-sans text-sm">
@@ -421,7 +441,9 @@ const BulkEditTable: React.FC = () => {
             {/* Toolbar */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-3 md:space-y-0">
                 <div className="flex items-center flex-wrap gap-2">
-                    <button onClick={handleSaveChanges} disabled={!hasUnsavedChanges} className="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 text-sm disabled:opacity-50">Save Changes</button>
+                    <button onClick={handleSaveChanges} disabled={!hasUnsavedChanges || isSaving} className="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 text-sm disabled:opacity-50">
+                        {isSaving ? 'Saving...' : 'Save Changes'}
+                    </button>
                     
                     <button onClick={handleOpenAddToPlan} disabled={numSelectedRows !== 1 || !recentPlan} className="px-3 py-1.5 rounded-md bg-green-600 text-white hover:bg-green-700 text-sm disabled:opacity-50">
                         Add to Plan
@@ -434,7 +456,9 @@ const BulkEditTable: React.FC = () => {
                             <div ref={rowDropdownRef} className="absolute z-20 bg-white shadow-lg rounded-md border py-1 mt-2 top-full left-0" style={{minWidth: '160px'}}>
                                 <button onClick={handleAddRow} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Add Row</button>
                                 <button onClick={handleCopyRows} disabled={numSelectedRows === 0} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50">Copy Selected ({numSelectedRows})</button>
-                                <button onClick={handleDeleteSelectedClick} disabled={numSelectedRows === 0} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50">Delete Selected ({numSelectedRows})</button>
+                                <button onClick={handleDeleteSelectedClick} disabled={numSelectedRows === 0 || isDeletingPlant} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50">
+                                    {isDeletingPlant ? 'Deleting...' : `Delete Selected (${numSelectedRows})`}
+                                </button>
                                 <div className="border-t my-1"></div>
                                 <button onClick={handleAutofitColumns} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Autofit Columns</button>
                             </div>
@@ -538,7 +562,7 @@ const BulkEditTable: React.FC = () => {
         {/* Modals */}
         <SavePresetModal isOpen={modals.savePreset.isOpen} onClose={modals.savePreset.close} onSave={saveCurrentPreset} modalRef={modals.savePreset.ref} />
         <DeleteConfirmModal isOpen={modals.deletePreset.isOpen} onClose={modals.deletePreset.close} onConfirm={() => { if (modals.deletePreset.data) deletePreset(modals.deletePreset.data); modals.deletePreset.close(); }} modalRef={modals.deletePreset.ref} title="Confirm Deletion" message={<p>Are you sure you want to delete the view "<strong>{modals.deletePreset.data}</strong>"?</p>} />
-        <ImportChoiceModal isOpen={modals.importChoice.isOpen} onClose={modals.importChoice.close} onAppend={() => handleImport('append')} onReplace={() => handleImport('replace')} modalRef={modals.importChoice.ref} />
+        <CsvImportModal isOpen={isCsvImportModalOpen} onClose={() => setIsCsvImportModalOpen(false)} onImport={handleImport} />
         <DeleteConfirmModal isOpen={modals.deleteRows.isOpen} onClose={modals.deleteRows.close} onConfirm={handleConfirmDeleteRows} modalRef={modals.deleteRows.ref} title="Confirm Deletion" message={<p>Are you sure you want to delete the <strong>{numSelectedRows}</strong> selected plant(s)? This action cannot be undone.</p>} />
         {isYieldModalOpen && currentPlant && (
             <YieldGraphModal

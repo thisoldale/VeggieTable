@@ -131,3 +131,8 @@ export type AppContextType = {
   isPageDirty: boolean;
   setIsPageDirty: (isDirty: boolean) => void;
 };
+
+export interface User {
+    id: number;
+    username: string;
+}

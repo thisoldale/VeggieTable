@@ -6,15 +6,12 @@ import { useState, useRef } from 'react';
 export const useTableModals = () => {
     const [showSavePresetModal, setShowSavePresetModal] = useState(false);
     const [showDeletePresetModal, setShowDeletePresetModal] = useState(false);
-    const [showImportChoiceModal, setShowImportChoiceModal] = useState(false);
     const [showDeleteRowsModal, setShowDeleteRowsModal] = useState(false);
 
     const [presetToDelete, setPresetToDelete] = useState<string | null>(null);
-    const [fileToImport, setFileToImport] = useState<File | null>(null);
     
     const savePresetModalRef = useRef<HTMLDivElement>(null);
     const deletePresetModalRef = useRef<HTMLDivElement>(null);
-    const importChoiceModalRef = useRef<HTMLDivElement>(null);
     const deleteRowsModalRef = useRef<HTMLDivElement>(null);
 
     const openDeletePresetModal = (name: string) => {
@@ -25,16 +22,6 @@ export const useTableModals = () => {
     const closeDeletePresetModal = () => {
         setShowDeletePresetModal(false);
         setPresetToDelete(null);
-    };
-    
-    const openImportChoiceModal = (file: File) => {
-        setFileToImport(file);
-        setShowImportChoiceModal(true);
-    };
-
-    const closeImportChoiceModal = () => {
-        setShowImportChoiceModal(false);
-        setFileToImport(null);
     };
 
     return {
@@ -51,13 +38,6 @@ export const useTableModals = () => {
                 close: closeDeletePresetModal,
                 ref: deletePresetModalRef,
                 data: presetToDelete,
-            },
-            importChoice: {
-                isOpen: showImportChoiceModal,
-                open: openImportChoiceModal,
-                close: closeImportChoiceModal,
-                ref: importChoiceModalRef,
-                data: fileToImport,
             },
             deleteRows: {
                 isOpen: showDeleteRowsModal,

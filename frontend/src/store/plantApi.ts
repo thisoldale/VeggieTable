@@ -1,10 +1,21 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Plant, GardenPlan, Planting, PlantingCreatePayload, Task } from '../types';
+import { Plant, GardenPlan, Planting, PlantingCreatePayload, Task, User } from '../types';
+import type { RootState } from './index'; // Import RootState
 
 // Define a service using a base URL and expected endpoints
 export const plantApi = createApi({
   reducerPath: 'plantApi',
-  baseQuery: fetchBaseQuery({ baseUrl: '/api/' }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: '/api/',
+    prepareHeaders: (headers, { getState }) => {
+      // Correctly access the token from the auth slice
+      const token = (getState() as RootState).auth.token;
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
   tagTypes: ['Plant', 'GardenPlan', 'Planting', 'Task'], // Used for cache invalidation
   endpoints: (builder) => ({
     // --- Plant Library Endpoints ---
@@ -36,16 +47,42 @@ export const plantApi = createApi({
         method: 'PUT',
         body: patch,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Plant', id }],
+      async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          plantApi.util.updateQueryData('getPlants', undefined, (draft) => {
+            const plant = draft.find((p) => p.id === id);
+            if (plant) {
+              Object.assign(plant, patch);
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
     }),
     deletePlant: builder.mutation<{ success: boolean; id: number }, number>({
-      query(id) {
-        return {
-          url: `plants/${id}`,
-          method: 'DELETE',
-        };
+      query: (id) => ({
+        url: `plants/${id}`,
+        method: 'DELETE',
+      }),
+      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          plantApi.util.updateQueryData('getPlants', undefined, (draft) => {
+            const index = draft.findIndex((p) => p.id === id);
+            if (index !== -1) {
+              draft.splice(index, 1);
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
       },
-      invalidatesTags: (result, error, id) => [{ type: 'Plant', id }],
     }),
     importPlants: builder.mutation<{ message: string }, { file: File; mode: 'append' | 'replace' }>({
         query: ({ file, mode }) => {
@@ -88,13 +125,25 @@ export const plantApi = createApi({
         invalidatesTags: [{ type: 'GardenPlan', id: 'LIST' }],
     }),
     deleteGardenPlan: builder.mutation<{ success: boolean; id: number }, number>({
-        query(id) {
-            return {
-                url: `garden-plans/${id}`,
-                method: 'DELETE',
-            };
-        },
-        invalidatesTags: (result, error, id) => [{ type: 'GardenPlan', id }, { type: 'GardenPlan', id: 'LIST' }],
+      query: (id) => ({
+        url: `garden-plans/${id}`,
+        method: 'DELETE',
+      }),
+      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          plantApi.util.updateQueryData('getGardenPlans', undefined, (draft) => {
+            const index = draft.findIndex((p) => p.id === id);
+            if (index !== -1) {
+              draft.splice(index, 1);
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
     }),
     touchGardenPlan: builder.mutation<GardenPlan, number>({
         query: (id) => ({
@@ -146,30 +195,67 @@ export const plantApi = createApi({
                 ]
             : [{ type: 'Task', id: 'LIST' }],
     }),
-    addTask: builder.mutation<Task, Partial<Task>>({
+    addTask: builder.mutation<Task, Partial<Task> & { garden_plan_id: number }>({
         query: (body) => ({
             url: 'tasks/',
             method: 'POST',
             body,
         }),
-        invalidatesTags: [{ type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: 'LIST' }],
+        invalidatesTags: (result, error, { garden_plan_id }) => [
+            { type: 'Task', id: 'LIST' },
+            { type: 'GardenPlan', id: garden_plan_id }
+        ],
     }),
-    updateTask: builder.mutation<Task, Partial<Task> & Pick<Task, 'id'>>({
+    updateTask: builder.mutation<Task, Partial<Task> & Pick<Task, 'id'> & { garden_plan_id: number }>({
         query: ({ id, ...patch }) => ({
             url: `tasks/${id}`,
             method: 'PUT',
             body: patch,
         }),
-        invalidatesTags: (result, error, { id }) => [{ type: 'Task', id }, { type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: 'LIST' }],
+        invalidatesTags: (result, error, { id, garden_plan_id }) => [
+            { type: 'Task', id },
+            { type: 'Task', id: 'LIST' },
+            { type: 'GardenPlan', id: garden_plan_id }
+        ],
     }),
-    deleteTask: builder.mutation<{ success: boolean; id: number }, number>({
+    deleteTask: builder.mutation<{ success: boolean; id: number, garden_plan_id: number }, number>({
         query(id) {
             return {
                 url: `tasks/${id}`,
                 method: 'DELETE',
             };
         },
-        invalidatesTags: (result, error, id) => [{ type: 'Task', id }, { type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: 'LIST' }],
+        invalidatesTags: (result, error, id) => [
+            { type: 'Task', id },
+            { type: 'Task', id: 'LIST' },
+            // We can't know the garden_plan_id here without more info from the server
+            // or changing the deleteTask signature. Invalidating the list is a safe fallback.
+            { type: 'GardenPlan', id: 'LIST' }
+        ],
+    }),
+
+    // --- Auth Endpoints ---
+    login: builder.mutation<{ access_token: string }, any>({
+        query: (credentials) => ({
+            url: 'token',
+            method: 'POST',
+            body: credentials,
+        }),
+    }),
+    register: builder.mutation<User, any>({
+        query: (userInfo) => ({
+            url: 'users/',
+            method: 'POST',
+            body: userInfo,
+        }),
+    }),
+    importMappedPlants: builder.mutation<{ message: string }, { data: any[], mapping: Record<string, string> }>({
+        query: (body) => ({
+            url: 'plants/import-mapped',
+            method: 'POST',
+            body,
+        }),
+        invalidatesTags: [{ type: 'Plant', id: 'LIST' }],
     }),
   }),
 });
@@ -196,4 +282,33 @@ export const {
   useAddTaskMutation,
   useUpdateTaskMutation,
   useDeleteTaskMutation,
+  useLoginMutation,
+  useRegisterMutation,
+  useImportMappedPlantsMutation,
 } = plantApi;
+
+console.log('Exporting from plantApi:', {
+    useGetPlantsQuery,
+    useGetPlantByIdQuery,
+    useAddPlantMutation,
+    useUpdatePlantMutation,
+    useDeletePlantMutation,
+    useImportPlantsMutation,
+    useGetGardenPlansQuery,
+    useGetGardenPlanByIdQuery,
+    useGetMostRecentGardenPlanQuery,
+    useAddGardenPlanMutation,
+    useDeleteGardenPlanMutation,
+    useTouchGardenPlanMutation,
+    useGetPlantingByIdQuery,
+    useAddPlantingMutation,
+    useUpdatePlantingMutation,
+    useDeletePlantingMutation,
+    useGetTasksForPlanQuery,
+    useAddTaskMutation,
+    useUpdateTaskMutation,
+    useDeleteTaskMutation,
+    useLoginMutation,
+    useRegisterMutation,
+    useImportMappedPlantsMutation,
+});
