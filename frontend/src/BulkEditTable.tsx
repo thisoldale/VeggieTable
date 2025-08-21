@@ -17,7 +17,7 @@ import Papa from 'papaparse';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 
 import { Plant, AppContextType, GardenPlan } from './types';
-import { useGetPlantsQuery, useUpdatePlantMutation, useAddPlantMutation, useDeletePlantMutation, useImportPlantsMutation, useGetMostRecentGardenPlanQuery } from './store/plantApi';
+import { useGetPlantsQuery, useUpdatePlantMutation, useAddPlantMutation, useDeletePlantMutation, useImportPlantsMutation, useGetMostRecentGardenPlanQuery, useImportMappedPlantsMutation } from './store/plantApi';
 import { useColumnPresets } from './hooks/useColumnPresets';
 import { useTableModals } from './hooks/useTableModals';
 
