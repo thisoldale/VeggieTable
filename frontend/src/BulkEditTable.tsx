@@ -82,6 +82,20 @@ const BulkEditTable: React.FC = () => {
   const csvDropdownRef = useRef<HTMLDivElement>(null);
   const rowDropdownRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLTableElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // This is a placeholder for the actual import logic
+      // In a real implementation, you would parse the CSV and update the table data
+      console.log('Selected file:', file.name);
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   // --- Unsaved Changes Warning ---
   const hasUnsavedChanges = Object.keys(editedRows).length > 0;
