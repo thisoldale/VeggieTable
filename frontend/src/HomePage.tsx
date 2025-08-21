@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { usePlan } from './context/PlanContext';
 import { useGetGardenPlanByIdQuery, useUpdatePlantingMutation, useUpdateTaskMutation, useDeletePlantingMutation, useDeleteTaskMutation } from './store/plantApi';
 import { Plant, Planting, PlantingMethod, GardenPlan, Task, TaskStatus, PlantingStatus } from './types';
-import { format, addDays, startOfWeek, addWeeks, subWeeks, isSameDay, isToday } from 'date-fns';
+import { format, addDays, startOfWeek, addWeeks, subWeeks, isSameDay, isToday, isSameWeek } from 'date-fns';
 import { Popover, Transition } from '@headlessui/react';
 import PlantSelectionModal from './components/PlantSelectionModal';
 import AddToPlanModal from './components/AddToPlanModal';
@@ -72,6 +72,7 @@ const CalendarWeek: React.FC<{
 }> = ({ week, tasks, onActionSelect, onItemClick, onComplete, onUndo, onDelete }) => {
     const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(week, i));
     const weeklyTasks = weekDays.flatMap(day => tasks[format(day, 'yyyy-MM-dd')] || []).sort((a, b) => a.date.getTime() - b.date.getTime());
+    const isCurrent = isSameWeek(new Date(), week, { weekStartsOn: 0 });
 
     const getTaskColor = (type: CalendarItem['type']) => {
         switch (type) {
@@ -111,11 +112,14 @@ const CalendarWeek: React.FC<{
     };
 
     return (
-        <div className="mb-8">
+        <div className={`mb-8 p-4 rounded-lg transition-colors duration-300 ${isCurrent ? 'bg-yellow-100 border-2 border-yellow-300' : 'bg-white'}`}>
             <h2 className="text-xl font-bold mb-2 text-gray-700">{format(week, 'MMMM yyyy')} - Week of {format(week, 'do')}</h2>
             <div className="grid grid-cols-7 text-center font-semibold text-sm text-gray-600 mb-1">
                 {weekDays.map(day => (
-                    <div key={day.toString()} className="truncate px-1">{format(day, 'EEEE')}</div>
+                    <div key={day.toString()} className="px-1">
+                        <div className="hidden md:block truncate">{format(day, 'EEEE')}</div>
+                        <div className="md:hidden truncate">{format(day, 'EEE')}</div>
+                    </div>
                 ))}
             </div>
             <div className="grid grid-cols-7 border-l border-b border-gray-200 rounded-lg">
