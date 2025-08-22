@@ -66,12 +66,15 @@ const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose, onImpo
   const [headers, setHeaders] = useState<string[]>([]);
   const [data, setData] = useState<any[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
-  const [showMapping, setShowMapping] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
       setFile(file);
+      setError(null);
+      setMapping({});
+
       Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
@@ -80,24 +83,31 @@ const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose, onImpo
           setHeaders(csvHeaders);
           setData(results.data);
 
-          const normalize = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]/gi, '');
+          const expectedHeaders = Object.values(plantFields);
+          const missingHeaders = expectedHeaders.filter(h => !csvHeaders.includes(h));
+          const extraHeaders = csvHeaders.filter(h => !expectedHeaders.includes(h));
+
+          if (missingHeaders.length > 0 || extraHeaders.length > 0) {
+            let errorMsg = '';
+            if (missingHeaders.length > 0) {
+              errorMsg += `Missing columns: ${missingHeaders.join(', ')}. `;
+            }
+            if (extraHeaders.length > 0) {
+              errorMsg += `Unexpected columns: ${extraHeaders.join(', ')}.`;
+            }
+            setError(errorMsg);
+            return;
+          }
 
           const newMapping: Record<string, string> = {};
-          let unmappedCount = 0;
           const plantFieldEntries = Object.entries(plantFields);
-
           csvHeaders.forEach(header => {
-            const normalizedHeader = normalize(header);
-            const foundEntry = plantFieldEntries.find(([_, value]) => normalize(value) === normalizedHeader);
+            const foundEntry = plantFieldEntries.find(([_, value]) => value === header);
             if (foundEntry) {
               newMapping[header] = foundEntry[0];
-            } else {
-              unmappedCount++;
             }
           });
-
           setMapping(newMapping);
-          setShowMapping(unmappedCount > 0);
         },
       });
     }
@@ -127,6 +137,13 @@ const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose, onImpo
           {file && <p className="mt-4 text-sm text-gray-500">{file.name}</p>}
         </div>
 
+        {error && (
+          <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-md">
+            <p className="font-bold">Invalid CSV Headers</p>
+            <p>{error}</p>
+          </div>
+        )}
+
         {data.length > 0 && (
           <div className="mt-6">
             <h3 className="text-xl font-bold mb-2">Data Preview</h3>
@@ -151,35 +168,13 @@ const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose, onImpo
               </table>
             </div>
 
-            {showMapping && (
-              <>
-                <h3 className="text-xl font-bold mt-6 mb-2">Map Columns</h3>
-                <p className="text-sm text-yellow-600 mb-4">We couldn't automatically map all columns. Please map the remaining columns.</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {headers.map((header) => (
-                    <div key={header} className="flex items-center">
-                      <label className="w-1/3 text-sm font-medium text-gray-700">{header}</label>
-                      <select
-                        className="w-2/3 p-2 border border-gray-300 rounded-md"
-                        value={mapping[header] || ''}
-                        onChange={(e) => setMapping({ ...mapping, [header]: e.target.value })}
-                      >
-                        <option value="">-- Select Field --</option>
-                        {Object.keys(plantFields).map((field) => (
-                          <option key={field} value={field}>{plantFields[field]}</option>
-                        ))}
-                      </select>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
+            {/* Mapping UI removed */}
           </div>
         )}
 
         <div className="mt-6 flex justify-end space-x-4">
           <button onClick={onClose} className="px-4 py-2 rounded-md bg-gray-300 hover:bg-gray-400">Cancel</button>
-          <button onClick={() => onImport(data, mapping)} className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50" disabled={!file || Object.keys(mapping).length === 0}>Import</button>
+          <button onClick={() => onImport(data, mapping)} className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50" disabled={!file || !!error}>Import</button>
         </div>
       </div>
     </div>
