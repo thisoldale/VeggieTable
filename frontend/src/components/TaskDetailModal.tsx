@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Dialog, Transition } from '@headlessui/react';
 import { Task, TaskStatus } from '../types';
-import { useUpdateTaskMutation } from '../store/plantApi';
+import { useUpdateTaskMutation, useAddTaskMutation } from '../store/plantApi';
+import { usePlan } from '../context/PlanContext';
 import { format } from 'date-fns';
 
 const taskSchema = z.object({
@@ -19,43 +20,65 @@ type TaskFormData = z.infer<typeof taskSchema>;
 interface TaskDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  task: Task | null;
+  task?: Task | null;
+  initialDate?: Date | null;
 }
 
-const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task }) => {
-  const [updateTask, { isLoading }] = useUpdateTaskMutation();
+const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task, initialDate }) => {
+  const { activePlan } = usePlan();
+  const [updateTask, { isLoading: isUpdating }] = useUpdateTaskMutation();
+  const [addTask, { isLoading: isAdding }] = useAddTaskMutation();
+  const isCreateMode = !task;
+  const isLoading = isUpdating || isAdding;
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
   });
 
   useEffect(() => {
-    if (task) {
-      reset({
-        name: task.name,
-        description: task.description || '',
-        due_date: task.due_date ? format(new Date(task.due_date + 'T00:00:00'), 'yyyy-MM-dd') : '',
-        status: task.status,
-      });
+    if (isOpen) {
+      if (isCreateMode) {
+        reset({
+          name: '',
+          description: '',
+          due_date: initialDate ? format(initialDate, 'yyyy-MM-dd') : '',
+          status: TaskStatus.PENDING,
+        });
+      } else if (task) {
+        reset({
+          name: task.name,
+          description: task.description || '',
+          due_date: task.due_date ? format(new Date(task.due_date + 'T00:00:00'), 'yyyy-MM-dd') : '',
+          status: task.status,
+        });
+      }
     }
-  }, [task, isOpen, reset]);
+  }, [task, isCreateMode, isOpen, reset, initialDate]);
 
   const handleFormSubmit = async (data: TaskFormData) => {
-    if (!task) return;
     try {
-      await updateTask({
-        id: task.id,
-        garden_plan_id: task.garden_plan_id,
-        ...data,
-        due_date: data.due_date || undefined,
-      }).unwrap();
+      if (isCreateMode) {
+        if (!activePlan) throw new Error("No active plan selected");
+        await addTask({
+          ...data,
+          garden_plan_id: activePlan.id,
+          due_date: data.due_date || undefined,
+        }).unwrap();
+      } else if (task) {
+        await updateTask({
+          id: task.id,
+          garden_plan_id: task.garden_plan_id,
+          ...data,
+          due_date: data.due_date || undefined,
+        }).unwrap();
+      }
       onClose();
     } catch (err) {
-      console.error('Failed to update task:', err);
+      console.error('Failed to save task:', err);
     }
   };
 
-  if (!isOpen || !task) return null;
+  if (!isOpen) return null;
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -85,7 +108,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
             >
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <Dialog.Title as="h3" className="text-2xl font-bold leading-6 text-gray-900 mb-4">
-                  Edit Task
+                  {isCreateMode ? 'Add New Task' : 'Edit Task'}
                 </Dialog.Title>
                 <form onSubmit={handleSubmit(handleFormSubmit)}>
                   <div className="mb-4">
@@ -133,7 +156,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
                       Cancel
                     </button>
                     <button type="submit" disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded-md disabled:opacity-50">
-                      {isLoading ? 'Saving...' : 'Save Changes'}
+                      {isLoading ? 'Saving...' : (isCreateMode ? 'Add Task' : 'Save Changes')}
                     </button>
                   </div>
                 </form>

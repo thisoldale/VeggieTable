@@ -20,7 +20,7 @@ type CalendarItem = {
 const CalendarDay: React.FC<{ 
   day: Date; 
   dayIndex: number; // Index of the day in the week (0-6)
-  onActionSelect: (action: PlantingMethod | 'harvest', date: Date) => void;
+  onActionSelect: (action: PlantingMethod | 'harvest' | 'task', date: Date) => void;
 }> = ({ day, dayIndex, onActionSelect }) => {
   const dayIsToday = isToday(day);
   const popoverPanelClasses = dayIndex < 4 ? 'left-0' : 'right-0';
@@ -52,6 +52,8 @@ const CalendarDay: React.FC<{
                 <button onClick={() => onActionSelect(PlantingMethod.SEED_STARTING, day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 rounded">Start Seeds</button>
                 <button onClick={() => onActionSelect(PlantingMethod.SEEDLING, day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 rounded">Plant Seedling</button>
                 <button onClick={() => onActionSelect('harvest', day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 rounded">Harvest</button>
+                <div className="border-t my-1"></div>
+                <button onClick={() => onActionSelect('task', day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 rounded">Add Task</button>
               </div>
             </Popover.Panel>
           </Transition>
@@ -64,7 +66,7 @@ const CalendarDay: React.FC<{
 const CalendarWeek: React.FC<{
     week: Date;
     tasks: Record<string, CalendarItem[]>;
-    onActionSelect: (action: PlantingMethod | 'harvest', date: Date) => void;
+    onActionSelect: (action: PlantingMethod | 'harvest' | 'task', date: Date) => void;
     onItemClick: (item: CalendarItem) => void;
     onComplete: (item: CalendarItem) => void;
     onUndo: (item: CalendarItem) => void;
@@ -112,16 +114,8 @@ const CalendarWeek: React.FC<{
     };
 
     return (
-        <div className={`mb-8 p-4 rounded-lg transition-colors duration-300 ${isCurrent ? 'bg-yellow-100 border-2 border-yellow-300' : 'bg-white'}`}>
+        <div className={`mb-8 p-4 rounded-lg transition-colors duration-300 ${isCurrent ? 'bg-green-100' : 'bg-white'}`}>
             <h2 className="text-xl font-bold mb-2 text-gray-700">{format(week, 'MMMM yyyy')} - Week of {format(week, 'do')}</h2>
-            <div className="grid grid-cols-7 text-center font-semibold text-sm text-gray-600 mb-1">
-                {weekDays.map(day => (
-                    <div key={day.toString()} className="px-1">
-                        <div className="hidden md:block truncate">{format(day, 'EEEE')}</div>
-                        <div className="md:hidden truncate">{format(day, 'EEE')}</div>
-                    </div>
-                ))}
-            </div>
             <div className="grid grid-cols-7 border-l border-b border-gray-200 rounded-lg">
                 {weekDays.map((day, index) => (
                     <CalendarDay key={day.toString()} day={day} dayIndex={index} onActionSelect={onActionSelect} />
@@ -274,10 +268,15 @@ const CalendarView: React.FC = () => {
     };
   }, [handleObserver]);
 
-  const handleActionSelect = (action: PlantingMethod | 'harvest', date: Date) => {
+  const handleActionSelect = (action: PlantingMethod | 'harvest' | 'task', date: Date) => {
     setSelectedDate(date);
-    setSelectedAction(action);
-    setPlantSelectionModalOpen(true);
+    if (action === 'task') {
+      setSelectedTask(null); // Ensure we're in create mode
+      setTaskDetailModalOpen(true);
+    } else {
+      setSelectedAction(action);
+      setPlantSelectionModalOpen(true);
+    }
   };
 
   const handlePlantSelected = (plant: Plant) => {
@@ -399,6 +398,7 @@ const CalendarView: React.FC = () => {
         isOpen={taskDetailModalOpen}
         onClose={() => setTaskDetailModalOpen(false)}
         task={selectedTask}
+        initialDate={selectedDate}
       />
     </div>
   );
