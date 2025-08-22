@@ -112,16 +112,8 @@ const CalendarWeek: React.FC<{
     };
 
     return (
-        <div className={`mb-8 p-4 rounded-lg transition-colors duration-300 ${isCurrent ? 'bg-yellow-100 border-2 border-yellow-300' : 'bg-white'}`}>
+        <div className={`mb-8 p-4 rounded-lg transition-colors duration-300 ${isCurrent ? 'bg-green-100' : 'bg-white'}`}>
             <h2 className="text-xl font-bold mb-2 text-gray-700">{format(week, 'MMMM yyyy')} - Week of {format(week, 'do')}</h2>
-            <div className="grid grid-cols-7 text-center font-semibold text-sm text-gray-600 mb-1">
-                {weekDays.map(day => (
-                    <div key={day.toString()} className="px-1">
-                        <div className="hidden md:block truncate">{format(day, 'EEEE')}</div>
-                        <div className="md:hidden truncate">{format(day, 'EEE')}</div>
-                    </div>
-                ))}
-            </div>
             <div className="grid grid-cols-7 border-l border-b border-gray-200 rounded-lg">
                 {weekDays.map((day, index) => (
                     <CalendarDay key={day.toString()} day={day} dayIndex={index} onActionSelect={onActionSelect} />
