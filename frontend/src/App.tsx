@@ -118,7 +118,7 @@ function AppLayout() {
       {isSidebarOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-30" onClick={toggleSidebar}></div>
       )}
-      <div className={`transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
+      <div className={`transition-all duration-300 ease-in-out`}>
         <button
           onClick={toggleSidebar}
           className="fixed top-4 left-4 z-20 p-2 bg-green-700 text-white rounded-md shadow-lg"
