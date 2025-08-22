@@ -80,13 +80,15 @@ const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose, onImpo
           setHeaders(csvHeaders);
           setData(results.data);
 
+          const normalize = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]/gi, '');
+
           const newMapping: Record<string, string> = {};
           let unmappedCount = 0;
           const plantFieldEntries = Object.entries(plantFields);
 
           csvHeaders.forEach(header => {
-            const normalizedHeader = header.trim().toLowerCase();
-            const foundEntry = plantFieldEntries.find(([_, value]) => value.trim().toLowerCase() === normalizedHeader);
+            const normalizedHeader = normalize(header);
+            const foundEntry = plantFieldEntries.find(([_, value]) => normalize(value) === normalizedHeader);
             if (foundEntry) {
               newMapping[header] = foundEntry[0];
             } else {
