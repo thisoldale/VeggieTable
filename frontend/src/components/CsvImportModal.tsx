@@ -66,6 +66,7 @@ const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose, onImpo
   const [headers, setHeaders] = useState<string[]>([]);
   const [data, setData] = useState<any[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
+  const [showMapping, setShowMapping] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -75,8 +76,26 @@ const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose, onImpo
         header: true,
         skipEmptyLines: true,
         complete: (results) => {
-          setHeaders(results.meta.fields || []);
+          const csvHeaders = results.meta.fields || [];
+          setHeaders(csvHeaders);
           setData(results.data);
+
+          const newMapping: Record<string, string> = {};
+          let unmappedCount = 0;
+          const plantFieldEntries = Object.entries(plantFields);
+
+          csvHeaders.forEach(header => {
+            const normalizedHeader = header.trim().toLowerCase();
+            const foundEntry = plantFieldEntries.find(([_, value]) => value.trim().toLowerCase() === normalizedHeader);
+            if (foundEntry) {
+              newMapping[header] = foundEntry[0];
+            } else {
+              unmappedCount++;
+            }
+          });
+
+          setMapping(newMapping);
+          setShowMapping(unmappedCount > 0);
         },
       });
     }
@@ -130,24 +149,29 @@ const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose, onImpo
               </table>
             </div>
 
-            <h3 className="text-xl font-bold mt-6 mb-2">Map Columns</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {headers.map((header) => (
-                <div key={header} className="flex items-center">
-                  <label className="w-1/3 text-sm font-medium text-gray-700">{header}</label>
-                  <select
-                    className="w-2/3 p-2 border border-gray-300 rounded-md"
-                    value={mapping[header] || ''}
-                    onChange={(e) => setMapping({ ...mapping, [header]: e.target.value })}
-                  >
-                    <option value="">-- Select Field --</option>
-                    {Object.keys(plantFields).map((field) => (
-                      <option key={field} value={field}>{plantFields[field]}</option>
-                    ))}
-                  </select>
+            {showMapping && (
+              <>
+                <h3 className="text-xl font-bold mt-6 mb-2">Map Columns</h3>
+                <p className="text-sm text-yellow-600 mb-4">We couldn't automatically map all columns. Please map the remaining columns.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {headers.map((header) => (
+                    <div key={header} className="flex items-center">
+                      <label className="w-1/3 text-sm font-medium text-gray-700">{header}</label>
+                      <select
+                        className="w-2/3 p-2 border border-gray-300 rounded-md"
+                        value={mapping[header] || ''}
+                        onChange={(e) => setMapping({ ...mapping, [header]: e.target.value })}
+                      >
+                        <option value="">-- Select Field --</option>
+                        {Object.keys(plantFields).map((field) => (
+                          <option key={field} value={field}>{plantFields[field]}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
           </div>
         )}
 
