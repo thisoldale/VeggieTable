@@ -20,7 +20,7 @@ type CalendarItem = {
 const CalendarDay: React.FC<{ 
   day: Date; 
   dayIndex: number; // Index of the day in the week (0-6)
-  onActionSelect: (action: PlantingMethod | 'harvest', date: Date) => void;
+  onActionSelect: (action: PlantingMethod | 'harvest' | 'task', date: Date) => void;
 }> = ({ day, dayIndex, onActionSelect }) => {
   const dayIsToday = isToday(day);
   const popoverPanelClasses = dayIndex < 4 ? 'left-0' : 'right-0';
@@ -52,6 +52,8 @@ const CalendarDay: React.FC<{
                 <button onClick={() => onActionSelect(PlantingMethod.SEED_STARTING, day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 rounded">Start Seeds</button>
                 <button onClick={() => onActionSelect(PlantingMethod.SEEDLING, day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 rounded">Plant Seedling</button>
                 <button onClick={() => onActionSelect('harvest', day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 rounded">Harvest</button>
+                <div className="border-t my-1"></div>
+                <button onClick={() => onActionSelect('task', day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 rounded">Add Task</button>
               </div>
             </Popover.Panel>
           </Transition>
@@ -64,7 +66,7 @@ const CalendarDay: React.FC<{
 const CalendarWeek: React.FC<{
     week: Date;
     tasks: Record<string, CalendarItem[]>;
-    onActionSelect: (action: PlantingMethod | 'harvest', date: Date) => void;
+    onActionSelect: (action: PlantingMethod | 'harvest' | 'task', date: Date) => void;
     onItemClick: (item: CalendarItem) => void;
     onComplete: (item: CalendarItem) => void;
     onUndo: (item: CalendarItem) => void;
@@ -266,10 +268,15 @@ const CalendarView: React.FC = () => {
     };
   }, [handleObserver]);
 
-  const handleActionSelect = (action: PlantingMethod | 'harvest', date: Date) => {
+  const handleActionSelect = (action: PlantingMethod | 'harvest' | 'task', date: Date) => {
     setSelectedDate(date);
-    setSelectedAction(action);
-    setPlantSelectionModalOpen(true);
+    if (action === 'task') {
+      setSelectedTask(null); // Ensure we're in create mode
+      setTaskDetailModalOpen(true);
+    } else {
+      setSelectedAction(action);
+      setPlantSelectionModalOpen(true);
+    }
   };
 
   const handlePlantSelected = (plant: Plant) => {
@@ -391,6 +398,7 @@ const CalendarView: React.FC = () => {
         isOpen={taskDetailModalOpen}
         onClose={() => setTaskDetailModalOpen(false)}
         task={selectedTask}
+        initialDate={selectedDate}
       />
     </div>
   );
