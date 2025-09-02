@@ -101,6 +101,18 @@ class Plant(PlantBase):
     id: int
     model_config = ConfigDict(from_attributes=True)
 
+# --- Task Group Schemas ---
+class TaskGroupBase(BaseModel):
+    pass
+
+class TaskGroupCreate(TaskGroupBase):
+    pass
+
+class TaskGroup(TaskGroupBase):
+    id: int
+    tasks: List["Task"] = []
+    model_config = ConfigDict(from_attributes=True)
+
 # --- Task Schemas ---
 class TaskBase(BaseModel):
     name: str
@@ -111,17 +123,22 @@ class TaskBase(BaseModel):
 class TaskCreate(TaskBase):
     garden_plan_id: int
     planting_id: Optional[int] = None
+    task_group_id: Optional[int] = None
+
 
 class TaskUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     due_date: Optional[date] = None
     status: Optional[TaskStatus] = None
+    task_group_id: Optional[int] = None
+
 
 class Task(TaskBase):
     id: int
     garden_plan_id: int
     planting_id: Optional[int] = None
+    task_group_id: Optional[int] = None
     model_config = ConfigDict(from_attributes=True)
 
 # --- Planting Schemas ---

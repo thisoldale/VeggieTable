@@ -1,12 +1,12 @@
-import React, { useEffect, Fragment } from 'react';
+import React, { useEffect, Fragment, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Dialog, Transition } from '@headlessui/react';
 import { Task, TaskStatus } from '../types';
-import { useUpdateTaskMutation, useAddTaskMutation } from '../store/plantApi';
+import { useUpdateTaskMutation, useAddTaskMutation, useUpdateTaskGroupMutation, useGetTasksForPlanQuery, useUnlinkTaskGroupMutation } from '../store/plantApi';
 import { usePlan } from '../context/PlanContext';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 
 const taskSchema = z.object({
   name: z.string().min(1, 'Task name cannot be empty.'),
@@ -28,8 +28,14 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
   const { activePlan } = usePlan();
   const [updateTask, { isLoading: isUpdating }] = useUpdateTaskMutation();
   const [addTask, { isLoading: isAdding }] = useAddTaskMutation();
+  const [updateTaskGroup] = useUpdateTaskGroupMutation();
+  const [unlinkTaskGroup] = useUnlinkTaskGroupMutation();
+  const { data: tasksForPlan } = useGetTasksForPlanQuery(activePlan?.id ?? 0, { skip: !activePlan });
+
   const isCreateMode = !task;
   const isLoading = isUpdating || isAdding;
+
+  const [updateAllLinked, setUpdateAllLinked] = useState(false);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -52,6 +58,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
           status: task.status,
         });
       }
+      setUpdateAllLinked(false);
     }
   }, [task, isCreateMode, isOpen, reset, initialDate]);
 
@@ -65,16 +72,46 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
           due_date: data.due_date || undefined,
         }).unwrap();
       } else if (task) {
-        await updateTask({
-          id: task.id,
-          garden_plan_id: task.garden_plan_id,
-          ...data,
-          due_date: data.due_date || undefined,
-        }).unwrap();
+        if (updateAllLinked && task.task_group_id && tasksForPlan) {
+          const originalTask = tasksForPlan.find(t => t.id === task.id);
+          const originalDate = originalTask?.due_date ? new Date(originalTask.due_date + 'T00:00:00') : null;
+          const newDate = data.due_date ? new Date(data.due_date + 'T00:00:00') : null;
+
+          if (originalDate && newDate) {
+            const dateDiffDays = differenceInDays(newDate, originalDate);
+            if (dateDiffDays !== 0) {
+              await updateTaskGroup({ groupId: task.task_group_id!, dateDiffDays }).unwrap();
+            }
+          }
+          // Also update the current task's non-date fields
+          await updateTask({
+            id: task.id,
+            name: data.name,
+            description: data.description,
+            status: data.status,
+          }).unwrap();
+        } else {
+          await updateTask({
+            id: task.id,
+            ...data,
+            due_date: data.due_date || undefined,
+          }).unwrap();
+        }
       }
       onClose();
     } catch (err) {
       console.error('Failed to save task:', err);
+    }
+  };
+
+  const handleUnlink = async () => {
+    if (task && task.task_group_id) {
+        try {
+            await unlinkTaskGroup({ groupId: task.task_group_id }).unwrap();
+            onClose();
+        } catch (err) {
+            console.error('Failed to unlink tasks:', err);
+        }
     }
   };
 
@@ -151,6 +188,31 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
                       ))}
                     </select>
                   </div>
+
+                  {task && task.task_group_id && (
+                    <div className="my-4 p-3 bg-yellow-100 border border-yellow-300 rounded-md">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-yellow-800">This task is linked to other tasks.</p>
+                        <button
+                          type="button"
+                          onClick={handleUnlink}
+                          className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                        >
+                          Unlink
+                        </button>
+                      </div>
+                      <label className="mt-2 flex items-center text-sm text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={updateAllLinked}
+                          onChange={(e) => setUpdateAllLinked(e.target.checked)}
+                          className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span className="ml-2">Update due dates of all linked tasks proportionally</span>
+                      </label>
+                    </div>
+                  )}
+
                   <div className="flex justify-end space-x-2 mt-6">
                     <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-md">
                       Cancel

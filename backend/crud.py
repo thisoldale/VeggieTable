@@ -65,6 +65,39 @@ def delete_plant_by_id(db: Session, plant_id: int):
         return True
     return False
 
+def get_tasks_by_group_id(db: Session, group_id: int):
+    return db.query(models.Task).filter(models.Task.task_group_id == group_id).all()
+
+def update_tasks_in_group(db: Session, group_id: int, date_diff_days: int):
+    from datetime import timedelta
+    tasks = get_tasks_by_group_id(db, group_id)
+    if not tasks:
+        return []
+
+    for task in tasks:
+        if task.due_date:
+            task.due_date += timedelta(days=date_diff_days)
+
+    db.commit()
+    for task in tasks:
+        db.refresh(task)
+
+    return tasks
+
+def unlink_tasks_in_group(db: Session, group_id: int):
+    tasks = get_tasks_by_group_id(db, group_id)
+    if not tasks:
+        return []
+
+    for task in tasks:
+        task.task_group_id = None
+
+    db.commit()
+    for task in tasks:
+        db.refresh(task)
+
+    return tasks
+
 # --- Garden Plan CRUD ---
 def get_garden_plan_by_id(db: Session, plan_id: int):
     return (
@@ -148,6 +181,65 @@ def create_planting(db: Session, garden_plan_id: int, planting_details: schemas.
     new_planting.planned_harvest_start_date = planting_details.planned_harvest_start_date
 
     db.add(new_planting)
+    db.flush()
+
+    # --- Task Creation Logic ---
+    task_group = models.TaskGroup()
+    db.add(task_group)
+    db.flush()
+
+    tasks_to_create = []
+    plant_name = library_plant.plant_name
+
+    if new_planting.planting_method == models.PlantingMethod.DIRECT_SEEDING:
+        if new_planting.planned_sow_date:
+            tasks_to_create.append(schemas.TaskCreate(
+                name=f"Sow seeds for {plant_name}",
+                due_date=new_planting.planned_sow_date,
+                garden_plan_id=garden_plan_id,
+                planting_id=new_planting.id,
+                task_group_id=task_group.id
+            ))
+    elif new_planting.planting_method == models.PlantingMethod.SEED_STARTING:
+        if new_planting.planned_sow_date:
+            tasks_to_create.append(schemas.TaskCreate(
+                name=f"Start seeds for {plant_name}",
+                due_date=new_planting.planned_sow_date,
+                garden_plan_id=garden_plan_id,
+                planting_id=new_planting.id,
+                task_group_id=task_group.id
+            ))
+        if new_planting.planned_transplant_date:
+            tasks_to_create.append(schemas.TaskCreate(
+                name=f"Transplant seedlings for {plant_name}",
+                due_date=new_planting.planned_transplant_date,
+                garden_plan_id=garden_plan_id,
+                planting_id=new_planting.id,
+                task_group_id=task_group.id
+            ))
+    elif new_planting.planting_method == models.PlantingMethod.SEEDLING:
+        if new_planting.planned_transplant_date:
+            tasks_to_create.append(schemas.TaskCreate(
+                name=f"Plant seedlings for {plant_name}",
+                due_date=new_planting.planned_transplant_date,
+                garden_plan_id=garden_plan_id,
+                planting_id=new_planting.id,
+                task_group_id=task_group.id
+            ))
+
+    if new_planting.planned_harvest_start_date:
+        tasks_to_create.append(schemas.TaskCreate(
+            name=f"Harvest {plant_name}",
+            due_date=new_planting.planned_harvest_start_date,
+            garden_plan_id=garden_plan_id,
+            planting_id=new_planting.id,
+            task_group_id=task_group.id
+        ))
+
+    for task_data in tasks_to_create:
+        db_task = models.Task(**task_data.model_dump())
+        db.add(db_task)
+
     db.commit()
     db.refresh(new_planting)
         
