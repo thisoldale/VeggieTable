@@ -87,6 +87,7 @@ export interface Task {
     id: number;
     garden_plan_id: number;
     planting_id?: number | null;
+    task_group_id?: number | null;
     name: string;
     description?: string | null;
     due_date?: string | null;

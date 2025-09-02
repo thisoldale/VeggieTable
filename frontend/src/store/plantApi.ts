@@ -221,6 +221,23 @@ export const plantApi = createApi({
         invalidatesTags: (result, error, id) => [{ type: 'Task', id }, { type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: 'LIST' }],
     }),
 
+    updateTaskGroup: builder.mutation<Task[], { groupId: number, dateDiffDays: number }>({
+      query: ({ groupId, dateDiffDays }) => ({
+        url: `task-groups/${groupId}`,
+        method: 'PUT',
+        body: { date_diff_days: dateDiffDays },
+      }),
+      invalidatesTags: (result, error, { groupId }) => [{ type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: 'LIST' }],
+    }),
+
+    unlinkTaskGroup: builder.mutation<Task[], { groupId: number }>({
+      query: ({ groupId }) => ({
+        url: `task-groups/${groupId}/unlink`,
+        method: 'PUT',
+      }),
+      invalidatesTags: (result, error, { groupId }) => [{ type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: 'LIST' }],
+    }),
+
     // --- Auth Endpoints ---
     login: builder.mutation<{ access_token: string }, any>({
         query: (credentials) => ({

@@ -174,11 +174,17 @@ class TaskStatus(str, enum.Enum):
     IN_PROGRESS = "In Progress"
     COMPLETED = "Completed"
 
+class TaskGroup(Base):
+    __tablename__ = "task_groups"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    tasks: Mapped[List["Task"]] = relationship(back_populates="task_group")
+
 class Task(Base):
     __tablename__ = "tasks"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     garden_plan_id: Mapped[int] = mapped_column(ForeignKey("garden_plans.id"))
     planting_id: Mapped[Optional[int]] = mapped_column(ForeignKey("plantings.id"), nullable=True)
+    task_group_id: Mapped[Optional[int]] = mapped_column(ForeignKey("task_groups.id"), nullable=True)
     name: Mapped[str] = mapped_column(String)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     due_date: Mapped[Optional[datetime]] = mapped_column(Date, nullable=True)
@@ -186,3 +192,4 @@ class Task(Base):
 
     garden_plan: Mapped["GardenPlan"] = relationship(back_populates="tasks")
     planting: Mapped[Optional["Planting"]] = relationship(back_populates="tasks")
+    task_group: Mapped[Optional["TaskGroup"]] = relationship(back_populates="tasks")
