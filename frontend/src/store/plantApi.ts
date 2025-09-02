@@ -286,6 +286,8 @@ export const {
   useAddTaskMutation,
   useUpdateTaskMutation,
   useDeleteTaskMutation,
+  useUpdateTaskGroupMutation,
+  useUnlinkTaskGroupMutation,
   useLoginMutation,
   useRegisterMutation,
   useImportMappedPlantsMutation,
