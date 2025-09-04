@@ -64,22 +64,22 @@ function SideMenu() {
         <nav>
           <ul>
             <li className="mb-4">
-              <Link to="/" className="block p-2 text-xl hover:bg-green-700 rounded transition duration-200">
+      <Link to="/" className="block p-2 text-xl hover:bg-green-700 dark:hover:bg-green-600 rounded transition duration-200">
                 Home
               </Link>
             </li>
             <li className="mb-4">
-              <Link to="/tasks" className="block p-2 text-xl hover:bg-green-700 rounded transition duration-200">
+      <Link to="/tasks" className="block p-2 text-xl hover:bg-green-700 dark:hover:bg-green-600 rounded transition duration-200">
                 Tasks
               </Link>
             </li>
             <li className="mb-4">
-              <Link to="/plans" className="block p-2 text-xl hover:bg-green-700 rounded transition duration-200">
+      <Link to="/plans" className="block p-2 text-xl hover:bg-green-700 dark:hover:bg-green-600 rounded transition duration-200">
                 All Garden Plans
               </Link>
             </li>
             <li className="mb-4">
-              <Link to="/bulk-edit" className="block p-2 text-xl hover:bg-green-700 rounded transition duration-200">
+      <Link to="/bulk-edit" className="block p-2 text-xl hover:bg-green-700 dark:hover:bg-green-600 rounded transition duration-200">
                 Plant Library
               </Link>
             </li>
@@ -89,7 +89,7 @@ function SideMenu() {
           <div className="flex justify-center mb-2">
             <button
               onClick={toggleTheme}
-              className="px-4 py-2 text-sm rounded-md text-white bg-gray-700 hover:bg-gray-600"
+      className="px-4 py-2 text-sm rounded-md text-white bg-gray-700 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500"
             >
               {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
             </button>
@@ -99,7 +99,7 @@ function SideMenu() {
           </div>
           <button
             onClick={handleLogout}
-            className="w-full text-left p-2 text-xl hover:bg-green-700 rounded transition duration-200"
+    className="w-full text-left p-2 text-xl hover:bg-green-700 dark:hover:bg-green-600 rounded transition duration-200"
           >
             Logout
           </button>
@@ -119,7 +119,7 @@ function AppLayout() {
 
   return (
     <DirtyContext.Provider value={{ isPageDirty, setIsPageDirty }}>
-      <div className={`fixed top-0 left-0 h-full bg-green-800 text-white w-64 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-40 shadow-lg`}>
+      <div className={`fixed top-0 left-0 h-full bg-green-800 dark:bg-green-900 text-white w-64 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-40 shadow-lg`}>
         <button
           onClick={toggleSidebar}
           className="absolute top-4 right-4 text-white text-3xl hover:text-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 rounded-full w-8 h-8 flex items-center justify-center"
@@ -136,7 +136,7 @@ function AppLayout() {
       <div className={`transition-all duration-300 ease-in-out`}>
         <button
           onClick={toggleSidebar}
-          className="fixed top-4 left-4 z-20 p-2 bg-green-700 text-white rounded-md shadow-lg"
+          className="fixed top-4 left-4 z-20 p-2 bg-green-700 dark:bg-green-800 text-white rounded-md shadow-lg"
           aria-label="Open menu"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
