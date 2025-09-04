@@ -30,10 +30,10 @@ const CalendarDay: React.FC<{
       {({ open }) => (
         <>
           <Popover.Button
-            className={`w-full h-24 border-t border-r border-gray-200 p-2 flex flex-col justify-center items-center cursor-pointer transition-colors duration-150 ${open ? 'bg-green-100' : 'hover:bg-gray-50'}`}
+    className={`w-full h-24 border-t border-r border-gray-200 dark:border-gray-700 p-2 flex flex-col justify-center items-center cursor-pointer transition-colors duration-150 ${open ? 'bg-green-100 dark:bg-green-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
           >
-            <span className="text-xs text-gray-500">{format(day, 'EEE')}</span>
-            <span className={`text-2xl mt-1 ${dayIsToday ? 'font-bold text-blue-600' : 'text-gray-700'}`}>
+    <span className="text-xs text-gray-500 dark:text-gray-400">{format(day, 'EEE')}</span>
+    <span className={`text-2xl mt-1 ${dayIsToday ? 'font-bold text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
               {format(day, 'd')}
             </span>
           </Popover.Button>
@@ -46,14 +46,14 @@ const CalendarDay: React.FC<{
             leaveFrom="opacity-100 translate-y-0"
             leaveTo="opacity-0 translate-y-1"
           >
-            <Popover.Panel className={`absolute z-10 w-48 p-2 mt-2 bg-white rounded-md shadow-lg ${popoverPanelClasses}`}>
-              <div className="flex flex-col space-y-1">
-                <button onClick={() => onActionSelect(PlantingMethod.DIRECT_SEEDING, day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 rounded">Direct Seed</button>
-                <button onClick={() => onActionSelect(PlantingMethod.SEED_STARTING, day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 rounded">Start Seeds</button>
-                <button onClick={() => onActionSelect(PlantingMethod.SEEDLING, day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 rounded">Plant Seedling</button>
-                <button onClick={() => onActionSelect('harvest', day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 rounded">Harvest</button>
-                <div className="border-t my-1"></div>
-                <button onClick={() => onActionSelect('task', day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 rounded">Add Task</button>
+    <Popover.Panel className={`absolute z-10 w-48 p-2 mt-2 bg-white dark:bg-gray-800 rounded-md shadow-lg ${popoverPanelClasses}`}>
+        <div className="flex flex-col space-y-1 text-gray-800 dark:text-gray-200">
+            <button onClick={() => onActionSelect(PlantingMethod.DIRECT_SEEDING, day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded">Direct Seed</button>
+            <button onClick={() => onActionSelect(PlantingMethod.SEED_STARTING, day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded">Start Seeds</button>
+            <button onClick={() => onActionSelect(PlantingMethod.SEEDLING, day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded">Plant Seedling</button>
+            <button onClick={() => onActionSelect('harvest', day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded">Harvest</button>
+            <div className="border-t my-1 dark:border-gray-600"></div>
+            <button onClick={() => onActionSelect('task', day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded">Add Task</button>
               </div>
             </Popover.Panel>
           </Transition>
@@ -114,38 +114,38 @@ const CalendarWeek: React.FC<{
     };
 
     return (
-        <div className={`mb-8 p-4 rounded-lg transition-colors duration-300 ${isCurrent ? 'bg-green-100' : 'bg-white'}`}>
-            <h2 className="text-xl font-bold mb-2 text-gray-700">{format(week, 'MMMM yyyy')} - Week of {format(week, 'do')}</h2>
-            <div className="grid grid-cols-7 border-l border-b border-gray-200 rounded-lg">
+<div className={`mb-8 p-4 rounded-lg transition-colors duration-300 ${isCurrent ? 'bg-green-100 dark:bg-green-900/50' : 'bg-white dark:bg-gray-900'}`}>
+    <h2 className="text-xl font-bold mb-2 text-gray-700 dark:text-gray-200">{format(week, 'MMMM yyyy')} - Week of {format(week, 'do')}</h2>
+    <div className="grid grid-cols-7 border-l border-b border-gray-200 dark:border-gray-700 rounded-lg">
                 {weekDays.map((day, index) => (
                     <CalendarDay key={day.toString()} day={day} dayIndex={index} onActionSelect={onActionSelect} />
                 ))}
             </div>
-            <div className="p-4 bg-gray-50 border-l border-r border-b border-gray-200 rounded-b-lg -mt-2">
-                <h3 className="font-semibold text-gray-700 mb-2">This Week's Actions</h3>
+    <div className="p-4 bg-gray-50 dark:bg-gray-800 border-l border-r border-b border-gray-200 dark:border-gray-700 rounded-b-lg -mt-2">
+        <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">This Week's Actions</h3>
                 {weeklyTasks.length > 0 ? (
                     <ul className="space-y-1">
                         {weeklyTasks.map(item => {
                             const itemIsComplete = isComplete(item);
                             return (
-                                <li key={item.id} className="text-sm flex items-center justify-between p-1 rounded-md hover:bg-gray-200 transition-colors">
-                                    <div className={`flex items-center cursor-pointer flex-grow ${itemIsComplete ? 'line-through text-gray-500' : ''}`} onClick={() => onItemClick(item)}>
+<li key={item.id} className="text-sm flex items-center justify-between p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+    <div className={`flex items-center cursor-pointer flex-grow ${itemIsComplete ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-800 dark:text-gray-200'}`} onClick={() => onItemClick(item)}>
                                         <span className="font-medium w-24 flex-shrink-0">{format(item.date, 'EEE, MMM d')}:</span>
                                         <span className={`font-medium mr-2 ${getTaskColor(item.type)}`}>
                                             {getTaskIcon(item.type)} {item.type.charAt(0).toUpperCase() + item.type.slice(1)}:
                                         </span> 
-                                        <span className="text-gray-800">
+        <span className="text-gray-800 dark:text-gray-200">
                                           {item.name}
-                                          {item.type === 'task' && <span className="text-gray-500 text-xs ml-2">({(item.data as Task).status})</span>}
+          {item.type === 'task' && <span className="text-gray-500 dark:text-gray-400 text-xs ml-2">({(item.data as Task).status})</span>}
                                         </span>
                                     </div>
                                     <div className="flex items-center space-x-2 ml-4 flex-shrink-0">
                                         {itemIsComplete ? (
-                                            <button onClick={(e) => { e.stopPropagation(); onUndo(item); }} className="px-2 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600">Undo</button>
+            <button onClick={(e) => { e.stopPropagation(); onUndo(item); }} className="px-2 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700">Undo</button>
                                         ) : (
-                                            <button onClick={(e) => { e.stopPropagation(); onComplete(item); }} className="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600">Done</button>
+            <button onClick={(e) => { e.stopPropagation(); onComplete(item); }} className="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700">Done</button>
                                         )}
-                                        <button onClick={(e) => { e.stopPropagation(); onDelete(item); }} className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
+        <button onClick={(e) => { e.stopPropagation(); onDelete(item); }} className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700">Delete</button>
                                     </div>
                                 </li>
                             );
@@ -410,9 +410,9 @@ const HomePage: React.FC = () => {
   if (!activePlan) {
     return (
         <div className="p-8 text-center">
-            <h1 className="text-2xl font-bold text-gray-700 mb-4">Welcome to Your Digital Garden</h1>
-            <p className="text-lg text-gray-600 mb-6">Before you start, create a new Plan to organize your garden.</p>
-            <Link to="/plans" className="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors">
+    <h1 className="text-2xl font-bold text-gray-700 dark:text-gray-200 mb-4">Welcome to Your Digital Garden</h1>
+    <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">Before you start, create a new Plan to organize your garden.</p>
+    <Link to="/plans" className="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 transition-colors">
                 Create a Plan
             </Link>
         </div>
