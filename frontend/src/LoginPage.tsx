@@ -1,40 +1,48 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
-import { useLoginMutation } from './store/plantApi';
-import { useAppDispatch } from './store';
-import { setToken } from './store/authSlice';
+import { useAuth } from './context/AuthContext';
 
 const LoginPage: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
+    const { login } = useAuth();
+
     const from = location.state?.from?.pathname || "/";
-    const [login, { isLoading }] = useLoginMutation();
-    const dispatch = useAppDispatch();
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        setError('');
+        setIsLoading(true);
 
         const formData = new FormData();
         formData.append('username', username);
         formData.append('password', password);
 
-        const promise = login(formData).unwrap();
+        try {
+            const response = await axios.post('/api/token', formData);
+            const { access_token } = response.data;
 
-        toast.promise(promise, {
-            loading: 'Logging in...',
-            success: (data) => {
-                dispatch(setToken(data.access_token));
-                navigate(from, { replace: true });
-                return 'Successfully logged in!';
-            },
-            error: 'Failed to login. Please check your credentials.',
-        });
+            toast.promise(
+                login(access_token),
+                {
+                    loading: 'Logging in...',
+                    success: () => {
+                        navigate(from, { replace: true });
+                        return 'Successfully logged in!';
+                    },
+                    error: 'Failed to update authentication state.',
+                }
+            );
+        } catch (error) {
+            toast.error('Failed to login. Please check your credentials.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -68,8 +76,7 @@ const LoginPage: React.FC = () => {
                             required
                         />
                     </div>
-                    {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-4">
                         <button
                             type="submit"
                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
@@ -77,6 +84,9 @@ const LoginPage: React.FC = () => {
                         >
                             {isLoading ? 'Signing In...' : 'Sign In'}
                         </button>
+                        <Link to="/register" className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+                            Register
+                        </Link>
                     </div>
                 </form>
             </div>
