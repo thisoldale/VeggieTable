@@ -2,13 +2,10 @@ import { configureStore } from '@reduxjs/toolkit';
 import { useDispatch, useSelector } from 'react-redux'
 import type { TypedUseSelectorHook } from 'react-redux'
 import { plantApi } from './plantApi';
-import authReducer from './authSlice';
-
 // The store is configured with the auth reducer and the plant API reducer.
 // The middleware is also configured to include the plant API middleware.
 export const store = configureStore({
   reducer: {
-    auth: authReducer,
     [plantApi.reducerPath]: plantApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
