@@ -23,11 +23,14 @@ import ChangePlanModal from './components/ChangePlanModal';
 import { useGetMostRecentGardenPlanQuery } from './store/plantApi';
 import packageJson from '../package.json';
 
+import { useTheme } from './context/ThemeContext';
+
 function SideMenu() {
   const { activePlan } = usePlan();
   const [isChangePlanModalOpen, setChangePlanModalOpen] = useState(false);
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const openChangePlanModal = () => setChangePlanModalOpen(true);
   const closeChangePlanModal = () => setChangePlanModalOpen(false);
@@ -83,6 +86,14 @@ function SideMenu() {
           </ul>
         </nav>
         <div className="absolute bottom-0 left-0 w-full p-4">
+          <div className="flex justify-center mb-2">
+            <button
+              onClick={toggleTheme}
+              className="px-4 py-2 text-sm rounded-md text-white bg-gray-700 hover:bg-gray-600"
+            >
+              {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+            </button>
+          </div>
           <div className="text-center text-xs text-gray-400 mb-2">
             Version: {packageJson.version}
           </div>
@@ -185,6 +196,7 @@ const PlanLoader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import LoginPage from './LoginPage';
 import RegistrationPage from './RegistrationPage';
 import { Toaster } from 'react-hot-toast';
@@ -253,12 +265,14 @@ const router = createBrowserRouter([
 function App() {
   return (
     <AuthProvider>
-      <PlanProvider>
-        <PlanLoader>
-          <Toaster position="top-center" reverseOrder={false} />
-          <RouterProvider router={router} />
-        </PlanLoader>
-      </PlanProvider>
+      <ThemeProvider>
+        <PlanProvider>
+          <PlanLoader>
+            <Toaster position="top-center" reverseOrder={false} />
+            <RouterProvider router={router} />
+          </PlanLoader>
+        </PlanProvider>
+      </ThemeProvider>
     </AuthProvider>
   );
 }
