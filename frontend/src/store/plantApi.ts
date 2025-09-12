@@ -261,11 +261,17 @@ export const plantApi = createApi({
         }),
         invalidatesTags: [{ type: 'Plant', id: 'LIST' }],
     }),
+
+    // --- Version Endpoint ---
+    getBackendVersion: builder.query<{ version: string }, void>({
+      query: () => 'version',
+    }),
   }),
 });
 
 // Export hooks for usage in functional components
 export const {
+  useGetBackendVersionQuery,
   useGetPlantsQuery,
   useGetPlantByIdQuery,
   useAddPlantMutation,

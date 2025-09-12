@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 
 import { useAuth } from './context/AuthContext';
+import VersionDisplay from './components/VersionDisplay';
 
 const LoginPage: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -90,6 +91,7 @@ const LoginPage: React.FC = () => {
                     </div>
                 </form>
             </div>
+            <VersionDisplay />
         </div>
     );
 };
