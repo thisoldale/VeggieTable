@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 import { useRegisterMutation } from './store/plantApi';
+import VersionDisplay from './components/VersionDisplay';
 
 const RegistrationPage: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -80,6 +81,7 @@ const RegistrationPage: React.FC = () => {
                     </div>
                 </form>
             </div>
+            <VersionDisplay />
         </div>
     );
 };

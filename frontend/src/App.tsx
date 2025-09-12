@@ -22,6 +22,7 @@ import { PlanProvider, usePlan } from './context/PlanContext';
 import ChangePlanModal from './components/ChangePlanModal';
 import { useGetMostRecentGardenPlanQuery } from './store/plantApi';
 import packageJson from '../package.json';
+import VersionDisplay from './components/VersionDisplay';
 
 import { useTheme } from './context/ThemeContext';
 
@@ -94,9 +95,7 @@ function SideMenu() {
               {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
             </button>
           </div>
-          <div className="text-center text-xs text-gray-400 mb-2">
-            Version: {packageJson.version}
-          </div>
+          <VersionDisplay />
           <button
             onClick={handleLogout}
     className="w-full text-left p-2 text-xl hover:bg-green-700 dark:hover:bg-green-600 rounded transition duration-200"

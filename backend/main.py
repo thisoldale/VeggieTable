@@ -4,10 +4,15 @@ from fastapi.middleware.cors import CORSMiddleware
 import models
 from database import engine
 from routers import plants, garden_plans, plantings, tasks, users, task_groups
+from version import __version__
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+@app.get("/version")
+def read_version():
+    return {"version": __version__}
 
 app.add_middleware(
     CORSMiddleware,
