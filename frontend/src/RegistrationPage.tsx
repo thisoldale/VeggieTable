@@ -23,7 +23,17 @@ const RegistrationPage: React.FC = () => {
                 navigate('/login');
                 return 'Successfully registered! Please login.';
             },
-            error: 'Failed to register. Please try another username.',
+            error: (err) => {
+                if (err.data && err.data.detail) {
+                    // FastAPI validation errors are an array of objects
+                    if (Array.isArray(err.data.detail)) {
+                        return err.data.detail.map((d: any) => `${d.loc[1]} ${d.msg}`).join(', ');
+                    }
+                    // Other errors are a simple string
+                    return err.data.detail;
+                }
+                return 'Failed to register. Please try another username.';
+            },
         });
     };
 
