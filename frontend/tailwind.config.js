@@ -9,7 +9,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        tahoma: ['Tahoma', 'sans-serif'], // <-- ADD THIS LINE
+        sans: ['"Open Sans"', 'sans-serif'],
+        serif: ['Prata', 'serif'],
       },
     },
   },
