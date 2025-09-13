@@ -7,9 +7,8 @@ export const plantApi = createApi({
   reducerPath: 'plantApi',
   baseQuery: fetchBaseQuery({
     baseUrl: '/api/',
-    prepareHeaders: (headers, { getState }) => {
-      // Correctly access the token from the auth slice
-      const token = (getState() as RootState).auth.token;
+    prepareHeaders: (headers) => {
+      const token = localStorage.getItem('token');
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
