@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { usePlan } from './context/PlanContext';
 import { useGetTasksForPlanQuery, useAddTaskMutation, useUpdateTaskMutation, useDeleteTaskMutation } from './store/plantApi';
 import { Task, TaskStatus } from './types';
-import { format } from 'date-fns';
+import { format, startOfWeek } from 'date-fns';
 import TaskDetailModal from './components/TaskDetailModal';
 
 const TasksPage: React.FC = () => {
   const { activePlan } = usePlan();
-  // The line below is the corrected one
   const { data: tasks, error, isLoading } = useGetTasksForPlanQuery(activePlan ? activePlan.id : 0, {
     skip: !activePlan,
   });
@@ -21,6 +20,7 @@ const TasksPage: React.FC = () => {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [viewMode, setViewMode] = useState<'weekly' | 'daily'>('weekly');
 
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +54,37 @@ const TasksPage: React.FC = () => {
     if (window.confirm('Are you sure you want to delete this task?')) {
       await deleteTask(taskId);
     }
+  };
+
+  const groupTasksByWeek = (tasks: Task[]) => {
+    const grouped: { [week: string]: Task[] } = {};
+    if (!tasks) return grouped;
+    tasks.forEach(task => {
+      if (task.due_date) {
+        const weekStart = startOfWeek(new Date(task.due_date + 'T00:00:00'), { weekStartsOn: 1 }); // week starts on Monday
+        const weekKey = format(weekStart, 'yyyy-MM-dd');
+        if (!grouped[weekKey]) {
+          grouped[weekKey] = [];
+        }
+        grouped[weekKey].push(task);
+      }
+    });
+    return grouped;
+  };
+
+  const groupTasksByDay = (tasks: Task[]) => {
+    const grouped: { [day: string]: Task[] } = {};
+    if (!tasks) return grouped;
+    tasks.forEach(task => {
+      if (task.due_date) {
+        const dayKey = task.due_date;
+        if (!grouped[dayKey]) {
+          grouped[dayKey] = [];
+        }
+        grouped[dayKey].push(task);
+      }
+    });
+    return grouped;
   };
 
   if (!activePlan) {
@@ -115,29 +146,87 @@ const TasksPage: React.FC = () => {
           </form>
         </div>
 
+        <h2 className="text-2xl font-semibold mb-4 text-gray-800">Task Schedule</h2>
+        {/* View Toggle */}
+        <div className="flex justify-center mb-4">
+            <button
+                onClick={() => setViewMode('weekly')}
+                className={`px-4 py-2 rounded-l-md ${viewMode === 'weekly' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+            >
+                Weekly
+            </button>
+            <button
+                onClick={() => setViewMode('daily')}
+                className={`px-4 py-2 rounded-r-md ${viewMode === 'daily' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+            >
+                Daily
+            </button>
+        </div>
         {/* Task List */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           {isLoading && <p>Loading tasks...</p>}
           {error && <p className="text-red-500">Failed to load tasks.</p>}
-          {tasks && tasks.length > 0 ? (
-            <ul className="space-y-4">
-              {tasks.map(task => (
-                <li key={task.id} className="flex items-center justify-between p-4 border rounded-md hover:bg-gray-50">
-                  <div className="flex items-center flex-grow cursor-pointer" onClick={() => handleEditTask(task)}>
-                    <div className="ml-4">
-                      <p className={`font-semibold ${task.status === TaskStatus.COMPLETED ? 'line-through text-gray-500' : 'text-gray-900'}`}>{task.name}</p>
-                      {task.description && <p className="text-sm text-gray-600">{task.description}</p>}
-                      {task.due_date && <p className="text-xs text-gray-500 mt-1">Due: {format(new Date(task.due_date + 'T00:00:00'), 'MMM d, yyyy')}</p>}
-                    </div>
-                  </div>
-                  <button onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }} className="text-red-500 hover:text-red-700 text-sm font-medium ml-4">
-                    Delete
-                  </button>
-                </li>
+          {viewMode === 'weekly' && tasks && tasks.length > 0 ? (
+            <div>
+              {Object.entries(groupTasksByWeek(tasks))
+                .sort(([weekA], [weekB]) => new Date(weekA).getTime() - new Date(weekB).getTime())
+                .map(([week, weekTasks]) => (
+                <div key={week} className="mb-6">
+                  <h3 className="text-lg font-semibold border-b-2 border-gray-200 pb-2 mb-3">
+                    Week of {format(new Date(week + 'T00:00:00'), 'MMM d, yyyy')}
+                  </h3>
+                  <ul className="space-y-4">
+                    {weekTasks.map(task => (
+                      <li key={task.id} className="flex items-center justify-between p-4 border rounded-md hover:bg-gray-50">
+                        <div className="flex items-center flex-grow cursor-pointer" onClick={() => handleEditTask(task)}>
+                          <div className="ml-4">
+                            <p className={`font-semibold ${task.status === TaskStatus.COMPLETED ? 'line-through text-gray-500' : 'text-gray-900'}`}>{task.name}</p>
+                            {task.description && <p className="text-sm text-gray-600">{task.description}</p>}
+                            {task.due_date && <p className="text-xs text-gray-500 mt-1">Due: {format(new Date(task.due_date + 'T00:00:00'), 'MMM d, yyyy')}</p>}
+                          </div>
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }} className="text-red-500 hover:text-red-700 text-sm font-medium ml-4">
+                          Delete
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
           ) : (
-            !isLoading && <p className="text-center text-gray-500 italic">No tasks for this plan yet.</p>
+            viewMode === 'weekly' && !isLoading && <p className="text-center text-gray-500 italic">No tasks for this plan yet.</p>
+          )}
+
+          {viewMode === 'daily' && tasks && tasks.length > 0 ? (
+            <div>
+              {Object.entries(groupTasksByDay(tasks))
+                .sort(([dayA], [dayB]) => new Date(dayA).getTime() - new Date(dayB).getTime())
+                .map(([day, dayTasks]) => (
+                <div key={day} className="mb-6">
+                  <h3 className="text-lg font-semibold border-b-2 border-gray-200 pb-2 mb-3">
+                    {format(new Date(day + 'T00:00:00'), 'EEEE, MMM d, yyyy')}
+                  </h3>
+                  <ul className="space-y-2">
+                    {dayTasks.map(task => (
+                      <li key={task.id} className="flex items-center justify-between p-2 border rounded-md hover:bg-gray-50">
+                        <div className="flex items-center flex-grow cursor-pointer" onClick={() => handleEditTask(task)}>
+                          <div className="ml-2">
+                            <p className={`font-semibold ${task.status === TaskStatus.COMPLETED ? 'line-through text-gray-500' : 'text-gray-900'}`}>{task.name}</p>
+                            {task.description && <p className="text-sm text-gray-600">{task.description}</p>}
+                          </div>
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }} className="text-red-500 hover:text-red-700 text-sm font-medium ml-4">
+                          Delete
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          ) : (
+            viewMode === 'daily' && !isLoading && <p className="text-center text-gray-500 italic">No tasks for this plan yet.</p>
           )}
         </div>
       </div>
