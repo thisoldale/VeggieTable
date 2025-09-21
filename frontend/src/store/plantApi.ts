@@ -7,9 +7,8 @@ export const plantApi = createApi({
   reducerPath: 'plantApi',
   baseQuery: fetchBaseQuery({
     baseUrl: '/api/',
-    prepareHeaders: (headers, { getState }) => {
-      // Correctly access the token from the auth slice
-      const token = (getState() as RootState).auth.token;
+    prepareHeaders: (headers) => {
+      const token = localStorage.getItem('token');
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
@@ -261,11 +260,17 @@ export const plantApi = createApi({
         }),
         invalidatesTags: [{ type: 'Plant', id: 'LIST' }],
     }),
+
+    // --- Version Endpoint ---
+    getBackendVersion: builder.query<{ version: string }, void>({
+      query: () => 'version',
+    }),
   }),
 });
 
 // Export hooks for usage in functional components
 export const {
+  useGetBackendVersionQuery,
   useGetPlantsQuery,
   useGetPlantByIdQuery,
   useAddPlantMutation,

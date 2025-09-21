@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useOutletContext, useNavigate } from 'react-router-dom';
+import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
 import { Planting, PlantingStatus, AppContextType, Plant, PlantingMethod } from './types';
 import { useGetPlantingByIdQuery, useUpdatePlantingMutation, useDeletePlantingMutation } from './store/plantApi';
 import YieldGraphModal from './components/YieldGraphModal';
 import YieldGraph from './components/YieldGraph';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
+import { calculateDates } from './utils/dateCalculations';
 
 const PlantingDetailPage: React.FC = () => {
   const { plantingId } = useParams<{ plantingId: string }>();
@@ -19,6 +20,7 @@ const PlantingDetailPage: React.FC = () => {
 
   const [editedPlanting, setEditedPlanting] = useState<Partial<Planting>>({});
   const [error, setError] = useState<string | null>(null);
+  const [activeDateField, setActiveDateField] = useState<string | null>(null);
   
   const [isEditing, setIsEditing] = useState(false);
   const [isYieldModalOpen, setIsYieldModalOpen] = useState(false);
@@ -40,12 +42,29 @@ const PlantingDetailPage: React.FC = () => {
     const { name, value, type } = e.target;
     const isCheckbox = type === 'checkbox';
     const checkedValue = (e.target as HTMLInputElement).checked;
-  
-    setEditedPlanting(prev => ({
-      ...prev,
-      [name]: isCheckbox ? checkedValue : value,
-    }));
+
+    const dateFields = ['planned_sow_date', 'planned_transplant_date', 'planned_harvest_start_date'];
+
+    setEditedPlanting(prev => {
+        const newPlanting = {
+            ...prev,
+            [name]: isCheckbox ? checkedValue : value,
+        };
+
+        if (dateFields.includes(name)) {
+            setActiveDateField(name);
+            return calculateDates(newPlanting, name);
+        }
+
+        return newPlanting;
+    });
   };
+
+  useEffect(() => {
+    if (activeDateField) {
+        setActiveDateField(null);
+    }
+  }, [editedPlanting]);
 
   const handleSave = async () => {
     if (!planting) return;

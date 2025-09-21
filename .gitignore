@@ -1,5 +1,6 @@
 frontend/node_modules/
 backend/__pycache__/
+
 # Python bytecode
 __pycache__/
 *.pyc
@@ -11,3 +12,4 @@ venv/
 # IDE and editor folders
 .idea/
 .vscode/
+
