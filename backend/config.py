@@ -4,7 +4,7 @@ from typing import List
 class Settings(BaseSettings):
     # Define your application settings here.
     # These will be loaded from environment variables or a .env file.
-    DATABASE_URL: str = "sqlite:///./sql_app_v2.db"
+    DATABASE_URL: str = "sqlite:////tmp/garden_data.db"
     CORS_ORIGINS: List[str] = [
         "http://localhost",
         "http://localhost:3000",

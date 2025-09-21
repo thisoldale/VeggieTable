@@ -69,6 +69,19 @@ const PlantingDetailPage: React.FC = () => {
   const handleSave = async () => {
     if (!planting) return;
     setError(null);
+
+    const { planned_sow_date, planned_transplant_date, planned_harvest_start_date } = editedPlanting;
+
+    if (planned_sow_date && planned_transplant_date && new Date(planned_transplant_date) <= new Date(planned_sow_date)) {
+        setError("Transplant date must be after sow date.");
+        return;
+    }
+
+    if (planned_transplant_date && planned_harvest_start_date && new Date(planned_harvest_start_date) <= new Date(planned_transplant_date)) {
+        setError("Harvest date must be after transplant date.");
+        return;
+    }
+
     try {
       await updatePlanting({ id: planting.id, ...editedPlanting }).unwrap();
       setIsEditing(false);
