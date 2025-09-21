@@ -21,7 +21,7 @@ export default defineConfig({
     },
     proxy: {
       '/api': { // When the browser requests paths starting with /api
-        target: 'http://backend:8000', // <-- This is the INTERNAL Docker service URL
+        target: 'http://localhost:8000', // <-- This is the INTERNAL Docker service URL
         changeOrigin: true, // Changes the origin header to the target URL
         rewrite: (path) => path.replace(/^\/api/, ''), // Rewrites /api/plants to /plants
         // Configure WebSocket proxy if your backend uses WebSockets (e.g., for hot reloading)
