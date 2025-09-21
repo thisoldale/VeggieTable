@@ -78,40 +78,40 @@ const GardenPlansPage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 bg-gray-100 dark:bg-gray-900 min-h-screen">
+    <div className="p-4 md:p-8 bg-gray-100 min-h-screen">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-center text-green-700 dark:text-green-400">My Garden Plans</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center text-green-700">My Garden Plans</h1>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Create a New Plan</h2>
+        <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
+          <h2 className="text-2xl font-bold mb-4 text-gray-800">Create a New Plan</h2>
           <form onSubmit={handleAddPlan} className="space-y-4">
             <div>
-              <label htmlFor="planName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Plan Name</label>
+              <label htmlFor="planName" className="block text-sm font-medium text-gray-700 mb-1">Plan Name</label>
               <input
                 id="planName"
                 type="text"
                 placeholder="e.g., Spring Veggie Patch 2025"
                 value={newPlanName}
                 onChange={(e) => setNewPlanName(e.target.value)}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow"
               />
             </div>
             <div>
-              <label htmlFor="planDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description (Optional)</label>
+              <label htmlFor="planDescription" className="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
               <textarea
                 id="planDescription"
                 placeholder="Notes about this garden plan..."
                 value={newPlanDescription}
                 onChange={(e) => setNewPlanDescription(e.target.value)}
                 rows={3}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow"
               />
             </div>
             {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
             <button
               type="submit"
               disabled={isAdding}
-              className="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 transition duration-300 ease-in-out transform hover:-translate-y-1 disabled:opacity-50"
+              className="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition duration-300 ease-in-out transform hover:-translate-y-1 disabled:opacity-50"
             >
               {isAdding ? 'Creating...' : 'Create Plan'}
             </button>
@@ -120,22 +120,22 @@ const GardenPlansPage: React.FC = () => {
 
         <div className="space-y-4">
           {isLoading ? (
-            <p className="text-center text-gray-600 dark:text-gray-400">Loading plans...</p>
+            <p className="text-center text-gray-600">Loading plans...</p>
           ) : queryError ? (
             <p className="text-center text-red-500">Failed to load plans.</p>
           ) : plans?.length === 0 ? (
-            <p className="text-center text-gray-500 dark:text-gray-400 italic">No garden plans created yet.</p>
+            <p className="text-center text-gray-500 italic">No garden plans created yet.</p>
           ) : (
             plans?.map((plan) => (
-              <div key={plan.id} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 flex justify-between items-center">
+              <div key={plan.id} className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 flex justify-between items-center">
                 <Link to={`/plans/${plan.id}`} className="block flex-grow">
-                  <h3 className="text-xl font-bold text-green-800 dark:text-green-300 hover:text-green-600 dark:hover:text-green-400 transition-colors">{plan.name}</h3>
-                  <p className="text-gray-600 dark:text-gray-400 mt-2">{plan.description}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Created: {new Date(plan.created_date).toLocaleDateString()}</p>
+                  <h3 className="text-xl font-bold text-green-800 hover:text-green-600 transition-colors">{plan.name}</h3>
+                  <p className="text-gray-600 mt-2">{plan.description}</p>
+                  <p className="text-sm text-gray-500 mt-2">Created: {new Date(plan.created_date).toLocaleDateString()}</p>
                 </Link>
                 <button 
                   onClick={(e) => { e.stopPropagation(); openDeleteModal(plan); }} 
-                  className="ml-4 p-2 rounded-full text-gray-400 hover:bg-red-100 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                  className="ml-4 p-2 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-600 transition-colors disabled:opacity-50"
                   disabled={isDeleting}
                   aria-label="Delete plan"
                 >
