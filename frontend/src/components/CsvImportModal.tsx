@@ -83,11 +83,18 @@ const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose, onImpo
           setHeaders(csvHeaders);
           setData(results.data);
 
-          const expectedHeaderValues = Object.values(plantFields);
-          const extraHeaders = csvHeaders.filter(h => !expectedHeaderValues.includes(h));
+          const expectedHeaders = Object.values(plantFields);
+          const missingHeaders = expectedHeaders.filter(h => !csvHeaders.includes(h));
+          const extraHeaders = csvHeaders.filter(h => !expectedHeaders.includes(h));
 
-          if (extraHeaders.length > 0) {
-            let errorMsg = `Unexpected columns: ${extraHeaders.join(', ')}.`;
+          if (missingHeaders.length > 0 || extraHeaders.length > 0) {
+            let errorMsg = '';
+            if (missingHeaders.length > 0) {
+              errorMsg += `Missing columns: ${missingHeaders.join(', ')}. `;
+            }
+            if (extraHeaders.length > 0) {
+              errorMsg += `Unexpected columns: ${extraHeaders.join(', ')}.`;
+            }
             setError(errorMsg);
             return;
           }
