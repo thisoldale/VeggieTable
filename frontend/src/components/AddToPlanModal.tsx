@@ -246,7 +246,6 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
             <label htmlFor="harvest-date" className="block text-sm font-medium text-gray-700">Target Harvest Date</label>
             <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => { setValue('harvestDate', e.target.value); lastChangedField.current = 'planned_harvest_start_date'; }} className="mt-1 block w-full p-2 border border-gray-300 rounded-md"/>
             {errors.harvestDate && <p className="text-red-500 text-xs mt-1">{errors.harvestDate.message}</p>}
-            <p className="text-xs text-gray-500 mt-1">Enter any known dates. The related tasks will be created automatically.</p>
             {(!watchedTimeToMaturity || watchedTimeToMaturity === '0') &&
               <p className="text-xs text-orange-500 mt-1">
                 Enter Days to Maturity to enable automatic date calculation.
