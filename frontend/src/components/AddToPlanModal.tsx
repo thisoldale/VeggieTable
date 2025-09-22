@@ -7,6 +7,14 @@ import { useAddPlantingMutation } from '../store/plantApi';
 import { format } from 'date-fns';
 import { calculateDates } from '../utils/dateCalculations';
 
+function usePrevious<T>(value: T): T | undefined {
+  const ref = useRef<T>();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
+
 const plantingSchema = z.object({
   quantity: z.number().min(1, 'Quantity must be at least 1'),
   plantingMethod: z.nativeEnum(PlantingMethod),
@@ -52,11 +60,11 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
     resolver: zodResolver(plantingSchema),
   });
   const lastChangedField = useRef<string | null>(null);
-  const isInitialMount = useRef(true);
 
   const watchedDates = watch(['sowDate', 'transplantDate', 'harvestDate']);
   const watchedPlantingMethod = watch('plantingMethod');
   const watchedTimeToMaturity = watch('timeToMaturity');
+  const previousPlantingMethod = usePrevious(watchedPlantingMethod);
 
   useEffect(() => {
     if (!lastChangedField.current) return;
@@ -83,14 +91,12 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
   }, [watchedDates, setValue, watch, watchedPlantingMethod]);
   
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-    } else {
+    if (previousPlantingMethod && previousPlantingMethod !== watchedPlantingMethod) {
       setValue('sowDate', '');
       setValue('transplantDate', '');
       setValue('harvestDate', '');
     }
-  }, [watchedPlantingMethod, setValue]);
+  }, [watchedPlantingMethod, previousPlantingMethod, setValue]);
 
   const parseDays = (timeValue: string | number | null | undefined): number | null => {
       if (timeValue === null || timeValue === undefined) return null;
