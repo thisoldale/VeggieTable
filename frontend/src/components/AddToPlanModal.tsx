@@ -184,14 +184,14 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+      <div className="bg-component-background p-6 rounded-lg shadow-xl max-w-md w-full">
         <h2 className="text-2xl font-bold mb-4">Add "{plant.plant_name}" to {gardenPlan.name}</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
           
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Planting Method</label>
+            <label className="block text-sm font-medium text-muted-foreground">Planting Method</label>
             <select {...register("plantingMethod")}
-              className="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+              className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md">
               {Object.values(PlantingMethod).map(method => (
                 <option key={method} value={method}>{method}</option>
               ))}
@@ -199,63 +199,63 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
           </div>
 
           <div className="mb-4">
-            <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">Quantity</label>
+            <label htmlFor="quantity" className="block text-sm font-medium text-muted-foreground">Quantity</label>
             <input type="number" id="quantity" {...register("quantity", { valueAsNumber: true })}
-              className="mt-1 block w-full p-2 border border-gray-300 rounded-md" min="1"
+              className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md" min="1"
             />
-            {errors.quantity && <p className="text-red-500 text-xs mt-1">{errors.quantity.message}</p>}
+            {errors.quantity && <p className="text-destructive text-xs mt-1">{errors.quantity.message}</p>}
           </div>
 
           <div className="mb-4">
-            <label htmlFor="time-to-maturity" className="block text-sm font-medium text-gray-700">Days to Maturity</label>
+            <label htmlFor="time-to-maturity" className="block text-sm font-medium text-muted-foreground">Days to Maturity</label>
             <input type="number" id="time-to-maturity" {...register("timeToMaturity")}
-              className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+              className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"
             />
-            {errors.timeToMaturity && <p className="text-red-500 text-xs mt-1">{errors.timeToMaturity.message}</p>}
+            {errors.timeToMaturity && <p className="text-destructive text-xs mt-1">{errors.timeToMaturity.message}</p>}
           </div>
 
           {(watch("plantingMethod") === PlantingMethod.SEED_STARTING) && (
              <div className="mb-4">
-                <label htmlFor="days-to-transplant" className="block text-sm font-medium text-gray-700">Days to Transplant</label>
+                <label htmlFor="days-to-transplant" className="block text-sm font-medium text-muted-foreground">Days to Transplant</label>
                 <input 
                     type="number" 
                     id="days-to-transplant" 
                     {...register("daysToTransplant")}
-                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                    className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"
                 />
              </div>
           )}
 
           {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.DIRECT_SEEDING) && (
              <div className="mb-4">
-                <label htmlFor="sow-date" className="block text-sm font-medium text-gray-700">Sow Date</label>
-                <input type="date" id="sow-date" {...register("sowDate")} onChange={(e) => { setValue('sowDate', e.target.value); lastChangedField.current = 'planned_sow_date'; }} className="mt-1 block w-full p-2 border border-gray-300 rounded-md"/>
-                {errors.sowDate && <p className="text-red-500 text-xs mt-1">{errors.sowDate.message}</p>}
+                <label htmlFor="sow-date" className="block text-sm font-medium text-muted-foreground">Sow Date</label>
+                <input type="date" id="sow-date" {...register("sowDate")} onChange={(e) => { setValue('sowDate', e.target.value); lastChangedField.current = 'planned_sow_date'; }} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
+                {errors.sowDate && <p className="text-destructive text-xs mt-1">{errors.sowDate.message}</p>}
              </div>
           )}
 
           {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.SEEDLING) && (
             <div className="mb-4">
-                <label htmlFor="transplant-date" className="block text-sm font-medium text-gray-700">Transplant Date</label>
-                <input type="date" id="transplant-date" {...register("transplantDate")} onChange={(e) => { setValue('transplantDate', e.target.value); lastChangedField.current = 'planned_transplant_date'; }} className="mt-1 block w-full p-2 border border-gray-300 rounded-md"/>
-                {errors.transplantDate && <p className="text-red-500 text-xs mt-1">{errors.transplantDate.message}</p>}
+                <label htmlFor="transplant-date" className="block text-sm font-medium text-muted-foreground">Transplant Date</label>
+                <input type="date" id="transplant-date" {...register("transplantDate")} onChange={(e) => { setValue('transplantDate', e.target.value); lastChangedField.current = 'planned_transplant_date'; }} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
+                {errors.transplantDate && <p className="text-destructive text-xs mt-1">{errors.transplantDate.message}</p>}
             </div>
           )}
 
           <div className="mb-4">
-            <label htmlFor="harvest-date" className="block text-sm font-medium text-gray-700">Target Harvest Date</label>
-            <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => { setValue('harvestDate', e.target.value); lastChangedField.current = 'planned_harvest_start_date'; }} className="mt-1 block w-full p-2 border border-gray-300 rounded-md"/>
-            {errors.harvestDate && <p className="text-red-500 text-xs mt-1">{errors.harvestDate.message}</p>}
+            <label htmlFor="harvest-date" className="block text-sm font-medium text-muted-foreground">Target Harvest Date</label>
+            <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => { setValue('harvestDate', e.target.value); lastChangedField.current = 'planned_harvest_start_date'; }} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
+            {errors.harvestDate && <p className="text-destructive text-xs mt-1">{errors.harvestDate.message}</p>}
             {(!watchedTimeToMaturity || watchedTimeToMaturity === '0') &&
-              <p className="text-xs text-orange-500 mt-1">
+              <p className="text-xs text-amber-500 mt-1">
                 Enter Days to Maturity to enable automatic date calculation.
               </p>
             }
           </div>
 
           <div className="flex justify-end space-x-2 mt-6">
-            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-md">Cancel</button>
-            <button type="submit" disabled={isAddingPlanting} className="px-4 py-2 bg-blue-600 text-white rounded-md disabled:opacity-50">
+            <button type="button" onClick={onClose} className="px-4 py-2 bg-interactive-secondary text-interactive-secondary-foreground rounded-md">Cancel</button>
+            <button type="submit" disabled={isAddingPlanting} className="px-4 py-2 bg-interactive-primary text-interactive-primary-foreground rounded-md disabled:opacity-50">
               {isAddingPlanting ? 'Adding...' : 'Add to Plan'}
             </button>
           </div>

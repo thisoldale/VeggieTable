@@ -65,10 +65,10 @@ const ChangePlanModal: React.FC<ChangePlanModalProps> = ({ isOpen, onClose }) =>
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-component-background p-6 text-left align-middle shadow-xl transition-all">
                 <Dialog.Title
                   as="h3"
-                  className="text-2xl font-bold leading-6 text-gray-900 mb-4"
+                  className="text-2xl font-bold leading-6 text-foreground mb-4"
                 >
                   Change or Create Plan
                 </Dialog.Title>
@@ -80,10 +80,10 @@ const ChangePlanModal: React.FC<ChangePlanModalProps> = ({ isOpen, onClose }) =>
                     {isLoadingPlans ? (
                       <p>Loading plans...</p>
                     ) : (
-                      <ul className="max-h-60 overflow-y-auto border rounded-md divide-y">
+                      <ul className="max-h-60 overflow-y-auto border border-border rounded-md divide-y divide-border">
                         {plans?.map(plan => (
                           <li key={plan.id}>
-                            <button onClick={() => handleSelectPlan(plan)} className="w-full text-left p-2 hover:bg-gray-100">
+                            <button onClick={() => handleSelectPlan(plan)} className="w-full text-left p-2 hover:bg-secondary">
                               {plan.name}
                             </button>
                           </li>
@@ -104,7 +104,7 @@ const ChangePlanModal: React.FC<ChangePlanModalProps> = ({ isOpen, onClose }) =>
                           placeholder="New plan name"
                           value={newPlanName}
                           onChange={(e) => setNewPlanName(e.target.value)}
-                          className="w-full p-2 border border-gray-300 rounded-md"
+                          className="w-full p-2 border border-border bg-component-background rounded-md"
                         />
                       </div>
                       <div className="mb-4">
@@ -115,10 +115,10 @@ const ChangePlanModal: React.FC<ChangePlanModalProps> = ({ isOpen, onClose }) =>
                           value={newPlanDescription}
                           onChange={(e) => setNewPlanDescription(e.target.value)}
                           rows={2}
-                          className="w-full p-2 border border-gray-300 rounded-md"
+                          className="w-full p-2 border border-border bg-component-background rounded-md"
                         />
                       </div>
-                      <button type="submit" disabled={isAddingPlan} className="w-full bg-green-600 text-white p-2 rounded-md hover:bg-green-700 disabled:opacity-50">
+                      <button type="submit" disabled={isAddingPlan} className="w-full bg-interactive-primary text-interactive-primary-foreground p-2 rounded-md hover:bg-interactive-primary/90 disabled:opacity-50">
                         {isAddingPlan ? 'Creating...' : 'Create and Select'}
                       </button>
                     </form>
@@ -128,7 +128,7 @@ const ChangePlanModal: React.FC<ChangePlanModalProps> = ({ isOpen, onClose }) =>
                 <div className="mt-6 flex justify-end">
                   <button
                     type="button"
-                    className="px-4 py-2 bg-gray-200 rounded-md"
+                    className="px-4 py-2 bg-interactive-secondary text-interactive-secondary-foreground rounded-md"
                     onClick={onClose}
                   >
                     Cancel

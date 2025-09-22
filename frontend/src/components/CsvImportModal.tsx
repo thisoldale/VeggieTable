@@ -125,20 +125,20 @@ const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose, onImpo
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-xl max-w-4xl w-full">
+      <div className="bg-component-background p-8 rounded-lg shadow-xl max-w-4xl w-full">
         <h2 className="text-2xl font-bold mb-4">Import CSV</h2>
-        <div {...getRootProps()} className={`p-10 border-2 border-dashed rounded-lg text-center cursor-pointer ${isDragActive ? 'border-green-500 bg-green-50' : 'border-gray-300'}`}>
+        <div {...getRootProps()} className={`p-10 border-2 border-dashed rounded-lg text-center cursor-pointer ${isDragActive ? 'border-primary bg-primary/10' : 'border-border'}`}>
           <input {...getInputProps()} />
           {
             isDragActive ?
               <p>Drop the files here ...</p> :
               <p>Drag 'n' drop a CSV file here, or click to select a file</p>
           }
-          {file && <p className="mt-4 text-sm text-gray-500">{file.name}</p>}
+          {file && <p className="mt-4 text-sm text-muted-foreground">{file.name}</p>}
         </div>
 
         {error && (
-          <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-md">
+          <div className="mt-4 p-4 bg-destructive/10 text-destructive rounded-md">
             <p className="font-bold">Invalid CSV Headers</p>
             <p>{error}</p>
           </div>
@@ -148,19 +148,19 @@ const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose, onImpo
           <div className="mt-6">
             <h3 className="text-xl font-bold mb-2">Data Preview</h3>
             <div className="overflow-auto max-h-64">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-secondary">
                   <tr>
                     {headers.map((header) => (
-                      <th key={header} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{header}</th>
+                      <th key={header} className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">{header}</th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-component-background divide-y divide-border">
                   {data.slice(0, 5).map((row, i) => (
                     <tr key={i}>
                       {headers.map((header) => (
-                        <td key={header} className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{row[header]}</td>
+                        <td key={header} className="px-4 py-2 whitespace-nowrap text-sm text-muted-foreground">{row[header]}</td>
                       ))}
                     </tr>
                   ))}
@@ -173,8 +173,8 @@ const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose, onImpo
         )}
 
         <div className="mt-6 flex justify-end space-x-4">
-          <button onClick={onClose} className="px-4 py-2 rounded-md bg-gray-300 hover:bg-gray-400">Cancel</button>
-          <button onClick={() => onImport(data, mapping)} className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50" disabled={!file || !!error}>Import</button>
+          <button onClick={onClose} className="px-4 py-2 rounded-md bg-interactive-secondary text-interactive-secondary-foreground hover:bg-interactive-secondary/90">Cancel</button>
+          <button onClick={() => onImport(data, mapping)} className="px-4 py-2 rounded-md bg-interactive-primary text-interactive-primary-foreground hover:bg-interactive-primary/90 disabled:opacity-50" disabled={!file || !!error}>Import</button>
         </div>
       </div>
     </div>
