@@ -55,6 +55,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
 
   const watchedDates = watch(['sowDate', 'transplantDate', 'harvestDate']);
   const watchedPlantingMethod = watch('plantingMethod');
+  const watchedTimeToMaturity = watch('timeToMaturity');
 
   useEffect(() => {
     if (!lastChangedField.current) return;
@@ -80,6 +81,12 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
     }
   }, [watchedDates, setValue, watch, watchedPlantingMethod]);
   
+  useEffect(() => {
+    setValue('sowDate', '');
+    setValue('transplantDate', '');
+    setValue('harvestDate', '');
+  }, [watchedPlantingMethod, setValue]);
+
   const parseDays = (timeValue: string | number | null | undefined): number | null => {
       if (timeValue === null || timeValue === undefined) return null;
       if (typeof timeValue === 'number') return timeValue;
@@ -209,6 +216,11 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
             <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => { setValue('harvestDate', e.target.value); lastChangedField.current = 'planned_harvest_start_date'; }} className="mt-1 block w-full p-2 border border-gray-300 rounded-md"/>
             {errors.harvestDate && <p className="text-red-500 text-xs mt-1">{errors.harvestDate.message}</p>}
             <p className="text-xs text-gray-500 mt-1">Enter any known dates. The related tasks will be created automatically.</p>
+            {(!watchedTimeToMaturity || watchedTimeToMaturity === '0') &&
+              <p className="text-xs text-orange-500 mt-1">
+                Enter Days to Maturity to enable automatic date calculation.
+              </p>
+            }
           </div>
 
           <div className="flex justify-end space-x-2 mt-6">
