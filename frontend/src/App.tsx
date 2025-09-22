@@ -51,14 +51,14 @@ function SideMenu() {
       <div className="p-4 pt-16">
         {activePlan ? (
           <div className="mb-8 text-center">
-            <h2 className="text-xl font-bold text-on-accent">{activePlan.name}</h2>
-            <button onClick={openChangePlanModal} className="text-sm text-on-accent/80 hover:underline">
+            <h2 className="text-xl font-bold">{activePlan.name}</h2>
+            <button onClick={openChangePlanModal} className="text-sm text-primary-foreground/80 hover:underline">
               (Change Plan)
             </button>
           </div>
         ) : (
           <div className="mb-8 text-center">
-            <button onClick={handleCreatePlanClick} className="text-xl font-bold text-on-accent hover:underline">
+            <button onClick={handleCreatePlanClick} className="text-xl font-bold hover:underline">
               Create a Plan
             </button>
           </div>
@@ -120,10 +120,10 @@ function AppLayout() {
 
   return (
     <DirtyContext.Provider value={{ isPageDirty, setIsPageDirty }}>
-      <div className={`fixed top-0 left-0 h-full bg-accent text-on-accent w-64 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-40 shadow-lg`}>
+      <div className={`fixed top-0 left-0 h-full bg-primary text-primary-foreground w-64 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-40 shadow-lg`}>
         <button
           onClick={toggleSidebar}
-          className="absolute top-4 right-4 text-on-accent text-3xl hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-ring rounded-full w-8 h-8 flex items-center justify-center"
+          className="absolute top-4 right-4 text-primary-foreground text-3xl hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-ring rounded-full w-8 h-8 flex items-center justify-center"
           aria-label="Close menu"
         >
           &times;
@@ -137,7 +137,7 @@ function AppLayout() {
       <div className={`transition-all duration-300 ease-in-out bg-background text-foreground`}>
         <button
           onClick={toggleSidebar}
-          className="fixed top-4 left-4 z-20 p-2 bg-accent text-on-accent rounded-md shadow-lg"
+          className="fixed top-4 left-4 z-20 p-2 bg-primary text-primary-foreground rounded-md shadow-lg"
           aria-label="Open menu"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -149,19 +149,19 @@ function AppLayout() {
 
       {blocker.state === "blocked" && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full relative text-center">
-            <h2 className="text-lg font-bold mb-4 text-gray-800">Unsaved Changes</h2>
-            <p className="text-gray-700 mb-6">You have unsaved changes. Are you sure you want to leave?</p>
+          <div className="bg-component-background p-6 rounded-lg shadow-xl max-w-sm w-full relative text-center">
+            <h2 className="text-lg font-bold mb-4">Unsaved Changes</h2>
+            <p className="text-muted-foreground mb-6">You have unsaved changes. Are you sure you want to leave?</p>
             <div className="flex justify-center space-x-4">
               <button
                 onClick={() => blocker.reset?.()}
-                className="px-4 py-2 rounded-md transition duration-200 bg-gray-300 text-gray-800 hover:bg-gray-400 text-sm"
+                className="px-4 py-2 rounded-md transition duration-200 bg-interactive-secondary text-interactive-secondary-foreground hover:bg-interactive-secondary/90 text-sm"
               >
                 Stay
               </button>
               <button
                 onClick={() => blocker.proceed?.()}
-                className="px-4 py-2 rounded-md transition duration-200 bg-red-600 text-white hover:bg-red-700 text-sm"
+                className="px-4 py-2 rounded-md transition duration-200 bg-interactive-destructive text-interactive-destructive-foreground hover:bg-interactive-destructive/90 text-sm"
               >
                 Leave
               </button>

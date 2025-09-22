@@ -30,10 +30,10 @@ const CalendarDay: React.FC<{
       {({ open }) => (
         <>
           <Popover.Button
-    className={`w-full h-24 border-t border-r border-gray-200 dark:border-gray-700 p-2 flex flex-col justify-center items-center cursor-pointer transition-colors duration-150 ${open ? 'bg-green-100 dark:bg-green-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+    className={`w-full h-24 border-t border-r border-border p-2 flex flex-col justify-center items-center cursor-pointer transition-colors duration-150 ${open ? 'bg-primary/10' : 'hover:bg-secondary'}`}
           >
-    <span className="text-xs text-gray-500 dark:text-gray-400">{format(day, 'EEE')}</span>
-    <span className={`text-2xl mt-1 ${dayIsToday ? 'font-bold text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
+    <span className="text-xs text-muted-foreground">{format(day, 'EEE')}</span>
+    <span className={`text-2xl mt-1 ${dayIsToday ? 'font-bold text-primary' : ''}`}>
               {format(day, 'd')}
             </span>
           </Popover.Button>
@@ -46,14 +46,14 @@ const CalendarDay: React.FC<{
             leaveFrom="opacity-100 translate-y-0"
             leaveTo="opacity-0 translate-y-1"
           >
-    <Popover.Panel className={`absolute z-10 w-48 p-2 mt-2 bg-white dark:bg-gray-800 rounded-md shadow-lg ${popoverPanelClasses}`}>
-        <div className="flex flex-col space-y-1 text-gray-800 dark:text-gray-200">
-            <button onClick={() => onActionSelect(PlantingMethod.DIRECT_SEEDING, day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded">Direct Seed</button>
-            <button onClick={() => onActionSelect(PlantingMethod.SEED_STARTING, day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded">Start Seeds</button>
-            <button onClick={() => onActionSelect(PlantingMethod.SEEDLING, day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded">Plant Seedling</button>
-            <button onClick={() => onActionSelect('harvest', day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded">Harvest</button>
-            <div className="border-t my-1 dark:border-gray-600"></div>
-            <button onClick={() => onActionSelect('task', day)} className="w-full text-left p-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded">Add Task</button>
+    <Popover.Panel className={`absolute z-10 w-48 p-2 mt-2 bg-component-background rounded-md shadow-lg ${popoverPanelClasses}`}>
+        <div className="flex flex-col space-y-1">
+            <button onClick={() => onActionSelect(PlantingMethod.DIRECT_SEEDING, day)} className="w-full text-left p-2 text-sm hover:bg-secondary rounded">Direct Seed</button>
+            <button onClick={() => onActionSelect(PlantingMethod.SEED_STARTING, day)} className="w-full text-left p-2 text-sm hover:bg-secondary rounded">Start Seeds</button>
+            <button onClick={() => onActionSelect(PlantingMethod.SEEDLING, day)} className="w-full text-left p-2 text-sm hover:bg-secondary rounded">Plant Seedling</button>
+            <button onClick={() => onActionSelect('harvest', day)} className="w-full text-left p-2 text-sm hover:bg-secondary rounded">Harvest</button>
+            <div className="border-t my-1 border-border"></div>
+            <button onClick={() => onActionSelect('task', day)} className="w-full text-left p-2 text-sm hover:bg-secondary rounded">Add Task</button>
               </div>
             </Popover.Panel>
           </Transition>
@@ -75,16 +75,6 @@ const CalendarWeek: React.FC<{
     const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(week, i));
     const weeklyTasks = weekDays.flatMap(day => tasks[format(day, 'yyyy-MM-dd')] || []).sort((a, b) => a.date.getTime() - b.date.getTime());
     const isCurrent = isSameWeek(new Date(), week, { weekStartsOn: 0 });
-
-    const getTaskColor = (type: CalendarItem['type']) => {
-        switch (type) {
-            case 'sow': return 'text-blue-600';
-            case 'transplant': return 'text-purple-600';
-            case 'harvest': return 'text-green-600';
-            case 'task': return 'text-yellow-700';
-            default: return 'text-gray-800';
-        }
-    };
     
     const getTaskIcon = (type: CalendarItem['type']) => {
         switch (type) {
@@ -114,45 +104,45 @@ const CalendarWeek: React.FC<{
     };
 
     return (
-<div className={`mb-8 p-4 rounded-lg transition-colors duration-300 ${isCurrent ? 'bg-green-100 dark:bg-green-900/50' : 'bg-white dark:bg-gray-900'}`}>
-    <h2 className="text-xl font-bold mb-2 text-gray-700 dark:text-gray-200">{format(week, 'MMMM yyyy')} - Week of {format(week, 'do')}</h2>
-    <div className="grid grid-cols-7 border-l border-b border-gray-200 dark:border-gray-700 rounded-lg">
+<div className={`mb-8 p-4 rounded-lg transition-colors duration-300 ${isCurrent ? 'bg-primary/10' : 'bg-component-background'}`}>
+    <h2 className="text-xl font-bold mb-2">{format(week, 'MMMM yyyy')} - Week of {format(week, 'do')}</h2>
+    <div className="grid grid-cols-7 border-l border-b border-border rounded-lg">
                 {weekDays.map((day, index) => (
                     <CalendarDay key={day.toString()} day={day} dayIndex={index} onActionSelect={onActionSelect} />
                 ))}
             </div>
-    <div className="p-4 bg-gray-50 dark:bg-gray-800 border-l border-r border-b border-gray-200 dark:border-gray-700 rounded-b-lg -mt-2">
-        <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">This Week's Actions</h3>
+    <div className="p-4 bg-secondary border-l border-r border-b border-border rounded-b-lg -mt-2">
+        <h3 className="font-semibold mb-2">This Week's Actions</h3>
                 {weeklyTasks.length > 0 ? (
                     <ul className="space-y-1">
                         {weeklyTasks.map(item => {
                             const itemIsComplete = isComplete(item);
                             return (
-<li key={item.id} className="text-sm flex items-center justify-between p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-    <div className={`flex items-center cursor-pointer flex-grow ${itemIsComplete ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-800 dark:text-gray-200'}`} onClick={() => onItemClick(item)}>
+<li key={item.id} className="text-sm flex items-center justify-between p-1 rounded-md hover:bg-component-background transition-colors">
+    <div className={`flex items-center cursor-pointer flex-grow ${itemIsComplete ? 'line-through text-muted-foreground' : ''}`} onClick={() => onItemClick(item)}>
                                         <span className="font-medium w-24 flex-shrink-0">{format(item.date, 'EEE, MMM d')}:</span>
-                                        <span className={`font-medium mr-2 ${getTaskColor(item.type)}`}>
+                                        <span className="font-medium mr-2 text-primary">
                                             {getTaskIcon(item.type)} {item.type.charAt(0).toUpperCase() + item.type.slice(1)}:
                                         </span> 
-        <span className="text-gray-800 dark:text-gray-200">
+        <span>
                                           {item.name}
-          {item.type === 'task' && <span className="text-gray-500 dark:text-gray-400 text-xs ml-2">({(item.data as Task).status})</span>}
+          {item.type === 'task' && <span className="text-muted-foreground text-xs ml-2">({(item.data as Task).status})</span>}
                                         </span>
                                     </div>
                                     <div className="flex items-center space-x-2 ml-4 flex-shrink-0">
                                         {itemIsComplete ? (
-            <button onClick={(e) => { e.stopPropagation(); onUndo(item); }} className="px-2 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700">Undo</button>
+            <button onClick={(e) => { e.stopPropagation(); onUndo(item); }} className="px-2 py-1 text-xs bg-interactive-secondary text-interactive-secondary-foreground rounded hover:bg-interactive-secondary/90">Undo</button>
                                         ) : (
-            <button onClick={(e) => { e.stopPropagation(); onComplete(item); }} className="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700">Done</button>
+            <button onClick={(e) => { e.stopPropagation(); onComplete(item); }} className="px-2 py-1 text-xs bg-interactive-primary text-interactive-primary-foreground rounded hover:bg-interactive-primary/90">Done</button>
                                         )}
-        <button onClick={(e) => { e.stopPropagation(); onDelete(item); }} className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700">Delete</button>
+        <button onClick={(e) => { e.stopPropagation(); onDelete(item); }} className="px-2 py-1 text-xs bg-interactive-destructive text-interactive-destructive-foreground rounded hover:bg-interactive-destructive/90">Delete</button>
                                     </div>
                                 </li>
                             );
                         })}
                     </ul>
                 ) : (
-                    <p className="text-sm text-gray-500 italic">No actions planned for this week.</p>
+                    <p className="text-sm text-muted-foreground italic">No actions planned for this week.</p>
                 )}
             </div>
         </div>

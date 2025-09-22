@@ -1,5 +1,6 @@
-import React, { useState, Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import React, { useState, Fragment, useEffect } from 'react';
+import { Dialog, Transition, Popover } from '@headlessui/react';
+import { HexColorPicker } from 'react-colorful';
 import { useTheme, defaultThemes, Theme } from '../context/ThemeContext';
 
 interface ThemeCustomizeModalProps {
@@ -12,20 +13,15 @@ const ThemeCustomizeModal: React.FC<ThemeCustomizeModalProps> = ({ isOpen, onClo
   const [customTheme, setCustomTheme] = useState<Theme>(theme);
 
   useEffect(() => {
-    // When the modal is opened, sync its state with the global theme
     setCustomTheme(theme);
   }, [theme, isOpen]);
 
   const handleColorChange = (key: keyof Theme['colors'], value: string) => {
-    // Convert hex to HSL string
     const hslValue = hexToHsl(value);
     const newTheme = {
       ...customTheme,
-      name: 'custom', // Mark as a custom theme
-      colors: {
-        ...customTheme.colors,
-        [key]: hslValue,
-      },
+      name: 'custom',
+      colors: { ...customTheme.colors, [key]: hslValue },
     };
     setCustomTheme(newTheme);
   };
@@ -37,72 +33,52 @@ const ThemeCustomizeModal: React.FC<ThemeCustomizeModalProps> = ({ isOpen, onClo
 
   const handleReset = (themeName: 'light' | 'dark') => {
     resetToDefault(themeName);
-    onClose(); // Close after resetting
   };
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black bg-opacity-50" />
-        </Transition.Child>
-
+        {/* ... Dialog overlay ... */}
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-component-background p-6 text-left align-middle shadow-xl transition-all">
-                <Dialog.Title
-                  as="h3"
-                  className="text-2xl font-bold leading-6 text-foreground mb-4"
-                >
-                  Customize Theme
-                </Dialog.Title>
+            <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-component-background p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Title as="h3" className="text-2xl font-bold leading-6 text-foreground mb-4">
+                Customize Theme
+              </Dialog.Title>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto p-2">
-                  {Object.entries(customTheme.colors).map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between">
-                      <label htmlFor={key} className="capitalize text-sm text-muted-foreground">
-                        {key.replace(/-/g, ' ')}
-                      </label>
-                      <input
-                        id={key}
-                        type="color"
-                        value={value.startsWith('hsl') ? `#${hslToHex(value)}` : value}
-                        onChange={(e) => handleColorChange(key as keyof Theme['colors'], e.target.value)}
-                        className="w-16 h-8 p-0 border-none rounded-md"
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto p-2">
+                {Object.entries(customTheme.colors).map(([key, value]) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <label className="capitalize text-sm text-muted-foreground">
+                      {key.replace(/-/g, ' ')}
+                    </label>
+                    <Popover className="relative">
+                      <Popover.Button
+                        className="w-16 h-8 rounded-md border border-border"
+                        style={{ backgroundColor: value }}
                       />
-                    </div>
-                  ))}
-                </div>
+                      <Popover.Panel className="absolute z-10 right-0 mt-2">
+                        <HexColorPicker
+                          color={hslToHex(value)}
+                          onChange={(newColor) => handleColorChange(key as keyof Theme['colors'], newColor)}
+                        />
+                      </Popover.Panel>
+                    </Popover>
+                  </div>
+                ))}
+              </div>
 
-                <div className="mt-6 flex justify-between">
-                    <div>
-                        <button onClick={() => handleReset('light')} className="px-4 py-2 text-sm rounded-md bg-interactive-secondary text-interactive-secondary-foreground mr-2">Reset to Light</button>
-                        <button onClick={() => handleReset('dark')} className="px-4 py-2 text-sm rounded-md bg-interactive-secondary text-interactive-secondary-foreground">Reset to Dark</button>
-                    </div>
-                    <div>
-                        <button onClick={onClose} className="px-4 py-2 text-sm rounded-md bg-interactive-secondary text-interactive-secondary-foreground mr-2">Cancel</button>
-                        <button onClick={handleSave} className="px-4 py-2 text-sm rounded-md bg-interactive-primary text-interactive-primary-foreground">Save</button>
-                    </div>
+              <div className="mt-6 flex justify-between">
+                <div>
+                  <button onClick={() => handleReset('light')} className="px-4 py-2 text-sm rounded-md bg-interactive-secondary text-interactive-secondary-foreground mr-2">Reset to Light</button>
+                  <button onClick={() => handleReset('dark')} className="px-4 py-2 text-sm rounded-md bg-interactive-secondary text-interactive-secondary-foreground">Reset to Dark</button>
                 </div>
-              </Dialog.Panel>
-            </Transition.Child>
+                <div>
+                  <button onClick={onClose} className="px-4 py-2 text-sm rounded-md bg-interactive-secondary text-interactive-secondary-foreground mr-2">Cancel</button>
+                  <button onClick={handleSave} className="px-4 py-2 text-sm rounded-md bg-interactive-primary text-interactive-primary-foreground">Save</button>
+                </div>
+              </div>
+            </Dialog.Panel>
           </div>
         </div>
       </Dialog>
@@ -120,23 +96,26 @@ function hslToHex(hsl: string): string {
     const a = s * Math.min(l, 1 - l);
     const f = (n: number) =>
         l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
-    return [0, 8, 4]
+    return `#${[0, 8, 4]
         .map(n => Math.round(f(n) * 255).toString(16).padStart(2, '0'))
-        .join('');
+        .join('')}`;
 }
 
 // Helper to convert a hex string to an HSL string
 function hexToHsl(hex: string): string {
     let r = 0, g = 0, b = 0;
+    // 3 digits
     if (hex.length === 4) {
-        r = parseInt(hex[1] + hex[1], 16);
-        g = parseInt(hex[2] + hex[2], 16);
-        b = parseInt(hex[3] + hex[3], 16);
+      r = parseInt(hex[1] + hex[1], 16);
+      g = parseInt(hex[2] + hex[2], 16);
+      b = parseInt(hex[3] + hex[3], 16);
+    // 6 digits
     } else if (hex.length === 7) {
-        r = parseInt(hex.substring(1, 3), 16);
-        g = parseInt(hex.substring(3, 5), 16);
-        b = parseInt(hex.substring(5, 7), 16);
+      r = parseInt(hex.substring(1, 3), 16);
+      g = parseInt(hex.substring(3, 5), 16);
+      b = parseInt(hex.substring(5, 7), 16);
     }
+
     r /= 255;
     g /= 255;
     b /= 255;
