@@ -55,25 +55,25 @@ const GardenPlanDetailPage: React.FC = () => {
   };
 
   if (isLoading) return <div className="p-8 text-center">Loading plan...</div>;
-  if (error) return <div className="p-8 text-center text-red-500">Failed to fetch plan details. It may not exist.</div>;
+  if (error) return <div className="p-8 text-center text-destructive">Failed to fetch plan details. It may not exist.</div>;
   if (!plan) return <div className="p-8 text-center">Garden plan not found.</div>;
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8 bg-background text-foreground">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
-          <Link to="/plans" className="text-blue-600 hover:underline">&larr; Back to All Plans</Link>
+          <Link to="/plans" className="text-interactive-primary hover:underline">&larr; Back to All Plans</Link>
         </div>
-        {mutationError && <div className="p-4 mb-4 text-center bg-red-100 border border-red-400 text-red-700 rounded">{mutationError}</div>}
-        <div className="bg-white p-8 rounded-lg shadow-xl mb-8">
+        {mutationError && <div className="p-4 mb-4 text-center bg-destructive/10 border border-destructive text-destructive rounded">{mutationError}</div>}
+        <div className="bg-component-background p-8 rounded-lg shadow-xl mb-8">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-4xl font-bold text-green-800">{plan.name}</h1>
-              <p className="text-gray-600 mt-2 text-lg">{plan.description}</p>
+              <h1 className="text-4xl font-bold text-primary">{plan.name}</h1>
+              <p className="text-muted-foreground mt-2 text-lg">{plan.description}</p>
             </div>
             <button 
               onClick={() => setIsDeletePlanModalOpen(true)}
-              className="p-2 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-600 transition-colors disabled:opacity-50"
+              className="p-2 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors disabled:opacity-50"
               disabled={isDeleting}
               aria-label="Delete plan"
             >
@@ -84,33 +84,33 @@ const GardenPlanDetailPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-8 rounded-lg shadow-xl">
-            <h3 className="text-3xl font-bold text-gray-800 mb-6">Plantings</h3>
+        <div className="bg-component-background p-8 rounded-lg shadow-xl">
+            <h3 className="text-3xl font-bold mb-6">Plantings</h3>
             <div className="overflow-x-auto">
             <table className="min-w-full">
-                <thead className="bg-gray-100">
+                <thead className="bg-secondary">
                     <tr>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">Name</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">Quantity</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">Sow Date</th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold text-muted-foreground uppercase tracking-wider">Name</th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold text-muted-foreground uppercase tracking-wider">Quantity</th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold text-muted-foreground uppercase tracking-wider">Sow Date</th>
                     </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-component-background divide-y divide-border">
                     {plan.plantings.map((planting) => (
-                    <tr key={planting.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-base font-medium text-gray-800">
-                            <Link to={`/plantings/${planting.id}`} className="text-green-700 hover:text-green-500">
+                    <tr key={planting.id} className="hover:bg-secondary transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-base font-medium">
+                            <Link to={`/plantings/${planting.id}`} className="text-primary hover:text-primary/90">
                                 {planting.plant_name} {planting.variety_name ? `(${planting.variety_name})` : ''}
                             </Link>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-base text-gray-600">{planting.quantity}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-base text-muted-foreground">{planting.quantity}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${getStatusBadgeColor(planting.status)}`}>
                                 {planting.status}
                             </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-base text-gray-600">
+                        <td className="px-6 py-4 whitespace-nowrap text-base text-muted-foreground">
                             {planting.planned_sow_date ? format(new Date(planting.planned_sow_date + 'T00:00:00'), 'MMM d, yyyy') : 'N/A'}
                         </td>
                     </tr>

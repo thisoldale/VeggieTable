@@ -30,8 +30,8 @@ const PlantSelectionModal: React.FC<PlantSelectionModalProps> = ({ isOpen, onClo
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
-<Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white dark:bg-gray-900 p-6 text-left align-middle shadow-xl transition-all">
-    <Dialog.Title as="h3" className="text-lg font-bold leading-6 text-gray-900 dark:text-gray-200">
+<Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-component-background p-6 text-left align-middle shadow-xl transition-all">
+    <Dialog.Title as="h3" className="text-lg font-bold leading-6 text-foreground">
                   Select a Plant
                 </Dialog.Title>
                 <div className="mt-4">
@@ -40,15 +40,15 @@ const PlantSelectionModal: React.FC<PlantSelectionModalProps> = ({ isOpen, onClo
                     placeholder="Search plant library..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md mb-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200"
+            className="w-full p-2 border border-border rounded-md mb-4 bg-component-background"
                   />
                   <div className="max-h-96 overflow-y-auto">
-            {isLoading && <p className="text-gray-800 dark:text-gray-200">Loading plants...</p>}
-                    {error && <p className="text-red-500">Error loading plants.</p>}
+            {isLoading && <p>Loading plants...</p>}
+                    {error && <p className="text-destructive">Error loading plants.</p>}
                     {filteredPlants?.map(plant => (
-                <div key={plant.id} onClick={() => onSelectPlant(plant)} className="p-2 border-b dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                    <p className="font-semibold text-gray-800 dark:text-gray-200">{plant.plant_name}</p>
-                    {plant.variety_name && <p className="text-sm text-gray-500 dark:text-gray-400">{plant.variety_name}</p>}
+                <div key={plant.id} onClick={() => onSelectPlant(plant)} className="p-2 border-b border-border hover:bg-secondary cursor-pointer">
+                    <p className="font-semibold">{plant.plant_name}</p>
+                    {plant.variety_name && <p className="text-sm text-muted-foreground">{plant.variety_name}</p>}
                       </div>
                     ))}
                   </div>
