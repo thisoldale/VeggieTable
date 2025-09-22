@@ -54,6 +54,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
   const lastChangedField = useRef<string | null>(null);
 
   const watchedDates = watch(['sowDate', 'transplantDate', 'harvestDate']);
+  const watchedPlantingMethod = watch('plantingMethod');
 
   useEffect(() => {
     if (!lastChangedField.current) return;
@@ -66,18 +67,18 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
         days_to_transplant_high: watch('daysToTransplant'),
     };
 
-    const newDates = calculateDates(currentValues, lastChangedField.current);
+    const newDates = calculateDates(currentValues, lastChangedField.current, watchedPlantingMethod);
 
-    if (newDates.planned_sow_date && newDates.planned_sow_date !== watchedDates[0]) {
-        setValue('sowDate', newDates.planned_sow_date);
+    if (newDates.planned_sow_date !== watchedDates[0]) {
+        setValue('sowDate', newDates.planned_sow_date || '');
     }
-    if (newDates.planned_transplant_date && newDates.planned_transplant_date !== watchedDates[1]) {
-        setValue('transplantDate', newDates.planned_transplant_date);
+    if (newDates.planned_transplant_date !== watchedDates[1]) {
+        setValue('transplantDate', newDates.planned_transplant_date || '');
     }
-    if (newDates.planned_harvest_start_date && newDates.planned_harvest_start_date !== watchedDates[2]) {
-        setValue('harvestDate', newDates.planned_harvest_start_date);
+    if (newDates.planned_harvest_start_date !== watchedDates[2]) {
+        setValue('harvestDate', newDates.planned_harvest_start_date || '');
     }
-  }, [watchedDates, setValue, watch]);
+  }, [watchedDates, setValue, watch, watchedPlantingMethod]);
   
   const parseDays = (timeValue: string | number | null | undefined): number | null => {
       if (timeValue === null || timeValue === undefined) return null;
@@ -190,7 +191,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
           {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.DIRECT_SEEDING) && (
              <div className="mb-4">
                 <label htmlFor="sow-date" className="block text-sm font-medium text-gray-700">Sow Date</label>
-                <input type="date" id="sow-date" {...register("sowDate")} onChange={() => lastChangedField.current = 'planned_sow_date'} className="mt-1 block w-full p-2 border border-gray-300 rounded-md"/>
+                <input type="date" id="sow-date" {...register("sowDate")} onChange={(e) => { setValue('sowDate', e.target.value); lastChangedField.current = 'planned_sow_date'; }} className="mt-1 block w-full p-2 border border-gray-300 rounded-md"/>
                 {errors.sowDate && <p className="text-red-500 text-xs mt-1">{errors.sowDate.message}</p>}
              </div>
           )}
@@ -198,14 +199,14 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
           {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.SEEDLING) && (
             <div className="mb-4">
                 <label htmlFor="transplant-date" className="block text-sm font-medium text-gray-700">Transplant Date</label>
-                <input type="date" id="transplant-date" {...register("transplantDate")} onChange={() => lastChangedField.current = 'planned_transplant_date'} className="mt-1 block w-full p-2 border border-gray-300 rounded-md"/>
+                <input type="date" id="transplant-date" {...register("transplantDate")} onChange={(e) => { setValue('transplantDate', e.target.value); lastChangedField.current = 'planned_transplant_date'; }} className="mt-1 block w-full p-2 border border-gray-300 rounded-md"/>
                 {errors.transplantDate && <p className="text-red-500 text-xs mt-1">{errors.transplantDate.message}</p>}
             </div>
           )}
 
           <div className="mb-4">
             <label htmlFor="harvest-date" className="block text-sm font-medium text-gray-700">Target Harvest Date</label>
-            <input type="date" id="harvest-date" {...register("harvestDate")} onChange={() => lastChangedField.current = 'planned_harvest_start_date'} className="mt-1 block w-full p-2 border border-gray-300 rounded-md"/>
+            <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => { setValue('harvestDate', e.target.value); lastChangedField.current = 'planned_harvest_start_date'; }} className="mt-1 block w-full p-2 border border-gray-300 rounded-md"/>
             {errors.harvestDate && <p className="text-red-500 text-xs mt-1">{errors.harvestDate.message}</p>}
             <p className="text-xs text-gray-500 mt-1">Enter any known dates. The related tasks will be created automatically.</p>
           </div>
