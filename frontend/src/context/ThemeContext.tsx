@@ -32,12 +32,12 @@ export const defaultThemes: Record<'light' | 'dark', Theme> = {
       background: 'hsl(0 0% 100%)',
       'component-background': 'hsl(0 0% 98%)',
       foreground: 'hsl(222.2 47.4% 11.2%)',
-      'muted-foreground': 'hsl(215 20% 65%)',
-      primary: 'hsl(142.1 76.2% 36.3%)', // Main green
+      'muted-foreground': 'hsl(215 20% 45%)',
+      primary: 'hsl(142.1 76.2% 30.3%)', // Main green
       'primary-foreground': 'hsl(0 0% 100%)',
       secondary: 'hsl(210 40% 96.1%)',
       'secondary-foreground': 'hsl(222.2 47.4% 11.2%)',
-      destructive: 'hsl(0 84.2% 60.2%)',
+      destructive: 'hsl(0 74.2% 50.2%)',
       'destructive-foreground': 'hsl(0 0% 100%)',
       border: 'hsl(214.3 31.8% 91.4%)',
       ring: 'hsl(142.1 76.2% 36.3%)',
@@ -50,11 +50,11 @@ export const defaultThemes: Record<'light' | 'dark', Theme> = {
       'component-background': 'hsl(222.2 47.4% 11.2%)',
       foreground: 'hsl(210 40% 98%)',
       'muted-foreground': 'hsl(215 20% 65%)',
-      primary: 'hsl(142.1 70.6% 45.3%)', // Main green
+      primary: 'hsl(142.1 80.6% 45.3%)', // Main green
       'primary-foreground': 'hsl(0 0% 100%)',
       secondary: 'hsl(217.2 32.6% 17.5%)',
       'secondary-foreground': 'hsl(210 40% 98%)',
-      destructive: 'hsl(0 62.8% 30.6%)',
+      destructive: 'hsl(0 72.8% 40.6%)',
       'destructive-foreground': 'hsl(0 0% 98%)',
       border: 'hsl(217.2 32.6% 17.5%)',
       ring: 'hsl(142.1 70.6% 45.3%)',
