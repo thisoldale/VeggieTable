@@ -172,27 +172,6 @@ function AppLayout() {
 }
 
 
-// This component now handles the initial loading of the active plan.
-const PlanLoader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { activePlan, setActivePlan } = usePlan();
-  // We only fetch if there isn't an active plan already in the state.
-  const { data: mostRecentPlan, isLoading } = useGetMostRecentGardenPlanQuery(undefined, {
-    skip: !!activePlan,
-  });
-
-  useEffect(() => {
-    if (mostRecentPlan) {
-      setActivePlan(mostRecentPlan);
-    }
-  }, [mostRecentPlan, setActivePlan]);
-
-  // Show a loading indicator while we're fetching the initial plan.
-  if (isLoading) {
-    return <div className="p-8 text-center">Loading your garden...</div>;
-  }
-
-  return <>{children}</>;
-};
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -266,10 +245,8 @@ function App() {
     <AuthProvider>
       <ThemeProvider>
         <PlanProvider>
-          <PlanLoader>
-            <Toaster position="top-center" reverseOrder={false} />
-            <RouterProvider router={router} />
-          </PlanLoader>
+          <Toaster position="top-center" reverseOrder={false} />
+          <RouterProvider router={router} />
         </PlanProvider>
       </ThemeProvider>
     </AuthProvider>

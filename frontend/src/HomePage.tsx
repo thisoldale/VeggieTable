@@ -405,21 +405,43 @@ const CalendarView: React.FC = () => {
 };
 
 const HomePage: React.FC = () => {
-  const { activePlan } = usePlan();
+  const { activePlan, setActivePlan } = usePlan();
+  const navigate = useNavigate();
 
-  if (!activePlan) {
-    return (
-        <div className="p-8 text-center">
-    <h1 className="text-2xl font-bold text-gray-700 dark:text-gray-200 mb-4">Welcome to Your Digital Garden</h1>
-    <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">Before you start, create a new Plan to organize your garden.</p>
-    <Link to="/plans" className="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 transition-colors">
-                Create a Plan
-            </Link>
-        </div>
-    );
+  // This query will only run if there's no activePlan in the context yet.
+  const { data: mostRecentPlan, isLoading, isError } = useGetMostRecentGardenPlanQuery(undefined, {
+      skip: !!activePlan,
+  });
+
+  useEffect(() => {
+      // If we fetch a plan, set it as active.
+      if (mostRecentPlan) {
+          setActivePlan(mostRecentPlan);
+      }
+  }, [mostRecentPlan, setActivePlan]);
+
+  // While fetching the initial plan, show a loading state.
+  if (isLoading) {
+      return <div className="p-8 text-center">Loading your garden...</div>;
   }
 
-  return <CalendarView />;
+  // If a plan is now active in the context (either from before or from our fetch),
+  // we can show the calendar.
+  if (activePlan) {
+      return <CalendarView />;
+  }
+
+  // If there's no active plan and we didn't fetch one (or the fetch resulted in no plan),
+  // then we show the welcome message to create a plan.
+  return (
+      <div className="p-8 text-center">
+          <h1 className="text-2xl font-bold text-gray-700 dark:text-gray-200 mb-4">Welcome to Your Digital Garden</h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">It looks like you don't have any garden plans yet. Let's create one!</p>
+          <Link to="/plans" className="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 transition-colors">
+              Create a Plan
+          </Link>
+      </div>
+  );
 };
 
 export default HomePage;
