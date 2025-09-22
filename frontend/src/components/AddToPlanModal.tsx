@@ -52,6 +52,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
     resolver: zodResolver(plantingSchema),
   });
   const lastChangedField = useRef<string | null>(null);
+  const isInitialMount = useRef(true);
 
   const watchedDates = watch(['sowDate', 'transplantDate', 'harvestDate']);
   const watchedPlantingMethod = watch('plantingMethod');
@@ -82,9 +83,13 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
   }, [watchedDates, setValue, watch, watchedPlantingMethod]);
   
   useEffect(() => {
-    setValue('sowDate', '');
-    setValue('transplantDate', '');
-    setValue('harvestDate', '');
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+    } else {
+      setValue('sowDate', '');
+      setValue('transplantDate', '');
+      setValue('harvestDate', '');
+    }
   }, [watchedPlantingMethod, setValue]);
 
   const parseDays = (timeValue: string | number | null | undefined): number | null => {
