@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { usePlan } from './context/PlanContext';
-import { useGetGardenPlanByIdQuery, useUpdatePlantingMutation, useUpdateTaskMutation, useDeletePlantingMutation, useDeleteTaskMutation } from './store/plantApi';
+import { useGetGardenPlanByIdQuery, useGetMostRecentGardenPlanQuery, useUpdatePlantingMutation, useUpdateTaskMutation, useDeletePlantingMutation, useDeleteTaskMutation } from './store/plantApi';
 import { Plant, Planting, PlantingMethod, GardenPlan, Task, TaskStatus, PlantingStatus } from './types';
 import { format, addDays, startOfWeek, addWeeks, subWeeks, isSameDay, isToday, isSameWeek } from 'date-fns';
 import { Popover, Transition } from '@headlessui/react';
