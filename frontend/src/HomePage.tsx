@@ -427,7 +427,7 @@ const HomePage: React.FC = () => {
       <div className="p-8 text-center">
           <h1 className="text-2xl font-bold text-gray-700 dark:text-gray-200 mb-4">Welcome to Your Digital Garden</h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">It looks like you don't have any garden plans yet. Let's create one!</p>
-          <Link to="/plans" className="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 transition-colors">
+          <Link to="/plans" className="px-6 py-3 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-colors">
               Create a Plan
           </Link>
       </div>
