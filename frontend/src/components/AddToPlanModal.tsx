@@ -25,7 +25,7 @@ const plantingSchema = z.object({
   daysToTransplant: z.string().regex(/^\d*$/, "Must be a number").optional(),
 }).refine(data => {
     if (data.sowDate && data.transplantDate) {
-        return new Date(data.transplantDate) > new Date(data.sowDate);
+        return new Date(data.transplantDate) >= new Date(data.sowDate);
     }
     return true;
 }, {
@@ -33,7 +33,7 @@ const plantingSchema = z.object({
     path: ["transplantDate"],
 }).refine(data => {
     if (data.transplantDate && data.harvestDate) {
-        return new Date(data.harvestDate) > new Date(data.transplantDate);
+        return new Date(data.harvestDate) >= new Date(data.transplantDate);
     }
     return true;
 }, {
