@@ -113,12 +113,32 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
       
       if (initialDate) {
         const dateStr = format(initialDate, 'yyyy-MM-dd');
+        let anchorField: string | null = null;
+
         if (initialAction === 'harvest') {
             defaults.harvestDate = dateStr;
+            anchorField = 'planned_harvest_start_date';
         } else if (defaultPlantingMethod === PlantingMethod.SEEDLING) {
             defaults.transplantDate = dateStr;
+            anchorField = 'planned_transplant_date';
         } else {
             defaults.sowDate = dateStr;
+            anchorField = 'planned_sow_date';
+        }
+
+        if (anchorField) {
+            const currentValues = {
+                planned_sow_date: defaults.sowDate,
+                planned_transplant_date: defaults.transplantDate,
+                planned_harvest_start_date: defaults.harvestDate,
+                time_to_maturity: defaults.timeToMaturity,
+                days_to_transplant_high: defaults.daysToTransplant,
+            };
+            const newDates = calculateDates(currentValues, anchorField, defaultPlantingMethod);
+
+            if(newDates.planned_sow_date) defaults.sowDate = newDates.planned_sow_date;
+            if(newDates.planned_transplant_date) defaults.transplantDate = newDates.planned_transplant_date;
+            if(newDates.planned_harvest_start_date) defaults.harvestDate = newDates.planned_harvest_start_date;
         }
       }
 
