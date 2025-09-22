@@ -47,8 +47,8 @@ const PlantSelectionModal: React.FC<PlantSelectionModalProps> = ({ isOpen, onClo
                     {error && <p className="text-destructive">Error loading plants.</p>}
                     {filteredPlants?.map(plant => (
                 <div key={plant.id} onClick={() => onSelectPlant(plant)} className="p-2 border-b border-border hover:bg-secondary cursor-pointer">
-                    <p className="font-semibold">{plant.plant_name}</p>
-                    {plant.variety_name && <p className="text-sm text-muted-foreground">{plant.variety_name}</p>}
+                    <p className="font-semibold text-foreground">{plant.plant_name}</p>
+                    {plant.variety_name && <p className="text-sm text-foreground/80">{plant.variety_name}</p>}
                       </div>
                     ))}
                   </div>
