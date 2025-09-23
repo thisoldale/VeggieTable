@@ -281,32 +281,7 @@ const BulkEditTable: React.FC = () => {
     modals.deleteRows.close();
   };
 
-  // --- Mobile Flick/Long Press Logic ---
-  const handlePointerMove = useCallback((event: PointerEvent) => {
-    // Any movement cancels the long press
-    clearTimeout(longPressTimeout.current);
-    window.removeEventListener('pointermove', handlePointerMove);
-  }, []);
-
-  const handlePointerDown = (row: Row<Plant>, event: React.PointerEvent) => {
-    longPressTriggered.current = false;
-    pointerStartPos.current = { x: event.clientX, y: event.clientY };
-    window.addEventListener('pointermove', handlePointerMove);
-    longPressTimeout.current = window.setTimeout(() => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      longPressTriggered.current = true;
-      setIsSelectionMode(true);
-      row.toggleSelected(true);
-    }, 2500);
-  };
-
-  const handlePointerUp = () => {
-    clearTimeout(longPressTimeout.current);
-    window.removeEventListener('pointermove', handlePointerMove);
-  };
-
   const handleRowClick = useCallback((row: Row<Plant>, event: React.MouseEvent) => {
-    if (longPressTriggered.current) return;
     if (isSelectionMode) {
       row.toggleSelected();
       return;
@@ -456,6 +431,8 @@ const BulkEditTable: React.FC = () => {
                                 </button>
                                 <div className="border-t my-1 border-border"></div>
                                 <button onClick={handleAutofitColumns} className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary">Autofit Columns</button>
+                                <div className="border-t my-1 border-border"></div>
+                                <button onClick={() => setIsSelectionMode(true)} className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary">Select Rows</button>
                             </div>
                         )}
                     </div>
@@ -543,7 +520,7 @@ const BulkEditTable: React.FC = () => {
                     <tbody>
                         {table.getRowModel().rows.map(row => (
                             <tr key={row.id} className={`border-b border-border select-none ${row.getIsSelected() ? 'bg-primary/20' : (row.original.id <= 0 ? 'bg-secondary' : 'bg-component-background')} hover:bg-secondary`}
-                                onPointerDown={(e) => handlePointerDown(row, e)} onPointerUp={handlePointerUp} onClick={(e) => handleRowClick(row, e)} onContextMenu={e => e.preventDefault()}>
+                                onClick={(e) => handleRowClick(row, e)} onContextMenu={e => e.preventDefault()}>
                                 {row.getVisibleCells().map(cell => (
                                     <td key={cell.id} className="whitespace-nowrap px-2 py-1 text-foreground border-b border-border">{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
                                 ))}
