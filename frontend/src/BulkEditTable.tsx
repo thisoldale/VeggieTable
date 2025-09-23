@@ -283,14 +283,9 @@ const BulkEditTable: React.FC = () => {
 
   // --- Mobile Flick/Long Press Logic ---
   const handlePointerMove = useCallback((event: PointerEvent) => {
-    if (!pointerStartPos.current) return;
-    const dx = Math.abs(event.clientX - pointerStartPos.current.x);
-    const dy = Math.abs(event.clientY - pointerStartPos.current.y);
-    if (dx > 20 || dy > 20) {
-      clearTimeout(longPressTimeout.current);
-      pointerStartPos.current = null;
-      window.removeEventListener('pointermove', handlePointerMove);
-    }
+    // Any movement cancels the long press
+    clearTimeout(longPressTimeout.current);
+    window.removeEventListener('pointermove', handlePointerMove);
   }, []);
 
   const handlePointerDown = (row: Row<Plant>, event: React.PointerEvent) => {

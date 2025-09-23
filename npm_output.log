@@ -1,13 +1,14 @@
 
-> frontend@0.3.3 dev
+> frontend@0.3.4 dev
 > vite
 
 Port 8444 is in use, trying another one...
 Port 8445 is in use, trying another one...
 Port 8446 is in use, trying another one...
 Port 8447 is in use, trying another one...
+Port 8448 is in use, trying another one...
 
-  VITE v5.4.19  ready in 728 ms
+  VITE v5.4.19  ready in 669 ms
 
-  ➜  Local:   http://localhost:8448/
-  ➜  Network: http://192.168.0.2:8448/
+  ➜  Local:   http://localhost:8449/
+  ➜  Network: http://192.168.0.2:8449/
