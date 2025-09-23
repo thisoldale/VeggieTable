@@ -90,13 +90,13 @@ const ThemeCustomizeModal: React.FC<ThemeCustomizeModalProps> = ({ isOpen, onClo
 
               <div className="mt-6 flex flex-col space-y-4 md:flex-row md:space-y-0 md:justify-between md:items-center">
                 <div className="flex items-center w-full">
-                  <label htmlFor="theme-name" className="text-sm font-medium text-foreground mr-2 whitespace-nowrap">Theme Name:</label>
+                  <label htmlFor="theme-name" className="capitalize text-sm font-medium text-foreground mr-2 whitespace-nowrap">Theme Name:</label>
                   <input
                     id="theme-name"
                     type="text"
                     value={newThemeName}
                     onChange={(e) => setNewThemeName(e.target.value)}
-                    className="w-full p-2 border border-border rounded-md bg-component-background"
+                    className="w-full p-2 border border-border rounded-md bg-component-background text-foreground"
                     placeholder="Enter custom theme name..."
                   />
                 </div>
