@@ -434,85 +434,85 @@ const BulkEditTable: React.FC = () => {
   const isSaving = isAddingPlant || isUpdatingPlant;
 
   return (
-    <div className="p-4 md:p-8 bg-gray-100 min-h-screen font-sans text-sm">
-        <h1 className="text-3xl font-bold mb-4 text-center text-green-700">Bulk Edit Plants</h1>
+    <div className="p-4 md:p-8 bg-background min-h-screen font-sans text-sm">
+        <h1 className="text-3xl font-bold mb-4 text-center text-primary">Bulk Edit Plants</h1>
 
-        <div className="max-w-screen-xl mx-auto bg-white p-4 rounded-lg shadow-md">
+        <div className="max-w-screen-xl mx-auto bg-component-background p-4 rounded-lg shadow-md">
             {/* Toolbar */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-3 md:space-y-0">
                 <div className="flex items-center flex-wrap gap-2">
-                    <button onClick={handleSaveChanges} disabled={!hasUnsavedChanges || isSaving} className="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 text-sm disabled:opacity-50">
+                    <button onClick={handleSaveChanges} disabled={!hasUnsavedChanges || isSaving} className="px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-sm disabled:opacity-50">
                         {isSaving ? 'Saving...' : 'Save Changes'}
                     </button>
                     
-                    <button onClick={handleOpenAddToPlan} disabled={numSelectedRows !== 1 || !recentPlan} className="px-3 py-1.5 rounded-md bg-green-600 text-white hover:bg-green-700 text-sm disabled:opacity-50">
+                    <button onClick={handleOpenAddToPlan} disabled={numSelectedRows !== 1 || !recentPlan} className="px-3 py-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90 text-sm disabled:opacity-50">
                         Add to Plan
                     </button>
 
                     {/* Row Actions Dropdown */}
                     <div className="relative">
-                        <button onClick={() => setShowRowDropdown(v => !v)} className="px-3 py-1.5 rounded-md bg-gray-500 text-white hover:bg-gray-600 text-sm">More Actions</button>
+                        <button onClick={() => setShowRowDropdown(v => !v)} className="px-3 py-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90 text-sm">More Actions</button>
                         {showRowDropdown && (
-                            <div ref={rowDropdownRef} className="absolute z-20 bg-white shadow-lg rounded-md border py-1 mt-2 top-full left-0" style={{minWidth: '160px'}}>
-                                <button onClick={handleAddRow} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Add Row</button>
-                                <button onClick={handleCopyRows} disabled={numSelectedRows === 0} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50">Copy Selected ({numSelectedRows})</button>
-                                <button onClick={handleDeleteSelectedClick} disabled={numSelectedRows === 0 || isDeletingPlant} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50">
+                            <div ref={rowDropdownRef} className="absolute z-20 bg-component-background shadow-lg rounded-md border py-1 mt-2 top-full left-0" style={{minWidth: '160px'}}>
+                                <button onClick={handleAddRow} className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary">Add Row</button>
+                                <button onClick={handleCopyRows} disabled={numSelectedRows === 0} className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary disabled:opacity-50">Copy Selected ({numSelectedRows})</button>
+                                <button onClick={handleDeleteSelectedClick} disabled={numSelectedRows === 0 || isDeletingPlant} className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10 disabled:opacity-50">
                                     {isDeletingPlant ? 'Deleting...' : `Delete Selected (${numSelectedRows})`}
                                 </button>
-                                <div className="border-t my-1"></div>
-                                <button onClick={handleAutofitColumns} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Autofit Columns</button>
+                                <div className="border-t my-1 border-border"></div>
+                                <button onClick={handleAutofitColumns} className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary">Autofit Columns</button>
                             </div>
                         )}
                     </div>
 
                     {/* CSV Actions Dropdown */}
                     <div className="relative">
-                        <button onClick={() => setShowCsvDropdown(v => !v)} className="px-3 py-1.5 rounded-md bg-yellow-600 text-white hover:bg-yellow-700 text-sm">CSV</button>
+                        <button onClick={() => setShowCsvDropdown(v => !v)} className="px-3 py-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90 text-sm">CSV</button>
                         <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".csv" style={{ display: 'none' }} />
                         {showCsvDropdown && (
-                            <div ref={csvDropdownRef} className="absolute z-20 bg-white shadow-lg rounded-md border py-1 mt-2 top-full left-0" style={{minWidth: '160px'}}>
-                                <button onClick={handleImportClick} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Import from CSV</button>
-                                <button onClick={handleExportCsv} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Export to CSV</button>
+                            <div ref={csvDropdownRef} className="absolute z-20 bg-component-background shadow-lg rounded-md border py-1 mt-2 top-full left-0" style={{minWidth: '160px'}}>
+                                <button onClick={handleImportClick} className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary">Import from CSV</button>
+                                <button onClick={handleExportCsv} className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary">Export to CSV</button>
                             </div>
                         )}
                     </div>
                     {isSelectionMode && (
-                        <button onClick={() => { setIsSelectionMode(false); setRowSelection({}); }} className="px-3 py-1.5 rounded-md bg-gray-500 text-white hover:bg-gray-600 text-sm fast-shake-infinite">Done Selecting</button>
+                        <button onClick={() => { setIsSelectionMode(false); setRowSelection({}); }} className="px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 text-sm fast-shake-infinite">Done Selecting</button>
                     )}
                 </div>
-                <input type="text" placeholder="Global Search..." value={globalFilter} onChange={e => setGlobalFilter(e.target.value)} className="w-full md:w-auto px-2 py-1.5 border rounded-md text-sm" />
+                <input type="text" placeholder="Global Search..." value={globalFilter} onChange={e => setGlobalFilter(e.target.value)} className="w-full md:w-auto px-2 py-1.5 border border-border rounded-md text-sm bg-component-background text-foreground" />
             </div>
 
             {/* Status Message */}
-            {statusMessage && <p className={`text-sm my-2 ${statusMessage.type === 'error' ? 'text-red-600' : 'text-blue-600'}`}>{statusMessage.message}</p>}
+            {statusMessage && <p className={`text-sm my-2 ${statusMessage.type === 'error' ? 'text-destructive' : 'text-primary'}`}>{statusMessage.message}</p>}
 
             {/* View Controls */}
-            <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4 my-4 p-2 bg-gray-50 rounded-md">
+            <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4 my-4 p-2 bg-secondary rounded-md">
                 <div className="flex items-center space-x-2">
-                    <label htmlFor="view-select" className="text-sm font-medium">View:</label>
-                    <select id="view-select" value={selectedPresetName} onChange={(e) => setSelectedPresetName(e.target.value)} className="px-2 py-1 border rounded-md bg-white text-sm">
+                    <label htmlFor="view-select" className="text-sm font-medium text-foreground">View:</label>
+                    <select id="view-select" value={selectedPresetName} onChange={(e) => setSelectedPresetName(e.target.value)} className="px-2 py-1 border border-border rounded-md bg-component-background text-sm text-foreground">
                         {defaultPresets.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
                         {savedPresets.map(p => <option key={p.name} value={p.name}>{p.name} (Custom)</option>)}
                     </select>
                 </div>
-                <button onClick={() => modals.savePreset.open()} className="px-3 py-1.5 rounded-md bg-teal-600 text-white hover:bg-teal-700 text-sm">Save View</button>
+                <button onClick={() => modals.savePreset.open()} className="px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-sm">Save View</button>
                 {savedPresets.length > 0 && (
-                    <button onClick={() => modals.deletePreset.open(selectedPresetName)} disabled={defaultPresets.some(p => p.name === selectedPresetName)} className="px-3 py-1.5 rounded-md bg-red-500 text-white hover:bg-red-600 text-sm disabled:opacity-50">Delete View</button>
+                    <button onClick={() => modals.deletePreset.open(selectedPresetName)} disabled={defaultPresets.some(p => p.name === selectedPresetName)} className="px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 text-sm disabled:opacity-50">Delete View</button>
                 )}
                 <div className="relative">
-                    <button onClick={() => setShowColumnSelector(v => !v)} className="px-3 py-1.5 rounded-md bg-purple-600 text-white hover:bg-purple-700 text-sm">Select Columns</button>
+                    <button onClick={() => setShowColumnSelector(v => !v)} className="px-3 py-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90 text-sm">Select Columns</button>
                     {showColumnSelector && (
-                        <div ref={columnSelectorRef} className="absolute z-20 bg-white shadow-lg rounded-md border py-2 mt-2 top-full right-0 md:left-0 max-h-80 overflow-y-auto" style={{minWidth: '200px'}}>
+                        <div ref={columnSelectorRef} className="absolute z-20 bg-component-background shadow-lg rounded-md border py-2 mt-2 top-full right-0 md:left-0 max-h-80 overflow-y-auto" style={{minWidth: '200px'}}>
                             {table.getAllColumns().filter(c => c.getCanHide()).map(column => (
-                                <div key={column.id} className="px-4 py-1 flex items-center hover:bg-gray-100">
-                                    <input type="checkbox" checked={column.getIsVisible()} onChange={column.getToggleVisibilityHandler()} className="form-checkbox h-3 w-3 text-green-600 rounded mr-2" id={`toggle-${column.id}`} />
-                                    <label htmlFor={`toggle-${column.id}`} className="text-gray-700 text-sm cursor-pointer select-none">{typeof column.columnDef.header === 'string' ? column.columnDef.header : column.id}</label>
+                                <div key={column.id} className="px-4 py-1 flex items-center hover:bg-secondary">
+                                    <input type="checkbox" checked={column.getIsVisible()} onChange={column.getToggleVisibilityHandler()} className="form-checkbox h-3 w-3 text-primary rounded mr-2" id={`toggle-${column.id}`} />
+                                    <label htmlFor={`toggle-${column.id}`} className="text-foreground text-sm cursor-pointer select-none">{typeof column.columnDef.header === 'string' ? column.columnDef.header : column.id}</label>
                                 </div>
                             ))}
                         </div>
                     )}
                 </div>
-                <button onClick={() => setShowColumnFilters(v => !v)} className="px-3 py-1.5 rounded-md bg-blue-500 text-white hover:bg-blue-600 text-sm">
+                <button onClick={() => setShowColumnFilters(v => !v)} className="px-3 py-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90 text-sm">
                     {showColumnFilters ? 'Hide Filters' : 'Show Filters'}
                 </button>
             </div>
@@ -520,18 +520,18 @@ const BulkEditTable: React.FC = () => {
 
             {/* Table */}
             <div className="overflow-x-auto">
-                <table ref={tableRef} className="w-full text-xs text-left text-gray-500 table-fixed">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0 z-10">
+                <table ref={tableRef} className="w-full text-xs text-left text-muted-foreground table-fixed">
+                    <thead className="text-xs text-foreground uppercase bg-secondary sticky top-0 z-10">
                         {table.getHeaderGroups().map(headerGroup => (
                             <tr key={headerGroup.id}>
                                 {headerGroup.headers.map(header => (
-                                    <th key={header.id} scope="col" className="font-medium select-none relative px-2 py-1.5 border-b border-gray-200 bg-gray-50" style={{ width: header.getSize() }}>
+                                    <th key={header.id} scope="col" className="font-medium select-none relative px-2 py-1.5 border-b border-border bg-secondary" style={{ width: header.getSize() }}>
                                         <div onClick={header.column.getToggleSortingHandler()} className={header.column.getCanSort() ? 'cursor-pointer' : ''}>
                                             {flexRender(header.column.columnDef.header, header.getContext())}
                                             {{ asc: ' 🔼', desc: ' 🔽' }[header.column.getIsSorted() as string] ?? null}
                                         </div>
                                         {showColumnFilters && header.column.getCanFilter() && (
-                                            <input type="text" value={(header.column.getFilterValue() ?? '') as string} onChange={e => header.column.setFilterValue(e.target.value)} onClick={e => e.stopPropagation()} placeholder="Filter..." className="w-full mt-1 p-0.5 text-xs border rounded-sm" />
+                                            <input type="text" value={(header.column.getFilterValue() ?? '') as string} onChange={e => header.column.setFilterValue(e.target.value)} onClick={e => e.stopPropagation()} placeholder="Filter..." className="w-full mt-1 p-0.5 text-xs border border-border rounded-sm bg-component-background text-foreground" />
                                         )}
                                         {header.column.getCanResize() && (
                                             <div 
@@ -547,10 +547,10 @@ const BulkEditTable: React.FC = () => {
                     </thead>
                     <tbody>
                         {table.getRowModel().rows.map(row => (
-                            <tr key={row.id} className={`border-b select-none ${row.getIsSelected() ? 'bg-green-100' : (row.original.id <= 0 ? 'bg-blue-100' : 'bg-white')} hover:bg-gray-100`}
+                            <tr key={row.id} className={`border-b border-border select-none ${row.getIsSelected() ? 'bg-primary/20' : (row.original.id <= 0 ? 'bg-secondary' : 'bg-component-background')} hover:bg-secondary`}
                                 onPointerDown={(e) => handlePointerDown(row, e)} onPointerUp={handlePointerUp} onClick={(e) => handleRowClick(row, e)} onContextMenu={e => e.preventDefault()}>
                                 {row.getVisibleCells().map(cell => (
-                                    <td key={cell.id} className="whitespace-nowrap px-2 py-1 text-gray-900 border-b border-gray-200">{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                                    <td key={cell.id} className="whitespace-nowrap px-2 py-1 text-foreground border-b border-border">{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
                                 ))}
                             </tr>
                         ))}
