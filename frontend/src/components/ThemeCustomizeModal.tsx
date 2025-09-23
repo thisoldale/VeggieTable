@@ -70,12 +70,12 @@ const ThemeCustomizeModal: React.FC<ThemeCustomizeModalProps> = ({ isOpen, onClo
 
               <div className="mt-6 flex justify-between">
                 <div>
-                  <button onClick={() => handleReset('light')} className="px-4 py-2 text-sm rounded-md bg-interactive-secondary text-interactive-secondary-foreground mr-2">Reset to Light</button>
-                  <button onClick={() => handleReset('dark')} className="px-4 py-2 text-sm rounded-md bg-interactive-secondary text-interactive-secondary-foreground">Reset to Dark</button>
+                  <button onClick={() => handleReset('light')} className="px-4 py-2 text-sm rounded-md bg-secondary text-secondary-foreground mr-2 hover:bg-secondary/90">Reset to Light</button>
+                  <button onClick={() => handleReset('dark')} className="px-4 py-2 text-sm rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90">Reset to Dark</button>
                 </div>
                 <div>
-                  <button onClick={onClose} className="px-4 py-2 text-sm rounded-md bg-interactive-secondary text-interactive-secondary-foreground mr-2">Cancel</button>
-                  <button onClick={handleSave} className="px-4 py-2 text-sm rounded-md bg-interactive-primary text-interactive-primary-foreground">Save</button>
+                  <button onClick={onClose} className="px-4 py-2 text-sm rounded-md bg-secondary text-secondary-foreground mr-2 hover:bg-secondary/90">Cancel</button>
+                  <button onClick={handleSave} className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90">Save</button>
                 </div>
               </div>
             </Dialog.Panel>
