@@ -302,7 +302,7 @@ const BulkEditTable: React.FC = () => {
       longPressTriggered.current = true;
       setIsSelectionMode(true);
       row.toggleSelected(true);
-    }, 1000);
+    }, 2500);
   };
 
   const handlePointerUp = () => {
