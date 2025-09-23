@@ -20,8 +20,9 @@ export type Theme = {
 
 interface ThemeContextType {
   theme: Theme;
-  setTheme: (theme: Theme) => void;
-  resetToDefault: (themeName: 'light' | 'dark') => void;
+  setTheme: (themeName: string) => void;
+  saveTheme: (newTheme: Theme) => void;
+  themes: Theme[];
 }
 
 // --- Default Themes ---
@@ -62,54 +63,75 @@ export const defaultThemes: Record<'light' | 'dark', Theme> = {
   },
 };
 
-
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    const storedTheme = localStorage.getItem('theme');
-    if (storedTheme) {
+  const [themes, setThemes] = useState<Theme[]>(() => {
+    const storedThemes = localStorage.getItem('themes');
+    if (storedThemes) {
       try {
-        // Basic validation to ensure it's a theme object
-        const parsed = JSON.parse(storedTheme);
-        if (parsed && parsed.name && parsed.colors) {
+        const parsed = JSON.parse(storedThemes);
+        if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed;
         }
       } catch (e) {
-        localStorage.removeItem('theme');
+        localStorage.removeItem('themes');
       }
     }
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? defaultThemes.dark : defaultThemes.light;
+    return [defaultThemes.light, defaultThemes.dark];
   });
 
-  const setTheme = useCallback((newTheme: Theme) => {
-    localStorage.setItem('theme', JSON.stringify(newTheme));
-    setThemeState(newTheme);
-  }, []);
+  const [activeThemeName, setActiveThemeName] = useState<string>(() => {
+    const storedThemeName = localStorage.getItem('activeThemeName');
+    if (storedThemeName && themes.some(t => t.name === storedThemeName)) {
+      return storedThemeName;
+    }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
 
-  const resetToDefault = (themeName: 'light' | 'dark') => {
-    setTheme(defaultThemes[themeName]);
-  };
+  const theme = useMemo(() => themes.find(t => t.name === activeThemeName) || themes[0], [themes, activeThemeName]);
+
+  const setTheme = useCallback((themeName: string) => {
+    if (themes.some(t => t.name === themeName)) {
+      setActiveThemeName(themeName);
+      localStorage.setItem('activeThemeName', themeName);
+    }
+  }, [themes]);
+
+  const saveTheme = useCallback((newTheme: Theme) => {
+    setThemes(prevThemes => {
+      const existingIndex = prevThemes.findIndex(t => t.name === newTheme.name);
+      let newThemes;
+      if (existingIndex > -1) {
+        newThemes = [...prevThemes];
+        newThemes[existingIndex] = newTheme;
+      } else {
+        newThemes = [...prevThemes, newTheme];
+      }
+      localStorage.setItem('themes', JSON.stringify(newThemes));
+      return newThemes;
+    });
+    setTheme(newTheme.name);
+  }, [setTheme]);
 
   useEffect(() => {
     const root = window.document.documentElement;
-
-    for (const [key, value] of Object.entries(theme.colors)) {
+    if (theme) {
+      for (const [key, value] of Object.entries(theme.colors)) {
         const hslMatch = value.match(/hsl\(([^)]+)\)/);
         if (hslMatch) {
             root.style.setProperty(`--${key}`, hslMatch[1]);
-        } else {
-            // Handle hex or other formats if needed, convert to HSL numbers
-            // For now, assuming HSL
         }
+      }
     }
   }, [theme]);
 
   const contextValue = useMemo(() => ({
     theme,
     setTheme,
-    resetToDefault,
-  }), [theme, setTheme, resetToDefault]);
+    saveTheme,
+    themes,
+  }), [theme, setTheme, saveTheme, themes]);
 
   return (
     <ThemeContext.Provider value={contextValue}>
