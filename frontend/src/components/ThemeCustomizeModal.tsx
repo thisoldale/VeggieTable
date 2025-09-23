@@ -69,7 +69,7 @@ const ThemeCustomizeModal: React.FC<ThemeCustomizeModalProps> = ({ isOpen, onClo
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[50vh] overflow-y-auto p-2">
                 {Object.entries(customTheme.colors).map(([key, value]) => (
                   <div key={key} className="flex items-center justify-between">
-                    <label className="capitalize text-sm text-muted-foreground">
+                    <label className="capitalize text-sm text-foreground/80">
                       {key.replace(/-/g, ' ')}
                     </label>
                     <Popover className="relative">
@@ -88,20 +88,20 @@ const ThemeCustomizeModal: React.FC<ThemeCustomizeModalProps> = ({ isOpen, onClo
                 ))}
               </div>
 
-              <div className="mt-6 flex justify-between items-center">
-                <div className="flex items-center">
-                  <label htmlFor="theme-name" className="text-sm font-medium text-foreground mr-2">Theme Name:</label>
+              <div className="mt-6 flex flex-col space-y-4 md:flex-row md:space-y-0 md:justify-between md:items-center">
+                <div className="flex items-center w-full">
+                  <label htmlFor="theme-name" className="text-sm font-medium text-foreground mr-2 whitespace-nowrap">Theme Name:</label>
                   <input
                     id="theme-name"
                     type="text"
                     value={newThemeName}
                     onChange={(e) => setNewThemeName(e.target.value)}
-                    className="p-2 border border-border rounded-md bg-component-background"
+                    className="w-full p-2 border border-border rounded-md bg-component-background"
                     placeholder="Enter custom theme name..."
                   />
                 </div>
-                <div>
-                  <button onClick={onClose} className="px-4 py-2 text-sm rounded-md bg-secondary text-secondary-foreground mr-2 hover:bg-secondary/90">Cancel</button>
+                <div className="flex justify-end w-full space-x-2">
+                  <button onClick={onClose} className="px-4 py-2 text-sm rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90">Cancel</button>
                   <button onClick={handleSave} className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90">Save</button>
                 </div>
               </div>
