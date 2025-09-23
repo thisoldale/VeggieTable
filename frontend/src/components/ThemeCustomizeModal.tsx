@@ -60,9 +60,9 @@ const ThemeCustomizeModal: React.FC<ThemeCustomizeModalProps> = ({ isOpen, onClo
                   id="theme-select"
                   value={activeTheme.name}
                   onChange={(e) => handleThemeSelection(e.target.value)}
-                  className="w-full p-2 border border-border rounded-md bg-component-background"
+                  className="w-full p-2 border border-border rounded-md bg-component-background text-foreground"
                 >
-                  {themes.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
+                  {themes.map(t => <option key={t.name} value={t.name}>{t.name.charAt(0).toUpperCase() + t.name.slice(1)}</option>)}
                 </select>
               </div>
 
