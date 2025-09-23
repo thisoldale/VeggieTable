@@ -286,7 +286,7 @@ const BulkEditTable: React.FC = () => {
     if (!pointerStartPos.current) return;
     const dx = Math.abs(event.clientX - pointerStartPos.current.x);
     const dy = Math.abs(event.clientY - pointerStartPos.current.y);
-    if (dx > 10 || dy > 10) {
+    if (dx > 20 || dy > 20) {
       clearTimeout(longPressTimeout.current);
       pointerStartPos.current = null;
       window.removeEventListener('pointermove', handlePointerMove);

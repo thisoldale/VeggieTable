@@ -4,16 +4,9 @@
 
 Port 8444 is in use, trying another one...
 Port 8445 is in use, trying another one...
+Port 8446 is in use, trying another one...
 
-  VITE v5.4.19  ready in 586 ms
+  VITE v5.4.19  ready in 681 ms
 
-  ➜  Local:   http://localhost:8446/
-  ➜  Network: http://192.168.0.2:8446/
-Error: The following dependencies are imported but could not be resolved:
-
-  react-colorful (imported by /app/frontend/src/components/ThemeCustomizeModal.tsx)
-
-Are they installed?
-    at file:///app/frontend/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:50669:15
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async file:///app/frontend/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:50174:26
+  ➜  Local:   http://localhost:8447/
+  ➜  Network: http://192.168.0.2:8447/
