@@ -300,18 +300,19 @@ const CalendarView: React.FC = () => {
     try {
       if (item.type === 'task') {
         const task = item.data as Task;
-        await updateTask({ id: task.id, status: TaskStatus.COMPLETED, garden_plan_id: task.garden_plan_id });
+        await updateTask({ id: task.id, status: TaskStatus.COMPLETED, garden_plan_id: task.garden_plan_id }).unwrap();
       } else {
         const planting = item.data as Planting;
         let newStatus = planting.status;
         if (item.type === 'sow') newStatus = PlantingStatus.DIRECT_SOWN;
         if (item.type === 'transplant') newStatus = PlantingStatus.TRANSPLANTED;
         if (item.type === 'harvest') newStatus = PlantingStatus.HARVESTING;
-        await updatePlanting({ id: planting.id, status: newStatus });
+        await updatePlanting({ id: planting.id, status: newStatus }).unwrap();
       }
       refetch();
     } catch (err) {
       console.error("Failed to mark item as complete:", err);
+      toast.error("Failed to mark item as complete.");
     }
   };
   
@@ -319,14 +320,15 @@ const CalendarView: React.FC = () => {
     try {
       if (item.type === 'task') {
         const task = item.data as Task;
-        await updateTask({ id: task.id, status: TaskStatus.PENDING, garden_plan_id: task.garden_plan_id });
+        await updateTask({ id: task.id, status: TaskStatus.PENDING, garden_plan_id: task.garden_plan_id }).unwrap();
       } else {
         const planting = item.data as Planting;
-        await updatePlanting({ id: planting.id, status: PlantingStatus.PLANNED });
+        await updatePlanting({ id: planting.id, status: PlantingStatus.PLANNED }).unwrap();
       }
       refetch();
     } catch (err) {
       console.error("Failed to undo item status:", err);
+      toast.error("Failed to undo item status.");
     }
   };
 
@@ -336,13 +338,14 @@ const CalendarView: React.FC = () => {
 
     try {
       if (item.type === 'task') {
-        await deleteTask((item.data as Task).id);
+        await deleteTask((item.data as Task).id).unwrap();
       } else {
-        await deletePlanting((item.data as Planting).id);
+        await deletePlanting((item.data as Planting).id).unwrap();
       }
       refetch();
     } catch (err) {
       console.error("Failed to delete item:", err);
+      toast.error("Failed to delete item.");
     }
   };
 

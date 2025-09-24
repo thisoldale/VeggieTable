@@ -1,10 +1,14 @@
+
 import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
+
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
+
 import { useAuth } from './context/AuthContext';
 import VersionDisplay from './components/VersionDisplay';
+
 
 const LoginPage: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -16,6 +20,7 @@ const LoginPage: React.FC = () => {
 
     const from = location.state?.from?.pathname || "/";
 
+
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setIsLoading(true);
@@ -23,6 +28,7 @@ const LoginPage: React.FC = () => {
         const formData = new FormData();
         formData.append('username', username);
         formData.append('password', password);
+
 
         try {
             const response = await axios.post('/api/token', formData);
@@ -90,6 +96,12 @@ const LoginPage: React.FC = () => {
                         </Link>
                     </div>
                 </form>
+                <p className="text-center text-gray-500 text-xs mt-4">
+                    Don't have an account?{' '}
+                    <a href="/register" className="text-blue-500 hover:text-blue-800">
+                        Register
+                    </a>
+                </p>
             </div>
             <VersionDisplay />
         </div>

@@ -8,6 +8,7 @@ import TaskDetailModal from './components/TaskDetailModal';
 const TasksPage: React.FC = () => {
   const { activePlan } = usePlan();
   const { data: tasks, error, isLoading } = useGetTasksForPlanQuery(activePlan ? activePlan.id : 0, {
+
     skip: !activePlan,
   });
   const [addTask] = useAddTaskMutation();
@@ -36,10 +37,10 @@ const TasksPage: React.FC = () => {
 
     try {
       await addTask(taskPayload).unwrap();
-
       setNewTaskName('');
       setNewTaskDescription('');
       setNewTaskDueDate('');
+      refetch();
     } catch (err) {
       console.error("Failed to add task", err);
     }
@@ -52,7 +53,8 @@ const TasksPage: React.FC = () => {
 
   const handleDeleteTask = async (taskId: number) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
-      await deleteTask(taskId);
+      await deleteTask(taskId).unwrap();
+      refetch();
     }
   };
 
