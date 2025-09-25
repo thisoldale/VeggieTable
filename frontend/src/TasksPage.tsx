@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { usePlan } from './context/PlanContext';
 import { useGetTasksForPlanQuery, useAddTaskMutation, useUpdateTaskMutation, useDeleteTaskMutation } from './store/plantApi';
 import { Task, TaskStatus } from './types';
-import { format, startOfWeek } from 'date-fns';
+import { format, startOfWeek, endOfWeek } from 'date-fns';
 import TaskDetailModal from './components/TaskDetailModal';
 
 const TasksPage: React.FC = () => {
@@ -172,13 +172,21 @@ const TasksPage: React.FC = () => {
             <div>
               {Object.entries(groupTasksByWeek(tasks))
                 .sort(([weekA], [weekB]) => new Date(weekA).getTime() - new Date(weekB).getTime())
-                .map(([week, weekTasks]) => (
-                <div key={week} className="mb-6">
-                  <h3 className="text-lg font-semibold border-b-2 border-border pb-2 mb-3">
-                    Week of {format(new Date(week + 'T00:00:00'), 'MMM d, yyyy')}
-                  </h3>
-                  <ul className="space-y-4">
-                    {weekTasks.map(task => (
+                .map(([week, weekTasks]) => {
+                  const weekStart = new Date(week + 'T00:00:00');
+                  const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+                  const startMonth = format(weekStart, 'MMMM');
+                  const endMonth = format(weekEnd, 'MMMM');
+
+                  const title = startMonth === endMonth ? startMonth : `${startMonth}/${endMonth}`;
+
+                  return (
+                    <div key={week} className="mb-6">
+                      <h3 className="text-lg font-semibold border-b-2 border-border pb-2 mb-3">
+                        {title}
+                      </h3>
+                      <ul className="space-y-4">
+                        {weekTasks.map(task => (
                       <li key={task.id} className="flex items-center justify-between p-4 border border-border rounded-md hover:bg-secondary">
                         <div className="flex items-center flex-grow cursor-pointer" onClick={() => handleEditTask(task)}>
                           <div className="ml-4">
@@ -194,7 +202,8 @@ const TasksPage: React.FC = () => {
                     ))}
                   </ul>
                 </div>
-              ))}
+                  )
+                })}
             </div>
           ) : (
             viewMode === 'weekly' && !isLoading && <p className="text-center text-muted-foreground italic">No tasks for this plan yet.</p>
