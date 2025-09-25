@@ -142,7 +142,7 @@ const PlantingDetailPage: React.FC = () => {
   };
 
   if (isLoading) return <div className="p-8 text-center">Loading planting details...</div>;
-  if (queryError) return <div className="p-8 text-center text-red-500">Failed to load planting details.</div>;
+  if (queryError) return <div className="p-8 text-center text-destructive">Failed to load planting details.</div>;
   if (!planting) return <div className="p-8 text-center">Planting not found.</div>;
 
   const renderDetail = (key: keyof Plant, label: string) => {
@@ -151,8 +151,8 @@ const PlantingDetailPage: React.FC = () => {
     const displayValue = typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value);
     return (
       <div key={key} className="py-2">
-        <p className="font-bold text-gray-600">{label}</p>
-        <p className="text-gray-800">{displayValue}</p>
+        <p className="font-bold text-muted-foreground">{label}</p>
+        <p className="text-foreground">{displayValue}</p>
       </div>
     );
   };
@@ -172,9 +172,9 @@ const PlantingDetailPage: React.FC = () => {
             name={key}
             checked={!!value}
             onChange={handleInputChange}
-            className="form-checkbox h-5 w-5 text-green-600 rounded"
+            className="form-checkbox h-5 w-5 text-primary rounded"
           />
-          <label htmlFor={key} className="ml-2 text-gray-700">{label}</label>
+          <label htmlFor={key} className="ml-2 text-foreground">{label}</label>
         </div>
       );
     }
@@ -182,14 +182,14 @@ const PlantingDetailPage: React.FC = () => {
     if (key === 'notes_observations') {
         return (
              <div key={key} className="col-span-1 md:col-span-2 lg:col-span-3">
-                <label htmlFor={key} className="block text-sm font-medium text-gray-700">{label}</label>
+                <label htmlFor={key} className="block text-sm font-medium text-foreground">{label}</label>
                 <textarea
                   id={key}
                   name={key}
                   value={value as string || ''}
                   onChange={handleInputChange}
                   rows={4}
-                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                  className="mt-1 block w-full px-3 py-2 bg-component-background border border-border rounded-md shadow-sm focus:outline-none focus:ring-ring focus:border-ring sm:text-sm"
                 />
             </div>
         )
@@ -197,14 +197,14 @@ const PlantingDetailPage: React.FC = () => {
 
     return (
       <div key={key}>
-        <label htmlFor={key} className="block text-sm font-medium text-gray-700">{label}</label>
+        <label htmlFor={key} className="block text-sm font-medium text-foreground">{label}</label>
         <input
           type={type === 'number' ? 'number' : 'text'}
           id={key}
           name={key}
           value={value as string | number ?? ''}
           onChange={handleInputChange}
-          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+          className="mt-1 block w-full px-3 py-2 bg-component-background border border-border rounded-md shadow-sm focus:outline-none focus:ring-ring focus:border-ring sm:text-sm"
         />
       </div>
     );
@@ -224,82 +224,82 @@ const PlantingDetailPage: React.FC = () => {
   const nextStatusAction = getNextStatus(planting.status, planting.planting_method);
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <div className="bg-white rounded-lg shadow-lg max-w-6xl mx-auto p-8">
+    <div className="p-8 bg-background min-h-screen">
+      <div className="bg-component-background rounded-lg shadow-lg max-w-6xl mx-auto p-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6 border-b pb-4">
-            <h1 className="text-4xl font-bold text-green-700">{planting.plant_name} <span className="text-3xl text-green-600">{planting.variety_name}</span></h1>
+        <div className="flex justify-between items-center mb-6 border-b border-border pb-4">
+            <h1 className="text-4xl font-bold text-primary">{planting.plant_name} <span className="text-3xl text-primary/80">{planting.variety_name}</span></h1>
             <div className="flex items-center space-x-2">
                 {!isEditing && (
                     <>
                         {nextStatusAction && (
-                            <button onClick={handleAdvanceStatus} className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+                            <button onClick={handleAdvanceStatus} className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
                                 Mark as {nextStatusAction}
                             </button>
                         )}
-                        <button onClick={() => setIsDeleteModalOpen(true)} className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Delete</button>
+                        <button onClick={() => setIsDeleteModalOpen(true)} className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90">Delete</button>
                     </>
                 )}
                 {!isEditing ? (
-                  <button onClick={() => setIsEditing(true)} className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Edit</button>
+                  <button onClick={() => setIsEditing(true)} className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90">Edit</button>
                 ) : (
                   <div className="flex space-x-2">
-                    <button onClick={handleCancel} className="px-4 py-2 bg-gray-300 rounded-md">Cancel</button>
-                    <button onClick={handleSave} disabled={isUpdating} className="px-4 py-2 bg-green-600 text-white rounded-md disabled:opacity-50">
+                    <button onClick={handleCancel} className="px-4 py-2 bg-muted text-muted-foreground rounded-md">Cancel</button>
+                    <button onClick={handleSave} disabled={isUpdating} className="px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50">
                       {isUpdating ? 'Saving...' : 'Save'}
                     </button>
                   </div>
                 )}
             </div>
         </div>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
+        {error && <p className="text-destructive mb-4">{error}</p>}
 
         {/* Planting-Specific Fields */}
-        <div className="mb-8 p-4 border rounded-md bg-green-50">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Planting Details</h2>
+        <div className="mb-8 p-4 border border-border rounded-md bg-secondary/20">
+            <h2 className="text-xl font-semibold mb-4 text-foreground">Planting Details</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Status */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-500">Status</label>
+                    <label className="block text-sm font-medium text-muted-foreground">Status</label>
                     {isEditing ? (
-                        <select name="status" value={editedPlanting.status} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded-md">
+                        <select name="status" value={editedPlanting.status} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-component-background text-foreground">
                             {Object.values(PlantingStatus).map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                     ) : (
-                        <p className="mt-1">{planting.status}</p>
+                        <p className="mt-1 text-foreground">{planting.status}</p>
                     )}
                 </div>
                 {/* Quantity */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-500">Quantity</label>
+                    <label className="block text-sm font-medium text-muted-foreground">Quantity</label>
                     {isEditing ? (
                         <input
                             type="number"
                             name="quantity"
                             value={editedPlanting.quantity ?? 1}
                             onChange={handleInputChange}
-                            className="w-full p-2 border border-gray-300 rounded-md"
+                            className="w-full p-2 border border-border rounded-md bg-component-background text-foreground"
                         />
                     ) : (
-                        <p className="mt-1">{planting.quantity}</p>
+                        <p className="mt-1 text-foreground">{planting.quantity}</p>
                     )}
                 </div>
                 {/* Dates */}
                 {(planting.planting_method === PlantingMethod.DIRECT_SEEDING || planting.planting_method === PlantingMethod.SEED_STARTING) && (
                     <div>
-                        <label className="block text-sm font-medium text-gray-500">Sow Date</label>
-                        {isEditing ? ( <input type="date" name="planned_sow_date" value={editedPlanting.planned_sow_date || ''} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded-md"/> ) : ( <p className="mt-1">{planting.planned_sow_date}</p> )}
+                        <label className="block text-sm font-medium text-muted-foreground">Sow Date</label>
+                        {isEditing ? ( <input type="date" name="planned_sow_date" value={editedPlanting.planned_sow_date || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-component-background text-foreground"/> ) : ( <p className="mt-1 text-foreground">{planting.planned_sow_date}</p> )}
                     </div>
                 )}
                 {(planting.planting_method === PlantingMethod.SEEDLING || planting.planting_method === PlantingMethod.SEED_STARTING) && (
                     <div>
-                        <label className="block text-sm font-medium text-gray-500">Transplant Date</label>
-                        {isEditing ? ( <input type="date" name="planned_transplant_date" value={editedPlanting.planned_transplant_date || ''} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded-md"/> ) : ( <p className="mt-1">{planting.planned_transplant_date}</p> )}
+                        <label className="block text-sm font-medium text-muted-foreground">Transplant Date</label>
+                        {isEditing ? ( <input type="date" name="planned_transplant_date" value={editedPlanting.planned_transplant_date || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-component-background text-foreground"/> ) : ( <p className="mt-1 text-foreground">{planting.planned_transplant_date}</p> )}
                     </div>
                 )}
                  <div>
-                    <label className="block text-sm font-medium text-gray-500">Harvest Date</label>
-                    {isEditing ? ( <input type="date" name="planned_harvest_start_date" value={editedPlanting.planned_harvest_start_date || ''} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded-md"/> ) : ( <p className="mt-1">{planting.planned_harvest_start_date}</p> )}
+                    <label className="block text-sm font-medium text-muted-foreground">Harvest Date</label>
+                    {isEditing ? ( <input type="date" name="planned_harvest_start_date" value={editedPlanting.planned_harvest_start_date || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-component-background text-foreground"/> ) : ( <p className="mt-1 text-foreground">{planting.planned_harvest_start_date}</p> )}
                 </div>
             </div>
         </div>
@@ -308,22 +308,22 @@ const PlantingDetailPage: React.FC = () => {
         <div className="space-y-8">
             {Object.entries(fieldGroups).map(([groupTitle, fields]) => (
                 <div key={groupTitle}>
-                    <h2 className="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">{groupTitle}</h2>
+                    <h2 className="text-2xl font-semibold text-foreground mb-4 border-b border-border pb-2">{groupTitle}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4">
                         {fields.map(key => isEditing 
                             ? renderInputField(key as keyof Plant, key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
-                            : renderDetail(key as keyof Plant, key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
+                            : renderDetail(key as key of Plant, key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
                         )}
                     </div>
                 </div>
             ))}
             <div>
-                <div className="flex justify-between items-center mt-8 mb-4 border-b pb-2">
-                    <h2 className="text-2xl font-semibold text-gray-800">Weekly Yield Graph</h2>
+                <div className="flex justify-between items-center mt-8 mb-4 border-b border-border pb-2">
+                    <h2 className="text-2xl font-semibold text-foreground">Weekly Yield Graph</h2>
                 </div>
                 <div
                     onClick={() => setIsYieldModalOpen(true)}
-                    className="cursor-pointer p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                    className="cursor-pointer p-2 rounded-lg hover:bg-secondary/20 transition-colors duration-200"
                     title="Click to edit yield graph"
                 >
                     <YieldGraph weeklyYield={planting.weekly_yield} unit={planting.yield_units} />
