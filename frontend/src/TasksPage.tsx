@@ -63,7 +63,7 @@ const TasksPage: React.FC = () => {
     if (!tasks) return grouped;
     tasks.forEach(task => {
       if (task.due_date) {
-        const weekStart = startOfWeek(new Date(task.due_date + 'T00:00:00'), { weekStartsOn: 1 }); // week starts on Monday
+        const weekStart = startOfWeek(new Date(task.due_date.replace(/-/g, '/')), { weekStartsOn: 1 }); // week starts on Monday
         const weekKey = format(weekStart, 'yyyy-MM-dd');
         if (!grouped[weekKey]) {
           grouped[weekKey] = [];
@@ -173,7 +173,7 @@ const TasksPage: React.FC = () => {
               {Object.entries(groupTasksByWeek(tasks))
                 .sort(([weekA], [weekB]) => new Date(weekA).getTime() - new Date(weekB).getTime())
                 .map(([week, weekTasks]) => {
-                  const weekStart = new Date(week + 'T00:00:00');
+                  const weekStart = new Date(week.replace(/-/g, '/'));
                   const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
                   const startMonth = format(weekStart, 'MMMM');
                   const endMonth = format(weekEnd, 'MMMM');
