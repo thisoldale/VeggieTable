@@ -12,10 +12,18 @@ jobs:
   automerge:
     runs-on: ubuntu-latest
     steps:
-      - name: "Auto-merge Drafts"
+      # STEP 1: If the PR is a draft, mark it as "Ready for Review"
+      - name: 'Mark PR as Ready for Review'
+        if: github.event.pull_request.draft == true
+        run: gh pr ready ${{ github.event.pull_request.number }} --repo ${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # STEP 2: Now that the PR is ready, merge it.
+      - name: "Auto-merge"
         uses: pascalgn/automerge-action@v0.16.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MERGE_DRAFT: "1"        # ✅ allow merging drafts
-          MERGE_LABELS: ""        # no label required
-          MERGE_METHOD: "squash"  # or merge/rebase
+          MERGE_LABELS: ""
+          MERGE_METHOD: "squash"
+          
