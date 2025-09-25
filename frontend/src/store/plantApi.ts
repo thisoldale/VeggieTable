@@ -250,21 +250,6 @@ export const plantApi = createApi({
       invalidatesTags: (result, error, { groupId }) => [{ type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: 'LIST' }],
     }),
 
-    // --- Auth Endpoints ---
-    login: builder.mutation<{ access_token: string }, any>({
-        query: (credentials) => ({
-            url: 'token',
-            method: 'POST',
-            body: credentials,
-        }),
-    }),
-    register: builder.mutation<User, any>({
-        query: (userInfo) => ({
-            url: 'users/',
-            method: 'POST',
-            body: userInfo,
-        }),
-    }),
     importMappedPlants: builder.mutation<{ message: string }, { data: any[], mapping: Record<string, string> }>({
         query: (body) => ({
             url: 'plants/import-mapped',
@@ -306,33 +291,5 @@ export const {
   useDeleteTaskMutation,
   useUpdateTaskGroupMutation,
   useUnlinkTaskGroupMutation,
-  useLoginMutation,
-  useRegisterMutation,
   useImportMappedPlantsMutation,
 } = plantApi;
-
-console.log('Exporting from plantApi:', {
-    useGetPlantsQuery,
-    useGetPlantByIdQuery,
-    useAddPlantMutation,
-    useUpdatePlantMutation,
-    useDeletePlantMutation,
-    useImportPlantsMutation,
-    useGetGardenPlansQuery,
-    useGetGardenPlanByIdQuery,
-    useGetMostRecentGardenPlanQuery,
-    useAddGardenPlanMutation,
-    useDeleteGardenPlanMutation,
-    useTouchGardenPlanMutation,
-    useGetPlantingByIdQuery,
-    useAddPlantingMutation,
-    useUpdatePlantingMutation,
-    useDeletePlantingMutation,
-    useGetTasksForPlanQuery,
-    useAddTaskMutation,
-    useUpdateTaskMutation,
-    useDeleteTaskMutation,
-    useLoginMutation,
-    useRegisterMutation,
-    useImportMappedPlantsMutation,
-});

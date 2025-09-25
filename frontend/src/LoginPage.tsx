@@ -1,14 +1,10 @@
 
 import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-
 import toast from 'react-hot-toast';
-import axios from 'axios';
-
-
 import { useAuth } from './context/AuthContext';
+import { login as authLogin } from './api/authService';
 import VersionDisplay from './components/VersionDisplay';
-
 
 const LoginPage: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -16,26 +12,19 @@ const LoginPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
-    const { login } = useAuth();
+    const { login: contextLogin } = useAuth();
 
     const from = location.state?.from?.pathname || "/";
-
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setIsLoading(true);
 
-        const formData = new FormData();
-        formData.append('username', username);
-        formData.append('password', password);
-
-
         try {
-            const response = await axios.post('/api/token', formData);
-            const { access_token } = response.data;
+            const { access_token } = await authLogin({ username, password });
 
             toast.promise(
-                login(access_token),
+                contextLogin(access_token),
                 {
                     loading: 'Logging in...',
                     success: () => {
