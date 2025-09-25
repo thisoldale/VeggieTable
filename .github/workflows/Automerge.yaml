@@ -1,5 +1,6 @@
 name: Auto Merge Draft PRs
 
+# IMPORTANT: Use pull_request_target to give the action the necessary permissions.
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -11,15 +12,16 @@ jobs:
       - name: "Auto-merge Drafts"
         uses: "pascalgn/automerge-action@v0.16.2"
         env:
+          # Your GITHUB_TOKEN has the necessary permissions because we're using pull_request_target.
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
-          # This is the key setting. It tells the action it's allowed
-          # to convert draft PRs to "ready" and then merge them.
+          # Tells the action to take the PR out of draft state.
           MERGE_DRAFT: "true"
           
-          # We set MERGE_LABELS to empty because we want ALL drafts to be merged,
-          # not just ones with a specific label.
+          # IMPORTANT: Explicitly clear the label requirement.
+          # Without this, the action defaults to requiring a label and will not merge.
           MERGE_LABELS: ""
 
+          # Define your desired merge strategy.
           MERGE_METHOD: "squash"
           
