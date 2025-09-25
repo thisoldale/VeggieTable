@@ -1,0 +1,25 @@
+name: Auto Merge Draft PRs
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Auto-merge Drafts"
+        uses: "pascalgn/automerge-action@v0.16.2"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+          # This is the key setting. It tells the action it's allowed
+          # to convert draft PRs to "ready" and then merge them.
+          MERGE_DRAFT: "true"
+          
+          # We set MERGE_LABELS to empty because we want ALL drafts to be merged,
+          # not just ones with a specific label.
+          MERGE_LABELS: ""
+
+          MERGE_METHOD: "squash"
+          
