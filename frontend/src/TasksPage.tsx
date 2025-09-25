@@ -178,7 +178,12 @@ const TasksPage: React.FC = () => {
                   const startMonth = format(weekStart, 'MMMM');
                   const endMonth = format(weekEnd, 'MMMM');
 
-                  const title = startMonth === endMonth ? startMonth : `${startMonth}/${endMonth}`;
+                  let title;
+                  if (startMonth === endMonth) {
+                    title = startMonth;
+                  } else {
+                    title = `${startMonth}/${endMonth}`;
+                  }
 
                   return (
                     <div key={week} className="mb-6">
