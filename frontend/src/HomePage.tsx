@@ -75,6 +75,17 @@ const CalendarWeek: React.FC<{
     const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(week, i));
     const weeklyTasks = weekDays.flatMap(day => tasks[format(day, 'yyyy-MM-dd')] || []).sort((a, b) => a.date.getTime() - b.date.getTime());
     const isCurrent = isSameWeek(new Date(), week, { weekStartsOn: 0 });
+
+    const startMonth = format(week, 'MMMM');
+    const startYear = format(week, 'yyyy');
+    const endOfWeek = addDays(week, 6);
+    const endMonth = format(endOfWeek, 'MMMM');
+    const endYear = format(endOfWeek, 'yyyy');
+    const title = startMonth === endMonth
+        ? `${startMonth} ${startYear}`
+        : startYear === endYear
+            ? `${startMonth}/${endMonth} ${startYear}`
+            : `${startMonth} ${startYear}/${endMonth} ${endYear}`;
     
     const getTaskIcon = (type: CalendarItem['type']) => {
         switch (type) {
@@ -105,7 +116,7 @@ const CalendarWeek: React.FC<{
 
     return (
 <div className={`mb-8 p-4 rounded-lg transition-colors duration-300 ${isCurrent ? 'bg-primary/10' : 'bg-component-background'}`}>
-    <h2 className="text-xl font-bold mb-2">{format(week, 'MMMM yyyy')} - Week of {format(week, 'do')}</h2>
+    <h2 className="text-xl font-bold mb-2">{title}</h2>
     <div className="grid grid-cols-7 border-l border-b border-border rounded-lg">
                 {weekDays.map((day, index) => (
                     <CalendarDay key={day.toString()} day={day} dayIndex={index} onActionSelect={onActionSelect} />
