@@ -1,41 +1,36 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-
-import { useRegisterMutation } from './store/plantApi';
+import { register as authRegister } from './api/authService';
 import VersionDisplay from './components/VersionDisplay';
 
 const RegistrationPage: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
-    const [register, { isLoading }] = useRegisterMutation();
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        setError('');
+        setIsLoading(true);
 
-        const promise = register({ username, password }).unwrap();
-
-        toast.promise(promise, {
-            loading: 'Registering...',
-            success: () => {
-                navigate('/login');
-                return 'Successfully registered! Please login.';
-            },
-            error: (err) => {
-                if (err.data && err.data.detail) {
-                    // FastAPI validation errors are an array of objects
-                    if (Array.isArray(err.data.detail)) {
-                        return err.data.detail.map((d: any) => `${d.loc[1]} ${d.msg}`).join(', ');
-                    }
-                    // Other errors are a simple string
-                    return err.data.detail;
+        try {
+            await authRegister({ username, password });
+            toast.success('Successfully registered! Please login.');
+            navigate('/login');
+        } catch (error: any) {
+            let errorMessage = 'Failed to register. Please try another username.';
+            if (error.response && error.response.data && error.response.data.detail) {
+                if (Array.isArray(error.response.data.detail)) {
+                    errorMessage = error.response.data.detail.map((d: any) => `${d.loc[1]} ${d.msg}`).join(', ');
+                } else {
+                    errorMessage = error.response.data.detail;
                 }
-                return 'Failed to register. Please try another username.';
-            },
-        });
+            }
+            toast.error(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -69,7 +64,6 @@ const RegistrationPage: React.FC = () => {
                             required
                         />
                     </div>
-                    {error && <p className="text-destructive text-xs italic mb-4">{error}</p>}
                     <div className="flex items-center justify-between">
                         <button
                             type="submit"
