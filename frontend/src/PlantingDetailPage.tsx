@@ -312,7 +312,7 @@ const PlantingDetailPage: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4">
                         {fields.map(key => isEditing 
                             ? renderInputField(key as keyof Plant, key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
-                            : renderDetail(key as key of Plant, key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
+                            : renderDetail(key as keyof Plant, key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
                         )}
                     </div>
                 </div>
