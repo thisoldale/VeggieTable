@@ -4,13 +4,13 @@ import { LoginCredentials, RegistrationData } from '../types';
 const API_URL = '/api';
 
 export const login = async (credentials: LoginCredentials) => {
-    const formData = new FormData();
-    formData.append('username', credentials.username);
-    formData.append('password', credentials.password);
+    const params = new URLSearchParams();
+    params.append('username', credentials.username);
+    params.append('password', credentials.password);
 
-    const response = await axios.post(`${API_URL}/token`, formData, {
+    const response = await axios.post(`${API_URL}/token`, params, {
         headers: {
-            'Content-Type': 'multipart/form-data',
+            'Content-Type': 'application/x-www-form-urlencoded',
         },
     });
     return response.data;
