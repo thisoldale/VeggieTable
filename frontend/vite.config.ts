@@ -20,14 +20,12 @@ export default defineConfig({
       usePolling: true // Needed for hot-reloading in Docker containers on some OS
     },
     proxy: {
-      '/api': {
-        target: 'http://backend:8000',
-        changeOrigin: true,
-        // No rewrite rule needed if backend routes are under /api as well,
-        // but if your backend routes are at the root (e.g., /token),
-        // you need to rewrite.
-        // For this project, the backend routes are at the root.
-        rewrite: (path) => path.replace(/^\/api/, ''),
+      '/api': { // When the browser requests paths starting with /api
+        target: 'http://backend:8000', // <-- This is the INTERNAL Docker service URL
+        changeOrigin: true, // Changes the origin header to the target URL
+        rewrite: (path) => path.replace(/^\/api/, ''), // Rewrites /api/plants to /plants
+        // Configure WebSocket proxy if your backend uses WebSockets (e.g., for hot reloading)
+        ws: true,
       },
     },
   },
