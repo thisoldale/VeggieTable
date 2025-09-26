@@ -260,7 +260,7 @@ export const plantApi = createApi({
     }),
 
     // --- Version Endpoint ---
-    getBackendVersion: builder.query<{ version: string }, void>({
+    getBackendVersion: builder.query<{ version: string; build_date: string }, void>({
       query: () => 'version',
     }),
   }),

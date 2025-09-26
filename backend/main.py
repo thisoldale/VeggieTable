@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import datetime
 
 import models
 from database import engine
@@ -10,9 +11,11 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+build_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
 @app.get("/version")
 def read_version():
-    return {"version": __version__}
+    return {"version": __version__, "build_date": build_date}
 
 app.add_middleware(
     CORSMiddleware,
