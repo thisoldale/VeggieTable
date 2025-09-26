@@ -20,6 +20,7 @@ import { Plant, AppContextType, GardenPlan } from './types';
 import { useGetPlantsQuery, useUpdatePlantMutation, useAddPlantMutation, useDeletePlantMutation, useImportPlantsMutation, useGetMostRecentGardenPlanQuery, useImportMappedPlantsMutation } from './store/plantApi';
 import { useColumnPresets } from './hooks/useColumnPresets';
 import { useTableModals } from './hooks/useTableModals';
+import Toolbar from './components/Toolbar';
 
 import SavePresetModal from './components/SavePresetModal';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
@@ -67,8 +68,6 @@ const BulkEditTable: React.FC = () => {
   // --- UI State ---
   const [showColumnFilters, setShowColumnFilters] = useState(false);
   const [showColumnSelector, setShowColumnSelector] = useState(false);
-  const [showCsvDropdown, setShowCsvDropdown] = useState(false);
-  const [showRowDropdown, setShowRowDropdown] = useState(false);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   // --- Refs ---
@@ -79,8 +78,6 @@ const BulkEditTable: React.FC = () => {
   const longPressTriggered = useRef(false);
   const pointerStartPos = useRef<{ x: number; y: number } | null>(null);
   const columnSelectorRef = useRef<HTMLDivElement>(null);
-  const csvDropdownRef = useRef<HTMLDivElement>(null);
-  const rowDropdownRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLTableElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -213,7 +210,6 @@ const BulkEditTable: React.FC = () => {
     });
 
     setColumnSizing(newColumnSizing);
-    setShowRowDropdown(false);
   };
 
   // --- Row Actions ---
@@ -235,7 +231,6 @@ const BulkEditTable: React.FC = () => {
     };
     setData([newPlant, ...data]);
     setEditedRows(prev => ({ ...prev, [newPlant.id]: newPlant }));
-    setShowRowDropdown(false);
   };
 
   const handleCopyRows = () => {
@@ -252,7 +247,6 @@ const BulkEditTable: React.FC = () => {
     setData([...newRows, ...data]);
     setEditedRows(prev => ({ ...prev, ...newEditedRows }));
     setRowSelection({});
-    setShowRowDropdown(false);
   };
 
   const handleDeleteSelectedClick = () => {
@@ -261,7 +255,6 @@ const BulkEditTable: React.FC = () => {
     } else {
       alert("Please select at least one row to delete.");
     }
-    setShowRowDropdown(false);
   };
 
   const handleConfirmDeleteRows = async () => {
@@ -311,7 +304,6 @@ const BulkEditTable: React.FC = () => {
 
   // --- Import/Export ---
   const handleExportCsv = useCallback(() => {
-    setShowCsvDropdown(false);
     const visibleColumns = table.getAllLeafColumns().filter(c => c.getIsVisible() && c.id !== 'mobile-select');
     const exportData = table.getCoreRowModel().rows.map(row => {
       const rowData: Record<string, any> = {};
@@ -338,7 +330,6 @@ const BulkEditTable: React.FC = () => {
   }, [table]);
 
   const handleImportClick = () => {
-      setShowCsvDropdown(false);
       setIsCsvImportModalOpen(true);
   }
 
@@ -388,8 +379,6 @@ const BulkEditTable: React.FC = () => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (columnSelectorRef.current && !columnSelectorRef.current.contains(event.target as Node)) setShowColumnSelector(false);
-      if (csvDropdownRef.current && !csvDropdownRef.current.contains(event.target as Node)) setShowCsvDropdown(false);
-      if (rowDropdownRef.current && !rowDropdownRef.current.contains(event.target as Node)) setShowRowDropdown(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -408,51 +397,26 @@ const BulkEditTable: React.FC = () => {
 
         <div className="max-w-screen-xl mx-auto bg-component-background p-4 rounded-lg shadow-md">
             {/* Toolbar */}
-            <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-3 md:space-y-0">
-                <div className="flex items-center flex-wrap gap-2">
-                    <button onClick={handleSaveChanges} disabled={!hasUnsavedChanges || isSaving} className="px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-sm disabled:opacity-50">
-                        {isSaving ? 'Saving...' : 'Save Changes'}
-                    </button>
-                    
-                    <button onClick={handleOpenAddToPlan} disabled={numSelectedRows !== 1 || !recentPlan} className="px-3 py-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90 text-sm disabled:opacity-50">
-                        Add to Plan
-                    </button>
-
-                    {/* Row Actions Dropdown */}
-                    <div className="relative">
-                        <button onClick={() => setShowRowDropdown(v => !v)} className="px-3 py-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90 text-sm">More Actions</button>
-                        {showRowDropdown && (
-                            <div ref={rowDropdownRef} className="absolute z-20 bg-component-background shadow-lg rounded-md border py-1 mt-2 top-full left-0" style={{minWidth: '160px'}}>
-                                <button onClick={handleAddRow} className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary">Add Row</button>
-                                <button onClick={handleCopyRows} disabled={numSelectedRows === 0} className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary disabled:opacity-50">Copy Selected ({numSelectedRows})</button>
-                                <button onClick={handleDeleteSelectedClick} disabled={numSelectedRows === 0 || isDeletingPlant} className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10 disabled:opacity-50">
-                                    {isDeletingPlant ? 'Deleting...' : `Delete Selected (${numSelectedRows})`}
-                                </button>
-                                <div className="border-t my-1 border-border"></div>
-                                <button onClick={handleAutofitColumns} className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary">Autofit Columns</button>
-                                <div className="border-t my-1 border-border"></div>
-                                <button onClick={() => setIsSelectionMode(true)} className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary">Select Rows</button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* CSV Actions Dropdown */}
-                    <div className="relative">
-                        <button onClick={() => setShowCsvDropdown(v => !v)} className="px-3 py-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90 text-sm">CSV</button>
-                        <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".csv" style={{ display: 'none' }} />
-                        {showCsvDropdown && (
-                            <div ref={csvDropdownRef} className="absolute z-20 bg-component-background shadow-lg rounded-md border py-1 mt-2 top-full left-0" style={{minWidth: '160px'}}>
-                                <button onClick={handleImportClick} className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary">Import from CSV</button>
-                                <button onClick={handleExportCsv} className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-secondary">Export to CSV</button>
-                            </div>
-                        )}
-                    </div>
-                    {isSelectionMode && (
-                        <button onClick={() => { setIsSelectionMode(false); setRowSelection({}); }} className="px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 text-sm fast-shake-infinite">Done Selecting</button>
-                    )}
-                </div>
-                <input type="text" placeholder="Global Search..." value={globalFilter} onChange={e => setGlobalFilter(e.target.value)} className="w-full md:w-auto px-2 py-1.5 border border-border rounded-md text-sm bg-component-background text-foreground" />
-            </div>
+            <Toolbar
+                handleSaveChanges={handleSaveChanges}
+                hasUnsavedChanges={hasUnsavedChanges}
+                isSaving={isSaving}
+                handleOpenAddToPlan={handleOpenAddToPlan}
+                numSelectedRows={numSelectedRows}
+                recentPlan={recentPlan}
+                handleAddRow={handleAddRow}
+                handleCopyRows={handleCopyRows}
+                handleDeleteSelectedClick={handleDeleteSelectedClick}
+                isDeletingPlant={isDeletingPlant}
+                handleAutofitColumns={handleAutofitColumns}
+                isSelectionMode={isSelectionMode}
+                setIsSelectionMode={setIsSelectionMode}
+                setRowSelection={setRowSelection}
+                handleImportClick={handleImportClick}
+                handleExportCsv={handleExportCsv}
+                globalFilter={globalFilter}
+                setGlobalFilter={setGlobalFilter}
+            />
 
             {/* Status Message */}
             {statusMessage && <p className={`text-sm my-2 ${statusMessage.type === 'error' ? 'text-destructive' : 'text-primary'}`}>{statusMessage.message}</p>}
