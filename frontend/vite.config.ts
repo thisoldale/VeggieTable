@@ -12,7 +12,7 @@ export default defineConfig({
   plugins: [react()],
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(packageJson.version),
-    'import.meta.env.VITE_APP_BUILD_DATE': JSON.stringify(new Date().toLocaleString()),
+    'import.meta.env.VITE_APP_BUILD_DATE': JSON.stringify(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })),
   },
   server: {
     host: true, // This makes the Vite server accessible from outside the container via IP
