@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import datetime
+import pytz
 
 import models
 from database import engine
@@ -11,7 +12,8 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-build_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+la_tz = pytz.timezone('America/Los_Angeles')
+build_date = datetime.datetime.now(la_tz).strftime("%Y-%m-%d %H:%M:%S %Z")
 
 @app.get("/version")
 def read_version():
