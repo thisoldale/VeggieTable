@@ -6,6 +6,7 @@ import { useGetGardenPlanByIdQuery, useDeleteGardenPlanMutation } from './store/
 import { usePlan } from './context/PlanContext';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
 import { format } from 'date-fns';
+import { exportToCsv, exportToHtml } from './utils/export';
 
 const GardenPlanDetailPage: React.FC = () => {
   const { planId } = useParams<{ planId: string }>();
@@ -71,16 +72,32 @@ const GardenPlanDetailPage: React.FC = () => {
               <h1 className="text-4xl font-bold text-primary">{plan.name}</h1>
               <p className="text-muted-foreground mt-2 text-lg">{plan.description}</p>
             </div>
-            <button 
-              onClick={() => setIsDeletePlanModalOpen(true)}
-              className="p-2 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors disabled:opacity-50"
-              disabled={isDeleting}
-              aria-label="Delete plan"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-            </button>
+            <div className="flex items-center space-x-4">
+                <button
+                    onClick={() => plan && exportToCsv(plan.plantings, plan.name)}
+                    className="px-4 py-2 rounded-md bg-interactive-secondary text-interactive-secondary-foreground hover:bg-interactive-secondary/90"
+                    disabled={!plan || plan.plantings.length === 0}
+                >
+                    Export to CSV
+                </button>
+                <button
+                    onClick={() => plan && exportToHtml(plan.name, plan.plantings)}
+                    className="px-4 py-2 rounded-md bg-interactive-secondary text-interactive-secondary-foreground hover:bg-interactive-secondary/90"
+                    disabled={!plan || plan.plantings.length === 0}
+                >
+                    Export to HTML
+                </button>
+                <button
+                onClick={() => setIsDeletePlanModalOpen(true)}
+                className="p-2 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors disabled:opacity-50"
+                disabled={isDeleting}
+                aria-label="Delete plan"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            </div>
           </div>
         </div>
 
