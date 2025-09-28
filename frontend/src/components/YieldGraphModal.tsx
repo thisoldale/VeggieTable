@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Plant } from '../types';
+import { useTheme } from '../context/ThemeContext';
+import { hslToHex } from '../utils/colors';
 import {
   LineChart,
   Line,
@@ -26,10 +28,24 @@ interface DataPoint {
 }
 
 const YieldGraphModal: React.FC<YieldGraphModalProps> = ({ isOpen, onClose, plant, onSave }) => {
+  const { theme } = useTheme();
   const [data, setData] = useState<DataPoint[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [activeDotIndex, setActiveDotIndex] = useState<number | null>(null);
   const chartRef = useRef<any>(null);
+
+  // Theme colors
+  const primaryColor = hslToHex(theme.colors.primary);
+  const primaryForegroundColor = hslToHex(theme.colors['primary-foreground']);
+  const secondaryColor = hslToHex(theme.colors.secondary);
+  const secondaryForegroundColor = hslToHex(theme.colors['secondary-foreground']);
+  const destructiveColor = hslToHex(theme.colors.destructive);
+  const destructiveForegroundColor = hslToHex(theme.colors['destructive-foreground']);
+  const textColor = hslToHex(theme.colors.foreground);
+  const mutedTextColor = hslToHex(theme.colors['muted-foreground']);
+  const backgroundColor = hslToHex(theme.colors.background);
+  const componentBackgroundColor = hslToHex(theme.colors['component-background']);
+  const gridColor = hslToHex(theme.colors.border);
 
   useEffect(() => {
     if (isOpen && plant) {
@@ -134,15 +150,15 @@ const YieldGraphModal: React.FC<YieldGraphModalProps> = ({ isOpen, onClose, plan
         cx={cx}
         cy={cy}
         r={8}
-        fill="#22c55e"
-        stroke="#ffffff"
+        fill={primaryColor}
+        stroke={componentBackgroundColor}
         strokeWidth={2}
         onMouseDown={(e) => handleMouseDown(e, index)}
         style={{ cursor: 'grab' }}
       />
     );
   };
-  
+
   const yAxisLabel = plant?.yield_units || 'Yield';
 
   return (
@@ -171,23 +187,27 @@ const YieldGraphModal: React.FC<YieldGraphModalProps> = ({ isOpen, onClose, plan
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-4xl max-h-[90vh] transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all flex flex-col">
+              <Dialog.Panel className="w-full max-w-4xl max-h-[90vh] transform overflow-hidden rounded-lg bg-component-background p-6 text-left align-middle shadow-xl transition-all flex flex-col">
                 <div className="h-96">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }} ref={chartRef}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="week" label={{ value: 'Week', position: 'insideBottom', offset: -5 }} />
-                      <YAxis label={{ value: yAxisLabel, angle: -90, position: 'insideLeft' }} domain={[0, 'dataMax + 1']} />
-                      <Tooltip formatter={(value) => [`${value} ${yAxisLabel}`, "Yield"]} />
-                      <Legend />
-                      <Line type="monotone" dataKey="yield" name={yAxisLabel} stroke="#8884d8" strokeWidth={2} dot={<CustomDot />} />
+                      <CartesianGrid stroke={gridColor} strokeDasharray="3 3" />
+                      <XAxis dataKey="week" stroke={textColor} label={{ value: 'Week', position: 'insideBottom', offset: -5, fill: textColor }} />
+                      <YAxis stroke={textColor} label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', fill: textColor }} domain={[0, 'dataMax + 1']} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: componentBackgroundColor, border: `1px solid ${gridColor}` }}
+                        labelStyle={{ color: textColor }}
+                        formatter={(value) => [`${value} ${yAxisLabel}`, "Yield"]}
+                      />
+                      <Legend wrapperStyle={{ color: textColor }}/>
+                      <Line type="monotone" dataKey="yield" name={yAxisLabel} stroke={primaryColor} strokeWidth={2} dot={<CustomDot />} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
                 
                 <Dialog.Title
                   as="h3"
-                  className="text-2xl font-bold my-4 text-gray-800 text-center"
+                  className="text-2xl font-bold my-4 text-foreground text-center"
                 >
                   Edit Weekly Yield for {plant?.plant_name}
                 </Dialog.Title>
@@ -196,12 +216,12 @@ const YieldGraphModal: React.FC<YieldGraphModalProps> = ({ isOpen, onClose, plan
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                         {data.map((point, index) => (
                             <div key={index} className="flex flex-col">
-                                <label className="text-sm font-medium text-gray-600">Week {point.week}</label>
+                                <label className="text-sm font-medium text-muted-foreground">Week {point.week}</label>
                                 <input
                                     type="number"
                                     value={point.yield}
                                     onChange={(e) => handleInputChange(index, e.target.value)}
-                                    className="p-1 border border-gray-300 rounded-md"
+                                    className="p-1 border border-border rounded-md bg-background text-foreground"
                                     step="0.1"
                                 />
                             </div>
@@ -209,14 +229,14 @@ const YieldGraphModal: React.FC<YieldGraphModalProps> = ({ isOpen, onClose, plan
                     </div>
                 </div>
 
-                <div className="flex-shrink-0 flex justify-between items-center mt-4 pt-4 border-t">
+                <div className="flex-shrink-0 flex justify-between items-center mt-4 pt-4 border-t border-border">
                     <div className="flex gap-2">
-                        <button onClick={handleAddWeek} disabled={data.length >= 26} className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400">Add Week</button>
-                        <button onClick={handleRemoveWeek} disabled={data.length === 0} className="px-4 py-2 rounded-md bg-yellow-500 text-white hover:bg-yellow-600 disabled:bg-gray-400">Remove Week</button>
+                        <button onClick={handleAddWeek} disabled={data.length >= 26} className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50">Add Week</button>
+                        <button onClick={handleRemoveWeek} disabled={data.length === 0} className="px-4 py-2 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50">Remove Week</button>
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={onClose} className="px-4 py-2 rounded-md bg-gray-300 text-gray-800 hover:bg-gray-400">Cancel</button>
-                        <button onClick={handleSave} className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700">Save Yield</button>
+                        <button onClick={onClose} className="px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90">Cancel</button>
+                        <button onClick={handleSave} className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">Save Yield</button>
                     </div>
                 </div>
               </Dialog.Panel>

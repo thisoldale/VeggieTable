@@ -9,6 +9,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import { useTheme } from '../context/ThemeContext';
+import { hslToHex } from '../utils/colors';
 
 interface YieldGraphProps {
   weeklyYield: string | null | undefined;
@@ -16,7 +18,12 @@ interface YieldGraphProps {
 }
 
 const YieldGraph: React.FC<YieldGraphProps> = ({ weeklyYield, unit }) => {
-  // Clean and parse the data robustly, just like in the modal.
+  const { theme } = useTheme();
+  const primaryColor = hslToHex(theme.colors.primary);
+  const textColor = hslToHex(theme.colors.foreground);
+  const gridColor = hslToHex(theme.colors.border);
+
+  // Clean and parse the data robustly.
   const cleanedYieldData = (weeklyYield || '').replace(/^\[|\]$/g, '');
   const data = cleanedYieldData
     .split(';')
@@ -27,7 +34,7 @@ const YieldGraph: React.FC<YieldGraphProps> = ({ weeklyYield, unit }) => {
     }));
 
   if (data.length === 0) {
-    return <p className="text-gray-500 italic">No weekly yield data available to display.</p>;
+    return <p className="text-muted-foreground italic">No weekly yield data available to display.</p>;
   }
 
   const yAxisLabel = unit || 'Yield';
@@ -43,12 +50,16 @@ const YieldGraph: React.FC<YieldGraphProps> = ({ weeklyYield, unit }) => {
           bottom: 5,
         }}
       >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="week" />
-        <YAxis label={{ value: yAxisLabel, angle: -90, position: 'insideLeft' }} />
-        <Tooltip formatter={(value) => [`${value} ${yAxisLabel}`, "Yield"]} />
-        <Legend />
-        <Line type="monotone" dataKey="yield" name={yAxisLabel} stroke="#8884d8" activeDot={{ r: 8 }} />
+        <CartesianGrid stroke={gridColor} strokeDasharray="3 3" />
+        <XAxis dataKey="week" stroke={textColor} />
+        <YAxis label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', fill: textColor }} stroke={textColor} />
+        <Tooltip
+          formatter={(value) => [`${value} ${yAxisLabel}`, "Yield"]}
+          contentStyle={{ backgroundColor: hslToHex(theme.colors['component-background']), border: `1px solid ${gridColor}` }}
+          labelStyle={{ color: textColor }}
+        />
+        <Legend wrapperStyle={{ color: textColor }} />
+        <Line type="monotone" dataKey="yield" name={yAxisLabel} stroke={primaryColor} activeDot={{ r: 8 }} />
       </LineChart>
     </ResponsiveContainer>
   );
