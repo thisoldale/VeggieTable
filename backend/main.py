@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import datetim
+import datetime
 import pytz
 import models
 from database import engine
