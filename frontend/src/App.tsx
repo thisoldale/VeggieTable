@@ -17,6 +17,7 @@ import GardenPlanDetailPage from './GardenPlanDetailPage';
 import PlantingDetailPage from './PlantingDetailPage';
 import HomePage from './HomePage';
 import TasksPage from './TasksPage';
+import SettingsPage from './SettingsPage';
 import { DirtyContext } from './DirtyContext';
 import { PlanProvider, usePlan } from './context/PlanContext';
 import ChangePlanModal from './components/ChangePlanModal';
@@ -83,6 +84,16 @@ function SideMenu() {
             <li className="mb-4">
               <Link to="/bulk-edit" className="block p-2 text-xl hover:bg-black/10 rounded transition duration-200">
                 Plant Library
+              </Link>
+            </li>
+          </ul>
+        </nav>
+        <div className="border-t border-primary-foreground/20 my-4"></div>
+        <nav>
+          <ul>
+            <li className="mb-4">
+              <Link to="/settings" className="block p-2 text-xl hover:bg-black/10 rounded transition duration-200">
+                Settings
               </Link>
             </li>
           </ul>
@@ -177,6 +188,7 @@ function AppLayout() {
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { SettingsProvider } from './context/SettingsContext';
 import LoginPage from './LoginPage';
 import RegistrationPage from './RegistrationPage';
 import { Toaster } from 'react-hot-toast';
@@ -230,6 +242,10 @@ const router = createBrowserRouter([
         path: "plantings/:plantingId",
         element: <PlantingDetailPage />,
       },
+      {
+        path: "settings",
+        element: <SettingsPage />,
+      },
     ],
   },
   {
@@ -246,10 +262,12 @@ function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <PlanProvider>
-          <Toaster position="top-center" reverseOrder={false} />
-          <RouterProvider router={router} />
-        </PlanProvider>
+        <SettingsProvider>
+          <PlanProvider>
+            <Toaster position="top-center" reverseOrder={false} />
+            <RouterProvider router={router} />
+          </PlanProvider>
+        </SettingsProvider>
       </ThemeProvider>
     </AuthProvider>
   );

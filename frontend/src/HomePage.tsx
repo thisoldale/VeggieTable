@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { usePlan } from './context/PlanContext';
+import { useSettings } from './context/SettingsContext';
 import { useGetGardenPlanByIdQuery, useGetMostRecentGardenPlanQuery, useUpdatePlantingMutation, useUpdateTaskMutation, useDeletePlantingMutation, useDeleteTaskMutation } from './store/plantApi';
 import { Plant, Planting, PlantingMethod, GardenPlan, Task, TaskStatus, PlantingStatus } from './types';
 import { format, addDays, startOfWeek, addWeeks, subWeeks, isSameDay, isToday, isSameWeek } from 'date-fns';
@@ -71,10 +72,11 @@ const CalendarWeek: React.FC<{
     onComplete: (item: CalendarItem) => void;
     onUndo: (item: CalendarItem) => void;
     onDelete: (item: CalendarItem) => void;
-}> = ({ week, tasks, onActionSelect, onItemClick, onComplete, onUndo, onDelete }) => {
+    weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+}> = ({ week, tasks, onActionSelect, onItemClick, onComplete, onUndo, onDelete, weekStartsOn }) => {
     const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(week, i));
     const weeklyTasks = weekDays.flatMap(day => tasks[format(day, 'yyyy-MM-dd')] || []).sort((a, b) => a.date.getTime() - b.date.getTime());
-    const isCurrent = isSameWeek(new Date(), week, { weekStartsOn: 0 });
+    const isCurrent = isSameWeek(new Date(), week, { weekStartsOn });
 
     const startMonth = format(week, 'MMMM');
     const startYear = format(week, 'yyyy');
@@ -163,6 +165,7 @@ const CalendarWeek: React.FC<{
 
 const CalendarView: React.FC = () => {
   const { activePlan, clearActivePlan } = usePlan();
+  const { settings } = useSettings();
   const { data: fullActivePlan, isLoading, error, refetch, originalArgs } = useGetGardenPlanByIdQuery(activePlan!.id, { skip: !activePlan });
   const [updatePlanting] = useUpdatePlantingMutation();
   const [updateTask] = useUpdateTaskMutation();
@@ -192,10 +195,10 @@ const CalendarView: React.FC = () => {
 
   useEffect(() => {
     const today = new Date();
-    const startDate = startOfWeek(subWeeks(today, 2));
+    const startDate = startOfWeek(subWeeks(today, 2), { weekStartsOn: settings.weekStartsOn });
     const initialWeeks = Array.from({ length: 10 }).map((_, i) => addWeeks(startDate, i));
     setWeeks(initialWeeks);
-  }, []);
+  }, [settings.weekStartsOn]);
 
   useEffect(() => {
     if (fullActivePlan) {
@@ -374,6 +377,7 @@ const CalendarView: React.FC = () => {
             onComplete={handleComplete}
             onUndo={handleUndo}
             onDelete={handleDelete}
+            weekStartsOn={settings.weekStartsOn}
         />
       ))}
       <div ref={loaderRef} className="h-10">
