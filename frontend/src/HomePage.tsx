@@ -131,26 +131,30 @@ const CalendarWeek: React.FC<{
                         {weeklyTasks.map(item => {
                             const itemIsComplete = isComplete(item);
                             return (
-<li key={item.id} className="text-sm flex items-center justify-between p-1 rounded-md hover:bg-component-background transition-colors">
-    <div className={`flex items-center cursor-pointer flex-grow ${itemIsComplete ? 'line-through text-muted-foreground' : ''}`} onClick={() => onItemClick(item)}>
-                                        <span className="font-medium w-24 flex-shrink-0">{format(item.date, 'EEE, MMM d')}:</span>
-                                        <span className="font-medium mr-2 text-primary">
-                                            {getTaskIcon(item.type)} {item.type.charAt(0).toUpperCase() + item.type.slice(1)}:
-                                        </span> 
-        <span>
-                                          {item.name}
-          {item.type === 'task' && <span className="text-muted-foreground text-xs ml-2">({(item.data as Task).status})</span>}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center space-x-2 ml-4 flex-shrink-0">
-                                        {itemIsComplete ? (
+<li key={item.id} className="text-sm flex flex-col md:flex-row md:items-baseline justify-between p-2 rounded-md hover:bg-component-background transition-colors">
+    <div className={`flex items-baseline cursor-pointer flex-grow ${itemIsComplete ? 'line-through text-muted-foreground' : ''}`} onClick={() => onItemClick(item)}>
+        <span className="font-medium w-24 flex-shrink-0">{format(item.date, 'EEE, MMM d')}:</span>
+        <div className="flex flex-col ml-2">
+            <div className="flex items-baseline">
+                <span className="font-medium mr-2 text-primary">
+                    {getTaskIcon(item.type)} {item.type.charAt(0).toUpperCase() + item.type.slice(1)}:
+                </span>
+                <span>
+                    {item.name}
+                    {item.type === 'task' && <span className="text-muted-foreground text-xs ml-2">({(item.data as Task).status})</span>}
+                </span>
+            </div>
+        </div>
+    </div>
+    <div className="flex items-center space-x-2 md:ml-4 mt-2 md:mt-0 self-end md:self-center flex-shrink-0">
+        {itemIsComplete ? (
             <button onClick={(e) => { e.stopPropagation(); onUndo(item); }} className="px-2 py-1 text-xs bg-interactive-secondary text-interactive-secondary-foreground rounded hover:bg-interactive-secondary/90">Undo</button>
-                                        ) : (
+        ) : (
             <button onClick={(e) => { e.stopPropagation(); onComplete(item); }} className="px-2 py-1 text-xs bg-interactive-primary text-interactive-primary-foreground rounded hover:bg-interactive-primary/90">Done</button>
-                                        )}
+        )}
         <button onClick={(e) => { e.stopPropagation(); onDelete(item); }} className="px-2 py-1 text-xs bg-interactive-destructive text-interactive-destructive-foreground rounded hover:bg-interactive-destructive/90">Delete</button>
-                                    </div>
-                                </li>
+    </div>
+</li>
                             );
                         })}
                     </ul>
