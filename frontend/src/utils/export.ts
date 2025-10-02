@@ -1,5 +1,5 @@
 // This file will contain the export functionality for garden plans.
-import { Planting } from '../types';
+import { Planting, PlantingStatus } from '../types';
 import Papa from 'papaparse';
 
 function downloadFile(content: string, fileName: string, contentType: string) {
@@ -41,13 +41,40 @@ export const exportToCsv = (plantings: Planting[], planName: string) => {
  * @param plantings - The array of plantings to export.
  */
 export const exportToHtml = (planName: string, plantings: Planting[]) => {
-  const plantingsHtml = plantings.map(p => `
+  // Separate plantings for Harvest section
+  const harvestPlantings = plantings.filter(p =>
+    p.status === PlantingStatus.HARVESTING || p.status === PlantingStatus.DONE
+  );
+
+  // Other plantings, sorted by planned sow date
+  const regularPlantings = plantings
+    .filter(p => p.status !== PlantingStatus.HARVESTING && p.status !== PlantingStatus.DONE)
+    .sort((a, b) => {
+      if (a.planned_sow_date && b.planned_sow_date) {
+        return new Date(a.planned_sow_date).getTime() - new Date(b.planned_sow_date).getTime();
+      }
+      return 0;
+    });
+
+  const regularPlantingsHtml = regularPlantings.map(p => `
     <tr>
       <td>${p.plant_name}</td>
       <td>${p.variety_name || 'N/A'}</td>
       <td>${p.quantity}</td>
       <td>${p.status}</td>
+      <td>${p.planting_method || 'N/A'}</td>
       <td>${p.planned_sow_date || 'N/A'}</td>
+      <td>${p.planned_transplant_date || 'N/A'}</td>
+    </tr>
+  `).join('');
+
+  const harvestPlantingsHtml = harvestPlantings.map(p => `
+    <tr>
+      <td>${p.plant_name}</td>
+      <td>${p.variety_name || 'N/A'}</td>
+      <td>${p.quantity}</td>
+      <td>${p.status}</td>
+      <td>${p.planned_harvest_start_date || 'N/A'}</td>
     </tr>
   `).join('');
 
@@ -61,30 +88,55 @@ export const exportToHtml = (planName: string, plantings: Planting[]) => {
       <style>
         body { font-family: sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 800px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
-        h1 { color: #2E7D32; }
+        h1, h2 { color: #2E7D32; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
         th { background-color: #f2f2f2; }
         tr:nth-child(even) { background-color: #f9f9f9; }
+        .section { margin-top: 40px; }
       </style>
     </head>
     <body>
       <div class="container">
         <h1>${planName}</h1>
-        <table>
-          <thead>
-            <tr>
-              <th>Plant Name</th>
-              <th>Variety</th>
-              <th>Quantity</th>
-              <th>Status</th>
-              <th>Planned Sow Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${plantingsHtml}
-          </tbody>
-        </table>
+
+        <div class="section">
+          <h2>Plantings</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Plant Name</th>
+                <th>Variety</th>
+                <th>Quantity</th>
+                <th>Status</th>
+                <th>Planting Method</th>
+                <th>Planned Sow Date</th>
+                <th>Planned Transplant Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${regularPlantingsHtml}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <h2>Harvest</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Plant Name</th>
+                <th>Variety</th>
+                <th>Quantity</th>
+                <th>Status</th>
+                <th>Planned Harvest Start Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${harvestPlantingsHtml}
+            </tbody>
+          </table>
+        </div>
       </div>
     </body>
     </html>
