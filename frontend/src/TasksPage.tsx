@@ -4,6 +4,7 @@ import { useGetTasksForPlanQuery, useAddTaskMutation, useUpdateTaskMutation, use
 import { Task, TaskStatus } from './types';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import TaskDetailModal from './components/TaskDetailModal';
+import { Trash2 } from 'lucide-react';
 
 const TasksPage: React.FC = () => {
   const { activePlan } = usePlan();
@@ -192,7 +193,7 @@ const TasksPage: React.FC = () => {
                       </h3>
                       <ul className="space-y-4">
                         {weekTasks.map(task => (
-                      <li key={task.id} className="flex items-center justify-between p-4 border border-border rounded-md hover:bg-secondary">
+                      <li key={task.id} className="group flex items-center justify-between p-4 border border-border rounded-md hover:bg-secondary">
                         <div className="flex items-center flex-grow cursor-pointer" onClick={() => handleEditTask(task)}>
                           <div className="ml-4">
                             <p className={`font-semibold ${task.status === TaskStatus.COMPLETED ? 'line-through text-muted-foreground' : ''}`}>{task.name}</p>
@@ -201,7 +202,7 @@ const TasksPage: React.FC = () => {
                           </div>
                         </div>
                         <button onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }} className="text-destructive hover:text-destructive/90 text-sm font-medium ml-4">
-                          Delete
+                          <Trash2 size={20} />
                         </button>
                       </li>
                     ))}
@@ -225,7 +226,7 @@ const TasksPage: React.FC = () => {
                   </h3>
                   <ul className="space-y-2">
                     {dayTasks.map(task => (
-                      <li key={task.id} className="flex items-center justify-between p-2 border border-border rounded-md hover:bg-secondary">
+                      <li key={task.id} className="group flex items-center justify-between p-2 border border-border rounded-md hover:bg-secondary">
                         <div className="flex items-center flex-grow cursor-pointer" onClick={() => handleEditTask(task)}>
                           <div className="ml-2">
                             <p className={`font-semibold ${task.status === TaskStatus.COMPLETED ? 'line-through text-muted-foreground' : ''}`}>{task.name}</p>
@@ -233,7 +234,7 @@ const TasksPage: React.FC = () => {
                           </div>
                         </div>
                         <button onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }} className="text-destructive hover:text-destructive/90 text-sm font-medium ml-4">
-                          Delete
+                          <Trash2 size={20} />
                         </button>
                       </li>
                     ))}
