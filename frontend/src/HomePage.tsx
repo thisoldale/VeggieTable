@@ -6,6 +6,7 @@ import { useGetGardenPlanByIdQuery, useGetMostRecentGardenPlanQuery, useUpdatePl
 import { Plant, Planting, PlantingMethod, GardenPlan, Task, TaskStatus, PlantingStatus } from './types';
 import { format, addDays, startOfWeek, addWeeks, subWeeks, isSameDay, isToday, isSameWeek } from 'date-fns';
 import { Popover, Transition } from '@headlessui/react';
+import { CheckSquare, Square, Trash2 } from 'lucide-react';
 import PlantSelectionModal from './components/PlantSelectionModal';
 import AddToPlanModal from './components/AddToPlanModal';
 import TaskDetailModal from './components/TaskDetailModal';
@@ -88,7 +89,7 @@ const CalendarWeek: React.FC<{
         : startYear === endYear
             ? `${startMonth}/${endMonth} ${startYear}`
             : `${startMonth} ${startYear}/${endMonth} ${endYear}`;
-    
+
     const getTaskIcon = (type: CalendarItem['type']) => {
         switch (type) {
             case 'sow': return '🌱';
@@ -116,48 +117,75 @@ const CalendarWeek: React.FC<{
         }
     };
 
+    type GroupedTasks = Record<string, {
+        Tasks: CalendarItem[];
+        Plant: CalendarItem[];
+        Harvest: CalendarItem[];
+    }>;
+
+    const groupedTasks = weeklyTasks.reduce((acc, item) => {
+        const dateKey = format(item.date, 'yyyy-MM-dd');
+        if (!acc[dateKey]) {
+            acc[dateKey] = { 'Tasks': [], 'Plant': [], 'Harvest': [] };
+        }
+
+        const category = item.type === 'task' ? 'Tasks' : (item.type === 'harvest' ? 'Harvest' : 'Plant');
+        acc[dateKey][category].push(item);
+        return acc;
+    }, {} as GroupedTasks);
+
+
     return (
-<div className={`mb-8 p-4 rounded-lg transition-colors duration-300 ${isCurrent ? 'bg-primary/10' : 'bg-component-background'}`}>
-    <h2 className="text-xl font-bold mb-2">{title}</h2>
-    <div className="grid grid-cols-7 border-l border-b border-border rounded-lg">
+        <div className={`mb-8 p-4 rounded-lg transition-colors duration-300 ${isCurrent ? 'bg-primary/10' : 'bg-component-background'}`}>
+            <h2 className="text-xl font-bold mb-2">{title}</h2>
+            <div className="grid grid-cols-7 border-l border-b border-border rounded-lg">
                 {weekDays.map((day, index) => (
                     <CalendarDay key={day.toString()} day={day} dayIndex={index} onActionSelect={onActionSelect} />
                 ))}
             </div>
-    <div className="p-4 bg-secondary border-l border-r border-b border-border rounded-b-lg -mt-2">
-        <h3 className="font-semibold mb-2">This Week's Actions</h3>
+            <div className="p-4 bg-secondary border-l border-r border-b border-border rounded-b-lg -mt-2">
                 {weeklyTasks.length > 0 ? (
-                    <ul className="space-y-1">
-                        {weeklyTasks.map(item => {
-                            const itemIsComplete = isComplete(item);
-                            return (
-<li key={item.id} className="text-sm flex flex-col md:flex-row md:items-baseline justify-between p-2 rounded-md hover:bg-component-background transition-colors">
-    <div className={`flex items-baseline cursor-pointer flex-grow ${itemIsComplete ? 'line-through text-muted-foreground' : ''}`} onClick={() => onItemClick(item)}>
-        <span className="font-medium w-24 flex-shrink-0">{format(item.date, 'EEE, MMM d')}:</span>
-        <div className="flex flex-col ml-2">
-            <div className="flex items-baseline">
-                <span className="font-medium mr-2 text-primary">
-                    {getTaskIcon(item.type)} {item.type.charAt(0).toUpperCase() + item.type.slice(1)}:
-                </span>
-                <span>
-                    {item.name}
-                    {item.type === 'task' && <span className="text-muted-foreground text-xs ml-2">({(item.data as Task).status})</span>}
-                </span>
-            </div>
-        </div>
-    </div>
-    <div className="flex items-center space-x-2 md:ml-4 mt-2 md:mt-0 self-end md:self-center flex-shrink-0">
-        {itemIsComplete ? (
-            <button onClick={(e) => { e.stopPropagation(); onUndo(item); }} className="px-2 py-1 text-xs bg-interactive-secondary text-interactive-secondary-foreground rounded hover:bg-interactive-secondary/90">Undo</button>
-        ) : (
-            <button onClick={(e) => { e.stopPropagation(); onComplete(item); }} className="px-2 py-1 text-xs bg-interactive-primary text-interactive-primary-foreground rounded hover:bg-interactive-primary/90">Done</button>
-        )}
-        <button onClick={(e) => { e.stopPropagation(); onDelete(item); }} className="px-2 py-1 text-xs bg-interactive-destructive text-interactive-destructive-foreground rounded hover:bg-interactive-destructive/90">Delete</button>
-    </div>
-</li>
-                            );
-                        })}
-                    </ul>
+                    <div className="space-y-4">
+                        {Object.entries(groupedTasks).map(([date, categories]) => (
+                            <div key={date}>
+                                <h3 className="font-semibold text-lg mb-2">{format(new Date(date + 'T00:00:00'), 'EEE, MMM d')}</h3>
+                                {Object.entries(categories).map(([category, items]) => {
+                                    if (items.length === 0) return null;
+                                    return (
+                                        <div key={category} className="ml-4">
+                                            <h4 className="font-medium text-primary my-1">{category}</h4>
+                                            <ul className="space-y-1">
+                                                {items.map(item => {
+                                                    const itemIsComplete = isComplete(item);
+                                                    return (
+                                                        <li key={item.id} className="text-sm flex items-center justify-between p-2 rounded-md hover:bg-component-background transition-colors group">
+                                                            <div className="flex items-center flex-grow cursor-pointer" onClick={() => itemIsComplete ? onUndo(item) : onComplete(item)}>
+                                                                {itemIsComplete ? <CheckSquare className="h-5 w-5 text-primary mr-3 flex-shrink-0" /> : <Square className="h-5 w-5 text-muted-foreground mr-3 flex-shrink-0" />}
+                                                                <div className={`flex items-baseline ${itemIsComplete ? 'line-through text-muted-foreground' : ''}`} >
+                                                                    <span className="font-medium mr-2 text-primary">
+                                                                        {getTaskIcon(item.type)}
+                                                                    </span>
+                                                                    <span onClick={(e) => { e.stopPropagation(); onItemClick(item); }} className="hover:underline">
+                                                                        {item.name}
+                                                                        {(item.type === 'sow' || item.type === 'transplant') && ` (${item.type})`}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center space-x-2 ml-4">
+                                                                <button onClick={(e) => { e.stopPropagation(); onDelete(item); }} className="text-muted-foreground hover:text-interactive-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </button>
+                                                            </div>
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ))}
+                    </div>
                 ) : (
                     <p className="text-sm text-muted-foreground italic">No actions planned for this week.</p>
                 )}
