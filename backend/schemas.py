@@ -6,27 +6,6 @@ from datetime import date, datetime
 from models import PlantingStatus, PlantingMethod, TaskStatus, HarvestMethod
 import enum
 
-# --- Token Schemas ---
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-class TokenData(BaseModel):
-    username: Optional[str] = None
-
-# --- User Schemas ---
-from pydantic import Field, EmailStr
-
-class UserBase(BaseModel):
-    username: str = Field(..., min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_.-]+$")
-    email: EmailStr
-
-class UserCreate(UserBase):
-    password: str = Field(..., min_length=8)
-
-class User(UserBase):
-    id: int
-    model_config = ConfigDict(from_attributes=True)
 
 # --- Helper function for creating update schemas ---
 def make_optional(model: Type[BaseModel]) -> Type[BaseModel]:
@@ -202,7 +181,6 @@ GardenPlanUpdate = make_optional(GardenPlanBase)
 
 class GardenPlan(GardenPlanBase):
     id: int
-    owner_id: int
     created_date: date
     last_accessed_date: datetime
     plantings: List[Planting] = []

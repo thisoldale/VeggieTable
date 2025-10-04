@@ -6,26 +6,6 @@ from datetime import datetime
 from models import Base
 
 import models, schemas
-import security
-
-# --- User CRUD ---
-def get_user(db: Session, username: str):
-    return db.query(models.User).filter(models.User.username == username).first()
-
-def get_user_by_email(db: Session, email: str):
-    return db.query(models.User).filter(models.User.email == email).first()
-
-def create_user(db: Session, user: schemas.UserCreate):
-    hashed_password = security.get_password_hash(user.password)
-    db_user = models.User(
-        username=user.username,
-        email=user.email,
-        hashed_password=hashed_password
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
 
 # --- Generic Helpers ---
 def _get_by_id(db: Session, model: Type[Base], item_id: int) -> Optional[Base]:
@@ -114,10 +94,9 @@ def get_garden_plan_by_id(db: Session, plan_id: int):
         .first()
     )
 
-def get_all_garden_plans(db: Session, user_id: int, skip: int = 0, limit: int = 100):
+def get_all_garden_plans(db: Session, skip: int = 0, limit: int = 100):
     return (
         db.query(models.GardenPlan)
-        .filter(models.GardenPlan.owner_id == user_id)
         .options(*_get_garden_plan_load_options())
         .order_by(desc(models.GardenPlan.last_accessed_date))
         .offset(skip)
@@ -125,8 +104,8 @@ def get_all_garden_plans(db: Session, user_id: int, skip: int = 0, limit: int = 
         .all()
     )
     
-def create_garden_plan(db: Session, plan: schemas.GardenPlanCreate, user_id: int):
-    db_plan = models.GardenPlan(**plan.model_dump(), owner_id=user_id)
+def create_garden_plan(db: Session, plan: schemas.GardenPlanCreate):
+    db_plan = models.GardenPlan(**plan.model_dump())
     db.add(db_plan)
     db.commit()
     db.refresh(db_plan)
@@ -141,10 +120,9 @@ def delete_garden_plan_by_id(db: Session, plan_id: int):
     return False
 
 # THIS IS THE CORRECTED FUNCTION
-def get_most_recent_garden_plan(db: Session, user_id: int):
+def get_most_recent_garden_plan(db: Session):
     return (
         db.query(models.GardenPlan)
-        .filter(models.GardenPlan.owner_id == user_id)
         .options(*_get_garden_plan_load_options())
         .order_by(desc(models.GardenPlan.last_accessed_date))
         .first()
