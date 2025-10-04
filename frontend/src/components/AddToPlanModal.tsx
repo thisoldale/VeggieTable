@@ -84,6 +84,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
   const watchedPlantingMethod = watch('plantingMethod');
   const watchedHarvestMethod = watch('harvestMethod');
   const watchedTimeToMaturity = watch('timeToMaturity');
+  const watchedDaysToTransplant = watch('daysToTransplant');
   const previousPlantingMethod = usePrevious(watchedPlantingMethod);
 
   useEffect(() => {
@@ -112,11 +113,41 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
   
   useEffect(() => {
     if (previousPlantingMethod && previousPlantingMethod !== watchedPlantingMethod) {
-      setValue('sowDate', '');
-      setValue('transplantDate', '');
-      setValue('harvestDate', '');
+      const [sowDate, transplantDate, harvestDate] = watchedDates;
+
+      let anchorField: string | null = null;
+      // Determine anchor date, giving precedence to sow date, then transplant, then harvest.
+      if (sowDate) {
+          anchorField = 'planned_sow_date';
+      } else if (transplantDate) {
+          anchorField = 'planned_transplant_date';
+      } else if (harvestDate) {
+          anchorField = 'planned_harvest_start_date';
+      }
+
+      if (anchorField) {
+        const currentValues = {
+            planned_sow_date: sowDate,
+            planned_transplant_date: transplantDate,
+            planned_harvest_start_date: harvestDate,
+            time_to_maturity: watchedTimeToMaturity,
+            days_to_transplant_high: watchedDaysToTransplant,
+        };
+
+        const newDates = calculateDates(currentValues, anchorField, watchedPlantingMethod);
+
+        if (newDates.planned_sow_date !== sowDate) {
+            setValue('sowDate', newDates.planned_sow_date || '');
+        }
+        if (newDates.planned_transplant_date !== transplantDate) {
+            setValue('transplantDate', newDates.planned_transplant_date || '');
+        }
+        if (newDates.planned_harvest_start_date !== harvestDate) {
+            setValue('harvestDate', newDates.planned_harvest_start_date || '');
+        }
+      }
     }
-  }, [watchedPlantingMethod, previousPlantingMethod, setValue]);
+  }, [watchedPlantingMethod, previousPlantingMethod, setValue, watchedDates, watchedTimeToMaturity, watchedDaysToTransplant]);
 
   const parseDays = (timeValue: string | number | null | undefined): number | null => {
       if (timeValue === null || timeValue === undefined) return null;
