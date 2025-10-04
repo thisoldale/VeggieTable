@@ -89,6 +89,12 @@ class PlantingMethod(str, enum.Enum):
     DIRECT_SEEDING = "Direct Seeding"
     SEEDLING = "Seedling"
 
+class HarvestMethod(str, enum.Enum):
+    SINGLE_HARVEST = "Single Harvest"
+    CUT_AND_COME_AGAIN = "Cut and Come Again"
+    STAGGERED = "Staggered"
+    CONTINUOUS = "Continuous"
+
 class PlantingStatus(str, enum.Enum):
     PLANNED = "Planned"
     STARTED = "Started"
@@ -108,9 +114,12 @@ class Planting(Base):
     quantity: Mapped[int] = mapped_column(Integer, default=1)
     status: Mapped[PlantingStatus] = mapped_column(Enum(PlantingStatus), default=PlantingStatus.PLANNED)
     planting_method: Mapped[Optional[PlantingMethod]] = mapped_column(Enum(PlantingMethod), nullable=True)
+    harvest_method: Mapped[Optional[HarvestMethod]] = mapped_column(Enum(HarvestMethod), nullable=True)
     planned_sow_date: Mapped[Optional[datetime]] = mapped_column(Date, nullable=True)
     planned_transplant_date: Mapped[Optional[datetime]] = mapped_column(Date, nullable=True)
     planned_harvest_start_date: Mapped[Optional[datetime]] = mapped_column(Date, nullable=True)
+    planned_harvest_end_date: Mapped[Optional[datetime]] = mapped_column(Date, nullable=True)
+    planned_second_harvest_date: Mapped[Optional[datetime]] = mapped_column(Date, nullable=True)
     time_to_maturity_override: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     # --- Fields copied from Plant library record at creation time ---
