@@ -113,9 +113,10 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
   
   useEffect(() => {
     if (previousPlantingMethod && previousPlantingMethod !== watchedPlantingMethod) {
-      const [sowDate, transplantDate, harvestDate] = watchedDates;
+      let [sowDate, transplantDate, harvestDate] = watchedDates; // Use let to allow modification
 
       let anchorField: string | null = null;
+
       // Determine anchor date, giving precedence to sow date, then transplant, then harvest.
       if (sowDate) {
           anchorField = 'planned_sow_date';
@@ -125,7 +126,19 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
           anchorField = 'planned_harvest_start_date';
       }
 
-      if (anchorField) {
+      // If no date is set, create a default anchor date
+      if (!anchorField) {
+        const today = format(new Date(), 'yyyy-MM-dd');
+        if (watchedPlantingMethod === PlantingMethod.SEEDLING) {
+            anchorField = 'planned_transplant_date';
+            transplantDate = today; // We'll use this updated local value for calculation
+        } else { // SEED_STARTING or DIRECT_SEEDING
+            anchorField = 'planned_sow_date';
+            sowDate = today; // We'll use this updated local value for calculation
+        }
+      }
+
+      if (anchorField) { // This will now always be true if we entered the top if
         const currentValues = {
             planned_sow_date: sowDate,
             planned_transplant_date: transplantDate,
@@ -136,13 +149,13 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
 
         const newDates = calculateDates(currentValues, anchorField, watchedPlantingMethod);
 
-        if (newDates.planned_sow_date !== sowDate) {
+        if (newDates.planned_sow_date !== watchedDates[0]) {
             setValue('sowDate', newDates.planned_sow_date || '');
         }
-        if (newDates.planned_transplant_date !== transplantDate) {
+        if (newDates.planned_transplant_date !== watchedDates[1]) {
             setValue('transplantDate', newDates.planned_transplant_date || '');
         }
-        if (newDates.planned_harvest_start_date !== harvestDate) {
+        if (newDates.planned_harvest_start_date !== watchedDates[2]) {
             setValue('harvestDate', newDates.planned_harvest_start_date || '');
         }
       }
