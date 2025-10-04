@@ -7,10 +7,13 @@ services:
     ports:
       - "8445:8000" # Correct mapping: Host 8445 to Container's Uvicorn 8000
     volumes:
-      - ./backend:/app      # <-- ADD THIS LINE to mount your backend code
-      - db_data:/app/data   # This line is for the persistent database
+      - ./backend:/app
+      - db_data:/app/data
     environment:
       - DATABASE_URL=sqlite:///./data/gardening.db
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
     restart: "unless-stopped"
     networks:
       - garden_net

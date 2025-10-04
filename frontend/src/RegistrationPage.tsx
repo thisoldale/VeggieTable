@@ -6,6 +6,7 @@ import VersionDisplay from './components/VersionDisplay';
 
 const RegistrationPage: React.FC = () => {
     const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
@@ -15,7 +16,7 @@ const RegistrationPage: React.FC = () => {
         setIsLoading(true);
 
         try {
-            await authRegister({ username, password });
+            await authRegister({ username, email, password });
             toast.success('Successfully registered! Please login.');
             navigate('/login');
         } catch (error: any) {
@@ -47,6 +48,19 @@ const RegistrationPage: React.FC = () => {
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
+                            className="shadow appearance-none border border-border rounded w-full py-2 px-3 bg-component-background leading-tight focus:outline-none focus:ring-2 focus:ring-ring"
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-muted-foreground text-sm font-bold mb-2" htmlFor="email">
+                            Email
+                        </label>
+                        <input
+                            id="email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             className="shadow appearance-none border border-border rounded w-full py-2 px-3 bg-component-background leading-tight focus:outline-none focus:ring-2 focus:ring-ring"
                             required
                         />
