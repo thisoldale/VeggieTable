@@ -3,7 +3,7 @@
 from pydantic import BaseModel, ConfigDict, create_model
 from typing import Optional, List, Type
 from datetime import date, datetime
-from models import PlantingStatus, PlantingMethod, TaskStatus
+from models import PlantingStatus, PlantingMethod, TaskStatus, HarvestMethod
 import enum
 
 # --- Token Schemas ---
@@ -152,8 +152,11 @@ class Planting(PlantBase):
     planned_sow_date: Optional[date] = None
     planned_transplant_date: Optional[date] = None
     planned_harvest_start_date: Optional[date] = None
+    planned_harvest_end_date: Optional[date] = None
+    planned_second_harvest_date: Optional[date] = None
     time_to_maturity_override: Optional[int] = None
     planting_method: Optional[PlantingMethod] = None
+    harvest_method: Optional[HarvestMethod] = None
     tasks: List[Task] = []
     model_config = ConfigDict(from_attributes=True)
 
@@ -162,10 +165,13 @@ class PlantingCreate(BaseModel):
     quantity: int = 1
     status: PlantingStatus = PlantingStatus.PLANNED
     planting_method: Optional[PlantingMethod] = None
+    harvest_method: Optional[HarvestMethod] = None
     time_to_maturity_override: Optional[int] = None
     planned_sow_date: Optional[date] = None
     planned_transplant_date: Optional[date] = None
     planned_harvest_start_date: Optional[date] = None
+    planned_harvest_end_date: Optional[date] = None
+    planned_second_harvest_date: Optional[date] = None
 
 PlantingUpdateSchema = make_optional(Planting)
 

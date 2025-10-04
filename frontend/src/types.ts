@@ -71,6 +71,13 @@ export enum PlantingMethod {
     SEEDLING = "Seedling",
 }
 
+export enum HarvestMethod {
+    SINGLE_HARVEST = "Single Harvest",
+    CUT_AND_COME_AGAIN = "Cut and Come Again",
+    STAGGERED = "Staggered",
+    CONTINUOUS = "Continuous",
+}
+
 export enum LogActionType {
     SOW_SEEDS = "Sow Seeds",
     TRANSPLANT = "Transplant",
@@ -102,8 +109,11 @@ export interface Planting extends Plant {
     planned_sow_date?: string | null;
     planned_transplant_date?: string | null;
     planned_harvest_start_date?: string | null;
+    planned_harvest_end_date?: string | null;
+    planned_second_harvest_date?: string | null;
     time_to_maturity_override?: number | null;
     planting_method?: PlantingMethod | null;
+    harvest_method?: HarvestMethod | null;
     tasks: Task[];
 }
 
@@ -112,10 +122,13 @@ export interface PlantingCreatePayload {
   quantity: number;
   status: PlantingStatus;
   planting_method?: PlantingMethod | null;
+  harvest_method?: HarvestMethod | null;
   time_to_maturity_override?: number | null;
   planned_sow_date?: string;
   planned_transplant_date?: string;
   planned_harvest_start_date?: string;
+  planned_harvest_end_date?: string;
+  planned_second_harvest_date?: string;
 }
 
 export interface GardenPlan {
