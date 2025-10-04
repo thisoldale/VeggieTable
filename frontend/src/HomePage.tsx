@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
 import { usePlan } from './context/PlanContext';
 import { useSettings } from './context/SettingsContext';
 import { useGetGardenPlanByIdQuery, useGetMostRecentGardenPlanQuery, useUpdatePlantingMutation, useUpdateTaskMutation, useDeletePlantingMutation, useDeleteTaskMutation } from './store/plantApi';
@@ -447,12 +446,11 @@ const CalendarView: React.FC = () => {
 
 const HomePage: React.FC = () => {
   const { activePlan, setActivePlan } = usePlan();
-  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  // This query will only run if there's no activePlan in the context yet, and the user is authenticated.
+  // This query will only run if there's no activePlan in the context yet.
   const { data: mostRecentPlan, isLoading, isError } = useGetMostRecentGardenPlanQuery(undefined, {
-      skip: !!activePlan || !isAuthenticated,
+      skip: !!activePlan,
   });
 
   useEffect(() => {

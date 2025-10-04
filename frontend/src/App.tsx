@@ -33,18 +33,12 @@ function SideMenu() {
   const [isChangePlanModalOpen, setChangePlanModalOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const navigate = useNavigate();
-  const { logout } = useAuth();
 
   const openChangePlanModal = () => setChangePlanModalOpen(true);
   const closeChangePlanModal = () => setChangePlanModalOpen(false);
 
   const handleCreatePlanClick = () => {
     navigate('/plans');
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
   };
 
   return (
@@ -108,12 +102,6 @@ function SideMenu() {
             </button>
           </div>
           <VersionDisplay />
-          <button
-            onClick={handleLogout}
-            className="w-full text-left p-2 text-xl hover:bg-black/10 rounded transition duration-200"
-          >
-            Logout
-          </button>
         </div>
       </div>
       <ChangePlanModal isOpen={isChangePlanModalOpen} onClose={closeChangePlanModal} />
@@ -186,33 +174,14 @@ function AppLayout() {
 
 
 
-import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { SettingsProvider } from './context/SettingsContext';
-import LoginPage from './LoginPage';
-import RegistrationPage from './RegistrationPage';
 import { Toaster } from 'react-hot-toast';
-
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-  const location = useLocation();
-
-  if (isLoading) {
-    // You can replace this with a loading spinner component
-    return <div className="p-8 text-center">Loading...</div>;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  return <>{children}</>;
-};
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <ProtectedRoute><AppLayout /></ProtectedRoute>,
+    element: <AppLayout />,
     children: [
       {
         index: true,
@@ -248,28 +217,18 @@ const router = createBrowserRouter([
       },
     ],
   },
-  {
-    path: "/login",
-    element: <LoginPage />,
-  },
-  {
-    path: "/register",
-    element: <RegistrationPage />,
-  },
 ]);
 
 function App() {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <SettingsProvider>
-          <PlanProvider>
-            <Toaster position="top-center" reverseOrder={false} />
-            <RouterProvider router={router} />
-          </PlanProvider>
-        </SettingsProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <SettingsProvider>
+        <PlanProvider>
+          <Toaster position="top-center" reverseOrder={false} />
+          <RouterProvider router={router} />
+        </PlanProvider>
+      </SettingsProvider>
+    </ThemeProvider>
   );
 }
 
