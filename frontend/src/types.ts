@@ -146,7 +146,19 @@ export type AppContextType = {
   setIsPageDirty: (isDirty: boolean) => void;
 };
 
+export interface LoginCredentials {
+    username: string;
+    password: string;
+}
+
+export interface RegistrationData {
+    username: string;
+    email: string;
+    password: string;
+}
+
 export interface User {
     id: number;
     username: string;
+    email: string;
 }

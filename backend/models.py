@@ -12,6 +12,7 @@ class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     username: Mapped[str] = mapped_column(String, unique=True, index=True)
+    email: Mapped[str] = mapped_column(String, unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String)
 
     garden_plans: Mapped[List["GardenPlan"]] = relationship(back_populates="owner", cascade="all, delete-orphan")

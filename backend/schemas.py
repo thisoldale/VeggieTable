@@ -15,10 +15,11 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 # --- User Schemas ---
-from pydantic import Field
+from pydantic import Field, EmailStr
 
 class UserBase(BaseModel):
     username: str = Field(..., min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_.-]+$")
+    email: EmailStr
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8)

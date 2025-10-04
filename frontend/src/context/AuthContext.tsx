@@ -6,26 +6,7 @@ import React, {
     ReactNode,
     useEffect,
 } from 'react';
-import axios from 'axios';
-
-// Create an axios instance
-const api = axios.create({
-    baseURL: '/api',
-});
-
-// Add a request interceptor to include the token in headers
-api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers['Authorization'] = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
+import api from '../api/api';
 
 interface User {
     id: number;
@@ -99,5 +80,3 @@ export const useAuth = () => {
     return context;
 };
 
-// Export the api instance to be used in other parts of the app
-export default api;
