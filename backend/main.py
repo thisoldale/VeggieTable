@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import datetime
-import pytz
+from zoneinfo import ZoneInfo
 import models
 from database import engine
 from routers import plants, garden_plans, plantings, tasks, task_groups
@@ -11,7 +11,7 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-la_tz = pytz.timezone('America/Los_Angeles')
+la_tz = ZoneInfo('America/Los_Angeles')
 build_date = datetime.datetime.now(la_tz).strftime("%Y-%m-%d %H:%M:%S %Z")
 
 @app.get("/version")
