@@ -241,112 +241,110 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-component-background p-6 rounded-lg shadow-xl max-w-md w-full">
+      <div className="bg-component-background p-6 rounded-lg shadow-xl w-full max-w-md md:max-w-3xl">
         <h2 className="text-2xl font-bold mb-4">Add "{plant.plant_name}" to {gardenPlan.name}</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
-          
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground">Planting Method</label>
-              <select {...register("plantingMethod")}
-                className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md">
-                {Object.values(PlantingMethod).map(method => (
-                  <option key={method} value={method}>{method}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground">Harvest Method</label>
-              <select {...register("harvestMethod")}
-                className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md">
-                {Object.values(HarvestMethod).map(method => (
-                  <option key={method} value={method}>{method}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="quantity" className="block text-sm font-medium text-muted-foreground">Quantity</label>
-            <input type="number" id="quantity" {...register("quantity", { valueAsNumber: true })}
-              className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md" min="1"
-            />
-            {errors.quantity && <p className="text-destructive text-xs mt-1">{errors.quantity.message}</p>}
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="time-to-maturity" className="block text-sm font-medium text-muted-foreground">Days to Maturity</label>
-            <input type="number" id="time-to-maturity" {...register("timeToMaturity")}
-              className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"
-            />
-            {errors.timeToMaturity && <p className="text-destructive text-xs mt-1">{errors.timeToMaturity.message}</p>}
-          </div>
-
-          {(watch("plantingMethod") === PlantingMethod.SEED_STARTING) && (
-             <div className="mb-4">
-                <label htmlFor="days-to-transplant" className="block text-sm font-medium text-muted-foreground">Days to Transplant</label>
-                <input 
-                    type="number" 
-                    id="days-to-transplant" 
-                    {...register("daysToTransplant")}
-                    className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-4">
+            {/* Column 1: Planting Details */}
+            <div className="flex flex-col space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Planting Method</label>
+                <select {...register("plantingMethod")}
+                  className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md">
+                  {Object.values(PlantingMethod).map(method => (
+                    <option key={method} value={method}>{method}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="quantity" className="block text-sm font-medium text-muted-foreground">Quantity</label>
+                <input type="number" id="quantity" {...register("quantity", { valueAsNumber: true })}
+                  className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md" min="1"
                 />
-             </div>
-          )}
-
-          {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.DIRECT_SEEDING) && (
-             <div className="mb-4">
-                <label htmlFor="sow-date" className="block text-sm font-medium text-muted-foreground">Sow Date</label>
-                <input type="date" id="sow-date" {...register("sowDate")} onChange={(e) => { setValue('sowDate', e.target.value); lastChangedField.current = 'planned_sow_date'; }} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
-                {errors.sowDate && <p className="text-destructive text-xs mt-1">{errors.sowDate.message}</p>}
-             </div>
-          )}
-
-          {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.SEEDLING) && (
-            <div className="mb-4">
-                <label htmlFor="transplant-date" className="block text-sm font-medium text-muted-foreground">Transplant Date</label>
-                <input type="date" id="transplant-date" {...register("transplantDate")} onChange={(e) => { setValue('transplantDate', e.target.value); lastChangedField.current = 'planned_transplant_date'; }} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
-                {errors.transplantDate && <p className="text-destructive text-xs mt-1">{errors.transplantDate.message}</p>}
-            </div>
-          )}
-
-          {watchedHarvestMethod === HarvestMethod.SINGLE_HARVEST && (
-            <div className="mb-4">
-              <label htmlFor="harvest-date" className="block text-sm font-medium text-muted-foreground">Harvest Date</label>
-              <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => { setValue('harvestDate', e.target.value); lastChangedField.current = 'planned_harvest_start_date'; }} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
-              {errors.harvestDate && <p className="text-destructive text-xs mt-1">{errors.harvestDate.message}</p>}
-            </div>
-          )}
-
-          {(watchedHarvestMethod === HarvestMethod.CONTINUOUS || watchedHarvestMethod === HarvestMethod.CUT_AND_COME_AGAIN) && (
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label htmlFor="harvest-date" className="block text-sm font-medium text-muted-foreground">Harvest Start</label>
-                <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => { setValue('harvestDate', e.target.value); lastChangedField.current = 'planned_harvest_start_date'; }} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
-                {errors.harvestDate && <p className="text-destructive text-xs mt-1">{errors.harvestDate.message}</p>}
+                {errors.quantity && <p className="text-destructive text-xs mt-1">{errors.quantity.message}</p>}
               </div>
               <div>
-                <label htmlFor="harvest-end-date" className="block text-sm font-medium text-muted-foreground">Harvest End</label>
-                <input type="date" id="harvest-end-date" {...register("harvestEndDate")} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
-                {errors.harvestEndDate && <p className="text-destructive text-xs mt-1">{errors.harvestEndDate.message}</p>}
+                <label htmlFor="time-to-maturity" className="block text-sm font-medium text-muted-foreground">Days to Maturity</label>
+                <input type="number" id="time-to-maturity" {...register("timeToMaturity")}
+                  className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"
+                />
+                {errors.timeToMaturity && <p className="text-destructive text-xs mt-1">{errors.timeToMaturity.message}</p>}
               </div>
+              {(watch("plantingMethod") === PlantingMethod.SEED_STARTING) && (
+                <div>
+                    <label htmlFor="days-to-transplant" className="block text-sm font-medium text-muted-foreground">Days to Transplant</label>
+                    <input
+                        type="number"
+                        id="days-to-transplant"
+                        {...register("daysToTransplant")}
+                        className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"
+                    />
+                </div>
+              )}
+              {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.DIRECT_SEEDING) && (
+                <div>
+                    <label htmlFor="sow-date" className="block text-sm font-medium text-muted-foreground">Sow Date</label>
+                    <input type="date" id="sow-date" {...register("sowDate")} onChange={(e) => { setValue('sowDate', e.target.value); lastChangedField.current = 'planned_sow_date'; }} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
+                    {errors.sowDate && <p className="text-destructive text-xs mt-1">{errors.sowDate.message}</p>}
+                </div>
+              )}
+              {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.SEEDLING) && (
+                <div>
+                    <label htmlFor="transplant-date" className="block text-sm font-medium text-muted-foreground">Transplant Date</label>
+                    <input type="date" id="transplant-date" {...register("transplantDate")} onChange={(e) => { setValue('transplantDate', e.target.value); lastChangedField.current = 'planned_transplant_date'; }} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
+                    {errors.transplantDate && <p className="text-destructive text-xs mt-1">{errors.transplantDate.message}</p>}
+                </div>
+              )}
             </div>
-          )}
 
-          {watchedHarvestMethod === HarvestMethod.STAGGERED && (
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            {/* Column 2: Harvest Details */}
+            <div className="flex flex-col space-y-4">
               <div>
-                <label htmlFor="harvest-date" className="block text-sm font-medium text-muted-foreground">First Harvest</label>
-                <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => { setValue('harvestDate', e.target.value); lastChangedField.current = 'planned_harvest_start_date'; }} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
-                {errors.harvestDate && <p className="text-destructive text-xs mt-1">{errors.harvestDate.message}</p>}
+                <label className="block text-sm font-medium text-muted-foreground">Harvest Method</label>
+                <select {...register("harvestMethod")}
+                  className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md">
+                  {Object.values(HarvestMethod).map(method => (
+                    <option key={method} value={method}>{method}</option>
+                  ))}
+                </select>
               </div>
-              <div>
-                <label htmlFor="second-harvest-date" className="block text-sm font-medium text-muted-foreground">Second Harvest</label>
-                <input type="date" id="second-harvest-date" {...register("secondHarvestDate")} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
-                {errors.secondHarvestDate && <p className="text-destructive text-xs mt-1">{errors.secondHarvestDate.message}</p>}
-              </div>
+              {watchedHarvestMethod === HarvestMethod.SINGLE_HARVEST && (
+                <div>
+                  <label htmlFor="harvest-date" className="block text-sm font-medium text-muted-foreground">Harvest Date</label>
+                  <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => { setValue('harvestDate', e.target.value); lastChangedField.current = 'planned_harvest_start_date'; }} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
+                  {errors.harvestDate && <p className="text-destructive text-xs mt-1">{errors.harvestDate.message}</p>}
+                </div>
+              )}
+              {(watchedHarvestMethod === HarvestMethod.CONTINUOUS || watchedHarvestMethod === HarvestMethod.CUT_AND_COME_AGAIN) && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="harvest-date" className="block text-sm font-medium text-muted-foreground">Harvest Start</label>
+                    <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => { setValue('harvestDate', e.target.value); lastChangedField.current = 'planned_harvest_start_date'; }} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
+                    {errors.harvestDate && <p className="text-destructive text-xs mt-1">{errors.harvestDate.message}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="harvest-end-date" className="block text-sm font-medium text-muted-foreground">Harvest End</label>
+                    <input type="date" id="harvest-end-date" {...register("harvestEndDate")} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
+                    {errors.harvestEndDate && <p className="text-destructive text-xs mt-1">{errors.harvestEndDate.message}</p>}
+                  </div>
+                </div>
+              )}
+              {watchedHarvestMethod === HarvestMethod.STAGGERED && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="harvest-date" className="block text-sm font-medium text-muted-foreground">First Harvest</label>
+                    <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => { setValue('harvestDate', e.target.value); lastChangedField.current = 'planned_harvest_start_date'; }} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
+                    {errors.harvestDate && <p className="text-destructive text-xs mt-1">{errors.harvestDate.message}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="second-harvest-date" className="block text-sm font-medium text-muted-foreground">Second Harvest</label>
+                    <input type="date" id="second-harvest-date" {...register("secondHarvestDate")} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
+                    {errors.secondHarvestDate && <p className="text-destructive text-xs mt-1">{errors.secondHarvestDate.message}</p>}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
 
           {(!watchedTimeToMaturity || watchedTimeToMaturity === '0') &&
             <p className="text-xs text-amber-500 mt-1">
