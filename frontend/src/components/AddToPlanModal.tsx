@@ -113,52 +113,52 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
   
   useEffect(() => {
     if (previousPlantingMethod && previousPlantingMethod !== watchedPlantingMethod) {
-      let [sowDate, transplantDate, harvestDate] = watchedDates; // Use let to allow modification
+      let [currentSowDate, currentTransplantDate, currentHarvestDate] = watchedDates;
 
+      // 1. Clear irrelevant dates based on the NEW method and update local variables
+      if (watchedPlantingMethod === PlantingMethod.SEEDLING) {
+        currentSowDate = '';
+      } else if (watchedPlantingMethod === PlantingMethod.DIRECT_SEEDING) {
+        currentTransplantDate = '';
+      }
+
+      // 2. Determine the anchor field from the (potentially cleared) local date variables
       let anchorField: string | null = null;
-
-      // Determine anchor date, giving precedence to sow date, then transplant, then harvest.
-      if (sowDate) {
+      if (watchedPlantingMethod !== PlantingMethod.SEEDLING && currentSowDate) {
           anchorField = 'planned_sow_date';
-      } else if (transplantDate) {
+      } else if ((watchedPlantingMethod === PlantingMethod.SEEDLING || watchedPlantingMethod === PlantingMethod.SEED_STARTING) && currentTransplantDate) {
           anchorField = 'planned_transplant_date';
-      } else if (harvestDate) {
+      } else if (currentHarvestDate) {
           anchorField = 'planned_harvest_start_date';
       }
 
-      // If no date is set, create a default anchor date
+      // 3. If no valid anchor date exists, create a default one
       if (!anchorField) {
         const today = format(new Date(), 'yyyy-MM-dd');
         if (watchedPlantingMethod === PlantingMethod.SEEDLING) {
             anchorField = 'planned_transplant_date';
-            transplantDate = today; // We'll use this updated local value for calculation
+            currentTransplantDate = today;
         } else { // SEED_STARTING or DIRECT_SEEDING
             anchorField = 'planned_sow_date';
-            sowDate = today; // We'll use this updated local value for calculation
+            currentSowDate = today;
         }
       }
 
-      if (anchorField) { // This will now always be true if we entered the top if
-        const currentValues = {
-            planned_sow_date: sowDate,
-            planned_transplant_date: transplantDate,
-            planned_harvest_start_date: harvestDate,
-            time_to_maturity: watchedTimeToMaturity,
-            days_to_transplant_high: watchedDaysToTransplant,
-        };
+      // 4. Recalculate dates using the local variables
+      const currentValues = {
+          planned_sow_date: currentSowDate,
+          planned_transplant_date: currentTransplantDate,
+          planned_harvest_start_date: currentHarvestDate,
+          time_to_maturity: watchedTimeToMaturity,
+          days_to_transplant_high: watchedDaysToTransplant,
+      };
 
-        const newDates = calculateDates(currentValues, anchorField, watchedPlantingMethod);
+      const newDates = calculateDates(currentValues, anchorField, watchedPlantingMethod);
 
-        if (newDates.planned_sow_date !== watchedDates[0]) {
-            setValue('sowDate', newDates.planned_sow_date || '');
-        }
-        if (newDates.planned_transplant_date !== watchedDates[1]) {
-            setValue('transplantDate', newDates.planned_transplant_date || '');
-        }
-        if (newDates.planned_harvest_start_date !== watchedDates[2]) {
-            setValue('harvestDate', newDates.planned_harvest_start_date || '');
-        }
-      }
+      // 5. Set the final state
+      setValue('sowDate', newDates.planned_sow_date || '');
+      setValue('transplantDate', newDates.planned_transplant_date || '');
+      setValue('harvestDate', newDates.planned_harvest_start_date || '');
     }
   }, [watchedPlantingMethod, previousPlantingMethod, setValue, watchedDates, watchedTimeToMaturity, watchedDaysToTransplant]);
 
