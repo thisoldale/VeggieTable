@@ -5,11 +5,13 @@ type Day = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 interface Settings {
   weekStartsOn: Day;
+  groupByTaskType: boolean;
 }
 
 interface SettingsContextType {
   settings: Settings;
   setWeekStartsOn: (day: Day) => void;
+  setGroupByTaskType: (enabled: boolean) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -19,16 +21,16 @@ const getStoredSettings = (): Settings => {
     const stored = localStorage.getItem('userSettings');
     if (stored) {
       const parsed = JSON.parse(stored);
-      if (typeof parsed.weekStartsOn === 'number' && parsed.weekStartsOn >= 0 && parsed.weekStartsOn <= 6) {
-        return { weekStartsOn: parsed.weekStartsOn as Day };
-      }
+      const weekStartsOn = (typeof parsed.weekStartsOn === 'number' && parsed.weekStartsOn >= 0 && parsed.weekStartsOn <= 6) ? parsed.weekStartsOn : 0;
+      const groupByTaskType = typeof parsed.groupByTaskType === 'boolean' ? parsed.groupByTaskType : false;
+      return { weekStartsOn, groupByTaskType };
     }
   } catch (error) {
     console.error("Failed to parse settings from localStorage", error);
     localStorage.removeItem('userSettings');
   }
   // Default settings
-  return { weekStartsOn: 0 }; // Sunday
+  return { weekStartsOn: 0, groupByTaskType: false };
 };
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
@@ -42,10 +44,19 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     });
   }, []);
 
+  const setGroupByTaskType = useCallback((enabled: boolean) => {
+    setSettings(prevSettings => {
+      const newSettings = { ...prevSettings, groupByTaskType: enabled };
+      localStorage.setItem('userSettings', JSON.stringify(newSettings));
+      return newSettings;
+    });
+  }, []);
+
   const contextValue = useMemo(() => ({
     settings,
     setWeekStartsOn,
-  }), [settings, setWeekStartsOn]);
+    setGroupByTaskType,
+  }), [settings, setWeekStartsOn, setGroupByTaskType]);
 
   return (
     <SettingsContext.Provider value={contextValue}>

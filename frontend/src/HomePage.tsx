@@ -74,7 +74,8 @@ const CalendarWeek: React.FC<{
     onUndo: (item: CalendarItem) => void;
     onDelete: (item: CalendarItem) => void;
     weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-}> = ({ week, tasks, onActionSelect, onItemClick, onComplete, onUndo, onDelete, weekStartsOn }) => {
+    groupByTaskType: boolean;
+}> = ({ week, tasks, onActionSelect, onItemClick, onComplete, onUndo, onDelete, weekStartsOn, groupByTaskType }) => {
     const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(week, i));
     const weeklyTasks = weekDays.flatMap(day => tasks[format(day, 'yyyy-MM-dd')] || []).sort((a, b) => a.date.getTime() - b.date.getTime());
     const isCurrent = isSameWeek(new Date(), week, { weekStartsOn });
@@ -117,22 +118,63 @@ const CalendarWeek: React.FC<{
         }
     };
 
-    type GroupedTasks = Record<string, {
+    type GroupedByDay = Record<string, {
         Tasks: CalendarItem[];
         Plant: CalendarItem[];
         Harvest: CalendarItem[];
     }>;
 
-    const groupedTasks = weeklyTasks.reduce((acc, item) => {
-        const dateKey = format(item.date, 'yyyy-MM-dd');
-        if (!acc[dateKey]) {
-            acc[dateKey] = { 'Tasks': [], 'Plant': [], 'Harvest': [] };
-        }
+    type GroupedByType = {
+        Tasks: CalendarItem[];
+        Plant: CalendarItem[];
+        Harvest: CalendarItem[];
+    };
 
+    const groupedTasks = weeklyTasks.reduce((acc, item) => {
         const category = item.type === 'task' ? 'Tasks' : (item.type === 'harvest' ? 'Harvest' : 'Plant');
-        acc[dateKey][category].push(item);
+
+        if (groupByTaskType) {
+            const typeAcc = acc as GroupedByType;
+            if (!typeAcc[category]) {
+                typeAcc[category] = [];
+            }
+            typeAcc[category].push(item);
+        } else {
+            const dayAcc = acc as GroupedByDay;
+            const dateKey = format(item.date, 'yyyy-MM-dd');
+            if (!dayAcc[dateKey]) {
+                dayAcc[dateKey] = { 'Tasks': [], 'Plant': [], 'Harvest': [] };
+            }
+            dayAcc[dateKey][category].push(item);
+        }
         return acc;
-    }, {} as GroupedTasks);
+    }, (groupByTaskType ? { 'Tasks': [], 'Plant': [], 'Harvest': [] } : {}) as GroupedByDay | GroupedByType);
+
+    const renderItem = (item: CalendarItem) => {
+        const itemIsComplete = isComplete(item);
+        return (
+            <li key={item.id} className="text-sm flex items-center justify-between p-2 rounded-md hover:bg-component-background transition-colors group">
+                <div className="flex items-center flex-grow cursor-pointer" onClick={() => itemIsComplete ? onUndo(item) : onComplete(item)}>
+                    {itemIsComplete ? <CheckSquare className="h-5 w-5 text-primary mr-3 flex-shrink-0" /> : <Square className="h-5 w-5 text-muted-foreground mr-3 flex-shrink-0" />}
+                    <div className={`flex items-baseline ${itemIsComplete ? 'line-through text-muted-foreground' : ''}`} >
+                        <span className="font-medium mr-2 text-primary">
+                            {getTaskIcon(item.type)}
+                        </span>
+                        <span onClick={(e) => { e.stopPropagation(); onItemClick(item); }} className="hover:underline">
+                            {item.name}
+                            {(item.type === 'sow' || item.type === 'transplant') && ` (${item.type})`}
+                        </span>
+                        {groupByTaskType && <span className="text-xs text-muted-foreground ml-2">({format(item.date, 'EEE, MMM d')})</span>}
+                    </div>
+                </div>
+                <div className="flex items-center space-x-2 ml-4">
+                    <button onClick={(e) => { e.stopPropagation(); onDelete(item); }} className="text-muted-foreground hover:text-interactive-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Trash2 className="h-4 w-4" />
+                    </button>
+                </div>
+            </li>
+        );
+    };
 
 
     return (
@@ -146,45 +188,36 @@ const CalendarWeek: React.FC<{
             <div className="p-4 bg-secondary border-l border-r border-b border-border rounded-b-lg -mt-2">
                 {weeklyTasks.length > 0 ? (
                     <div className="space-y-4">
-                        {Object.entries(groupedTasks).map(([date, categories]) => (
-                            <div key={date}>
-                                <h3 className="font-semibold text-lg mb-2">{format(new Date(date + 'T00:00:00'), 'EEE, MMM d')}</h3>
-                                {Object.entries(categories).map(([category, items]) => {
-                                    if (items.length === 0) return null;
-                                    return (
-                                        <div key={category} className="ml-4">
-                                            <h4 className="font-medium text-primary my-1">{category}</h4>
-                                            <ul className="space-y-1">
-                                                {items.map(item => {
-                                                    const itemIsComplete = isComplete(item);
-                                                    return (
-                                                        <li key={item.id} className="text-sm flex items-center justify-between p-2 rounded-md hover:bg-component-background transition-colors group">
-                                                            <div className="flex items-center flex-grow cursor-pointer" onClick={() => itemIsComplete ? onUndo(item) : onComplete(item)}>
-                                                                {itemIsComplete ? <CheckSquare className="h-5 w-5 text-primary mr-3 flex-shrink-0" /> : <Square className="h-5 w-5 text-muted-foreground mr-3 flex-shrink-0" />}
-                                                                <div className={`flex items-baseline ${itemIsComplete ? 'line-through text-muted-foreground' : ''}`} >
-                                                                    <span className="font-medium mr-2 text-primary">
-                                                                        {getTaskIcon(item.type)}
-                                                                    </span>
-                                                                    <span onClick={(e) => { e.stopPropagation(); onItemClick(item); }} className="hover:underline">
-                                                                        {item.name}
-                                                                        {(item.type === 'sow' || item.type === 'transplant') && ` (${item.type})`}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                            <div className="flex items-center space-x-2 ml-4">
-                                                                <button onClick={(e) => { e.stopPropagation(); onDelete(item); }} className="text-muted-foreground hover:text-interactive-destructive opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </button>
-                                                            </div>
-                                                        </li>
-                                                    );
-                                                })}
-                                            </ul>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ))}
+                        {groupByTaskType ? (
+                            Object.entries(groupedTasks as GroupedByType).map(([category, items]) => {
+                                if (items.length === 0) return null;
+                                return (
+                                    <div key={category}>
+                                        <h3 className="font-semibold text-lg mb-2 text-primary">{category}</h3>
+                                        <ul className="space-y-1 ml-4">
+                                            {items.sort((a, b) => a.date.getTime() - b.date.getTime()).map(renderItem)}
+                                        </ul>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            Object.entries(groupedTasks as GroupedByDay).map(([date, categories]) => (
+                                <div key={date}>
+                                    <h3 className="font-semibold text-lg mb-2">{format(new Date(date + 'T00:00:00'), 'EEE, MMM d')}</h3>
+                                    {Object.entries(categories).map(([category, items]) => {
+                                        if (items.length === 0) return null;
+                                        return (
+                                            <div key={category} className="ml-4">
+                                                <h4 className="font-medium text-primary my-1">{category}</h4>
+                                                <ul className="space-y-1">
+                                                    {items.map(renderItem)}
+                                                </ul>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ))
+                        )}
                     </div>
                 ) : (
                     <p className="text-sm text-muted-foreground italic">No actions planned for this week.</p>
@@ -395,6 +428,7 @@ const CalendarView: React.FC = () => {
             onUndo={handleUndo}
             onDelete={handleDelete}
             weekStartsOn={settings.weekStartsOn}
+            groupByTaskType={settings.groupByTaskType}
         />
       ))}
       <div ref={handleObserver} className="h-10">
