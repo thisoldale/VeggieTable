@@ -97,7 +97,7 @@ class PlantingStatus(str, enum.Enum):
 class Planting(Base):
     __tablename__ = "plantings"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    garden_plan_id: Mapped[int] = mapped_column(ForeignKey("garden_plans.id"))
+    garden_plan_id: Mapped[int] = mapped_column(ForeignKey("garden_plans.id", ondelete="CASCADE"))
     library_plant_id: Mapped[int] = mapped_column(ForeignKey("plants.id"))
     
     # --- Planting-specific fields ---
@@ -181,7 +181,7 @@ class TaskGroup(Base):
 class Task(Base):
     __tablename__ = "tasks"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    garden_plan_id: Mapped[int] = mapped_column(ForeignKey("garden_plans.id"))
+    garden_plan_id: Mapped[int] = mapped_column(ForeignKey("garden_plans.id", ondelete="CASCADE"))
     planting_id: Mapped[Optional[int]] = mapped_column(ForeignKey("plantings.id"), nullable=True)
     task_group_id: Mapped[Optional[int]] = mapped_column(ForeignKey("task_groups.id"), nullable=True)
     name: Mapped[str] = mapped_column(String)
