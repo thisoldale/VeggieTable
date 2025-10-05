@@ -168,6 +168,36 @@ def create_planting(db: Session, garden_plan_id: int, planting_details: schemas.
     db.add(new_planting)
     db.flush()
 
+    # Create associated tasks based on the provided dates
+    if planting_details.planned_sow_date:
+        sow_task = models.Task(
+            garden_plan_id=garden_plan_id,
+            planting_id=new_planting.id,
+            name=f"Sow {new_planting.plant_name}",
+            due_date=planting_details.planned_sow_date,
+            status=models.TaskStatus.PENDING,
+        )
+        db.add(sow_task)
+
+    if planting_details.planned_transplant_date:
+        transplant_task = models.Task(
+            garden_plan_id=garden_plan_id,
+            planting_id=new_planting.id,
+            name=f"Transplant {new_planting.plant_name}",
+            due_date=planting_details.planned_transplant_date,
+            status=models.TaskStatus.PENDING,
+        )
+        db.add(transplant_task)
+
+    if planting_details.planned_harvest_start_date:
+        harvest_task = models.Task(
+            garden_plan_id=garden_plan_id,
+            planting_id=new_planting.id,
+            name=f"Harvest {new_planting.plant_name}",
+            due_date=planting_details.planned_harvest_start_date,
+            status=models.TaskStatus.PENDING,
+        )
+        db.add(harvest_task)
 
     db.commit()
     db.refresh(new_planting)

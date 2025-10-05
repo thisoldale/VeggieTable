@@ -146,36 +146,50 @@ def _parse_boolean(value: str) -> Optional[bool]:
         return False
     return None
 
+def _parse_integer_with_range(value: Any) -> Optional[int]:
+    """
+    Parses a value into an integer. If the value is a range (e.g., '10-14'),
+    it returns the average. Returns None if parsing fails or value is empty.
+    """
+    if value is None:
+        return None
+
+    s_value = str(value).strip()
+    if not s_value:
+        return None
+
+    if '-' in s_value:
+        parts = s_value.split('-')
+        if len(parts) == 2:
+            try:
+                low = int(parts[0].strip())
+                high = int(parts[1].strip())
+                return round((low + high) / 2)
+            except ValueError:
+                return None  # Let Pydantic handle the error by returning None
+
+    try:
+        return int(s_value)
+    except ValueError:
+        return None # Let Pydantic handle the error by returning None
+
 def _parse_and_validate_row(row_data: Dict[str, Any], row_num: int) -> Tuple[Optional[Dict], List[str]]:
     """Parses a single CSV row, validates it, and returns cleaned data or errors."""
     plant_data_dict = {}
     errors = []
 
     for key, value in row_data.items():
-        # Pre-process boolean fields
         if key in BOOLEAN_FIELDS:
             plant_data_dict[key] = _parse_boolean(value)
-        # Pre-process integer fields
         elif key in INTEGER_FIELDS:
-            if value and str(value).strip():
-                try:
-                    plant_data_dict[key] = int(str(value).strip())
-                except (ValueError, TypeError):
-                    plant_data_dict[key] = value # Let Pydantic handle the validation error
-            else:
-                plant_data_dict[key] = None
-        # Handle all other fields
+            plant_data_dict[key] = _parse_integer_with_range(value)
         else:
             plant_data_dict[key] = value.strip() if isinstance(value, str) and value.strip() else None
 
-    if not plant_data_dict.get('plant_name'):
-        # This check is now less reliable since the column name is mapped.
-        # The frontend should ensure 'plant_name' is mapped.
-        pass
-
     try:
-        schemas.PlantCreate(**plant_data_dict)
-        return plant_data_dict, errors
+        # Pydantic will raise an error for any fields that are still invalid
+        validated_model = schemas.PlantCreate(**plant_data_dict)
+        return validated_model.model_dump(), errors
     except ValidationError as e:
         error_details = "; ".join([f"{err['loc'][0]}: {err['msg']}" for err in e.errors()])
         errors.append(f"Row {row_num}: Data validation error: {error_details}")
@@ -267,7 +281,14 @@ def process_csv_import(db: Session, content: bytes, mode: str) -> schemas.Import
     for i, row in enumerate(reader):
         row_num = i + 2
         
-        plant_data, errors = _parse_and_validate_row(row, row_num)
+        mapped_row = {}
+        for header, value in row.items():
+            normalized_header = header.lower().strip() if header else ''
+            if normalized_header in HEADER_MAP:
+                mapped_key = HEADER_MAP[normalized_header]
+                mapped_row[mapped_key] = value
+
+        plant_data, errors = _parse_and_validate_row(mapped_row, row_num)
 
         if errors:
             total_errors.extend(errors)
