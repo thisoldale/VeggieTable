@@ -206,7 +206,6 @@ const CalendarView: React.FC = () => {
 
   const [weeks, setWeeks] = useState<Date[]>([]);
   const [tasks, setTasks] = useState<Record<string, CalendarItem[]>>({});
-  const loaderRef = useRef(null);
   const navigate = useNavigate();
 
   // State for modals
@@ -232,40 +231,50 @@ const CalendarView: React.FC = () => {
     setWeeks(initialWeeks);
   }, [settings.weekStartsOn]);
 
-  useEffect(() => {
-    if (fullActivePlan) {
-        const allItems: CalendarItem[] = [];
+  const observer = useRef<IntersectionObserver>();
 
-        (fullActivePlan.plantings || []).forEach(p => {
-            const taskName = `${p.plant_name}${p.variety_name ? ` (${p.variety_name})` : ''} - ${p.quantity} Plants`;
-            if (p.planned_sow_date) {
-                const date = new Date(p.planned_sow_date + 'T00:00:00');
-                allItems.push({ id: `planting-sow-${p.id}`, type: 'sow', name: taskName, date, data: p });
-            }
-            if (p.planned_transplant_date) {
-                const date = new Date(p.planned_transplant_date + 'T00:00:00');
-                allItems.push({ id: `planting-transplant-${p.id}`, type: 'transplant', name: taskName, date, data: p });
-            }
-            if (p.weekly_yield) {
-                const yields = p.weekly_yield.split(';').map(y => parseFloat(y));
-                const sowOrTransplantDate = p.planned_transplant_date || p.planned_sow_date;
-                if (sowOrTransplantDate) {
-                    const startDate = new Date(sowOrTransplantDate + 'T00:00:00');
-                    yields.forEach((y, weekIndex) => {
-                        if (y > 0) {
-                            const harvestDate = addDays(startDate, (weekIndex + 1) * 7);
-                            allItems.push({ id: `planting-harvest-${p.id}-w${weekIndex}`, type: 'harvest', name: taskName, date: harvestDate, data: p });
-                        }
-                    });
-                }
-            }
+  const handleObserver = useCallback((node: HTMLDivElement | null) => {
+    if (isLoading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        setWeeks(prev => {
+          const lastWeek = prev[prev.length - 1];
+          const nextWeeks = Array.from({ length: 4 }).map((_, i) => addWeeks(lastWeek, i + 1));
+          return [...prev, ...nextWeeks];
         });
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [isLoading]);
+
+
+  useEffect(() => {
+    const parseDate = (dateString: string): Date => {
+      const [year, month, day] = dateString.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    };
+
+    if (fullActivePlan) {
+      const allItems: CalendarItem[] = [];
+
+      (fullActivePlan.plantings || []).forEach(p => {
+        const taskName = `${p.plant_name}${p.variety_name ? ` (${p.variety_name})` : ''} - ${p.quantity} Plants`;
+        if (p.planned_sow_date) {
+          allItems.push({ id: `planting-sow-${p.id}`, type: 'sow', name: taskName, date: parseDate(p.planned_sow_date), data: p });
+        }
+        if (p.planned_transplant_date) {
+          allItems.push({ id: `planting-transplant-${p.id}`, type: 'transplant', name: taskName, date: parseDate(p.planned_transplant_date), data: p });
+        }
+        if (p.planned_harvest_start_date) {
+          allItems.push({ id: `planting-harvest-${p.id}`, type: 'harvest', name: taskName, date: parseDate(p.planned_harvest_start_date), data: p });
+        }
+      });
       
       (fullActivePlan.tasks || []).forEach(t => {
-          if (t.due_date) {
-              const date = new Date(t.due_date + 'T00:00:00');
-              allItems.push({ id: `task-${t.id}`, type: 'task', name: t.name, date, data: t });
-          }
+        if (t.due_date) {
+          allItems.push({ id: `task-${t.id}`, type: 'task', name: t.name, date: parseDate(t.due_date), data: t });
+        }
       });
 
       const newTasks: Record<string, CalendarItem[]> = {};
@@ -279,30 +288,6 @@ const CalendarView: React.FC = () => {
     }
   }, [fullActivePlan]);
 
-  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
-    const target = entries[0];
-    if (target.isIntersecting) {
-      setWeeks(prev => {
-        const lastWeek = prev[prev.length - 1];
-        const nextWeek = addWeeks(lastWeek, 1);
-        return [...prev, nextWeek];
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    const element = loaderRef.current;
-    const option = { root: null, rootMargin: "20px", threshold: 0 };
-    const observer = new IntersectionObserver(handleObserver, option);
-    if (element) {
-        observer.observe(element);
-    }
-    return () => {
-      if (element) {
-        observer.unobserve(element);
-      }
-    };
-  }, [handleObserver]);
 
   const handleActionSelect = (action: PlantingMethod | 'harvest' | 'task', date: Date) => {
     setSelectedDate(date);
@@ -412,7 +397,7 @@ const CalendarView: React.FC = () => {
             weekStartsOn={settings.weekStartsOn}
         />
       ))}
-      <div ref={loaderRef} className="h-10">
+      <div ref={handleObserver} className="h-10">
         <p className="text-center py-4 text-gray-500">Loading more...</p>
       </div>
 
