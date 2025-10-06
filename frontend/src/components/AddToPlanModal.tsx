@@ -263,51 +263,60 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
               </div>
               <div>
                 <label htmlFor="quantity" className="block text-sm font-medium text-muted-foreground">Quantity</label>
-                <input type="number" id="quantity" {...register("quantity", { valueAsNumber: true })}
-                  className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md" min="1"
-                />
-                {errors.quantity && <p className="text-destructive text-xs mt-1">{errors.quantity.message}</p>}
+                <div className="flex items-center space-x-2">
+                  <div className="w-9 h-9"></div> {/* Spacer */}
+                  <input type="number" id="quantity" {...register("quantity", { valueAsNumber: true })}
+                    className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md" min="1"
+                  />
+                </div>
+                {errors.quantity && <p className="text-destructive text-xs mt-1 ml-11">{errors.quantity.message}</p>}
               </div>
               <div>
                 <label htmlFor="time-to-maturity" className="block text-sm font-medium text-muted-foreground">Days to Maturity</label>
-                <input type="number" id="time-to-maturity" {...register("timeToMaturity")}
-                  className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"
-                />
-                {errors.timeToMaturity && <p className="text-destructive text-xs mt-1">{errors.timeToMaturity.message}</p>}
+                <div className="flex items-center space-x-2">
+                  <div className="w-9 h-9"></div> {/* Spacer */}
+                  <input type="number" id="time-to-maturity" {...register("timeToMaturity")}
+                    className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"
+                  />
+                </div>
+                {errors.timeToMaturity && <p className="text-destructive text-xs mt-1 ml-11">{errors.timeToMaturity.message}</p>}
               </div>
               {(watch("plantingMethod") === PlantingMethod.SEED_STARTING) && (
                 <div>
                     <label htmlFor="days-to-transplant" className="block text-sm font-medium text-muted-foreground">Days to Transplant</label>
-                    <input
-                        type="number"
-                        id="days-to-transplant"
-                        {...register("daysToTransplant")}
-                        className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"
-                    />
+                    <div className="flex items-center space-x-2">
+                      <div className="w-9 h-9"></div> {/* Spacer */}
+                      <input
+                          type="number"
+                          id="days-to-transplant"
+                          {...register("daysToTransplant")}
+                          className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"
+                      />
+                    </div>
                 </div>
               )}
               {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.DIRECT_SEEDING) && (
                 <div>
                   <label htmlFor="sow-date" className="block text-sm font-medium text-muted-foreground">Sow Date</label>
                   <div className="flex items-center space-x-2">
-                    <input type="date" id="sow-date" {...register("sowDate")} onChange={(e) => handleDateChange('planned_sow_date', e.target.value)} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
                     <button type="button" onClick={() => setLockedField('planned_sow_date')} className="p-2 mt-1 rounded-md hover:bg-interactive-hover">
                         {lockedField === 'planned_sow_date' ? <Lock className="h-5 w-5 text-interactive-primary" /> : <Unlock className="h-5 w-5 text-muted-foreground" />}
                     </button>
+                    <input type="date" id="sow-date" {...register("sowDate")} onChange={(e) => handleDateChange('planned_sow_date', e.target.value)} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
                   </div>
-                  {errors.sowDate && <p className="text-destructive text-xs mt-1">{errors.sowDate.message}</p>}
+                  {errors.sowDate && <p className="text-destructive text-xs mt-1 ml-11">{errors.sowDate.message}</p>}
                 </div>
               )}
               {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.SEEDLING) && (
                 <div>
                   <label htmlFor="transplant-date" className="block text-sm font-medium text-muted-foreground">Transplant Date</label>
                   <div className="flex items-center space-x-2">
-                    <input type="date" id="transplant-date" {...register("transplantDate")} onChange={(e) => handleDateChange('planned_transplant_date', e.target.value)} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
                     <button type="button" onClick={() => setLockedField('planned_transplant_date')} className="p-2 mt-1 rounded-md hover:bg-interactive-hover">
                         {lockedField === 'planned_transplant_date' ? <Lock className="h-5 w-5 text-interactive-primary" /> : <Unlock className="h-5 w-5 text-muted-foreground" />}
                     </button>
+                    <input type="date" id="transplant-date" {...register("transplantDate")} onChange={(e) => handleDateChange('planned_transplant_date', e.target.value)} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
                   </div>
-                  {errors.transplantDate && <p className="text-destructive text-xs mt-1">{errors.transplantDate.message}</p>}
+                  {errors.transplantDate && <p className="text-destructive text-xs mt-1 ml-11">{errors.transplantDate.message}</p>}
                 </div>
               )}
             </div>
@@ -329,25 +338,31 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
                    (watchedHarvestMethod === HarvestMethod.STAGGERED ? 'First Harvest' : 'Harvest Start')}
                 </label>
                 <div className="flex items-center space-x-2">
-                  <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => handleDateChange('planned_harvest_start_date', e.target.value)} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
                   <button type="button" onClick={() => setLockedField('planned_harvest_start_date')} className="p-2 mt-1 rounded-md hover:bg-interactive-hover">
                     {lockedField === 'planned_harvest_start_date' ? <Lock className="h-5 w-5 text-interactive-primary" /> : <Unlock className="h-5 w-5 text-muted-foreground" />}
                   </button>
+                  <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => handleDateChange('planned_harvest_start_date', e.target.value)} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
                 </div>
-                {errors.harvestDate && <p className="text-destructive text-xs mt-1">{errors.harvestDate.message}</p>}
+                {errors.harvestDate && <p className="text-destructive text-xs mt-1 ml-11">{errors.harvestDate.message}</p>}
               </div>
               {(watchedHarvestMethod === HarvestMethod.CONTINUOUS || watchedHarvestMethod === HarvestMethod.CUT_AND_COME_AGAIN) && (
                 <div>
                   <label htmlFor="harvest-end-date" className="block text-sm font-medium text-muted-foreground">Harvest End</label>
-                  <input type="date" id="harvest-end-date" {...register("harvestEndDate")} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
-                  {errors.harvestEndDate && <p className="text-destructive text-xs mt-1">{errors.harvestEndDate.message}</p>}
+                  <div className="flex items-center space-x-2">
+                    <div className="w-9 h-9"></div> {/* Spacer */}
+                    <input type="date" id="harvest-end-date" {...register("harvestEndDate")} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
+                  </div>
+                  {errors.harvestEndDate && <p className="text-destructive text-xs mt-1 ml-11">{errors.harvestEndDate.message}</p>}
                 </div>
               )}
               {watchedHarvestMethod === HarvestMethod.STAGGERED && (
                 <div>
                   <label htmlFor="second-harvest-date" className="block text-sm font-medium text-muted-foreground">Second Harvest</label>
-                  <input type="date" id="second-harvest-date" {...register("secondHarvestDate")} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
-                  {errors.secondHarvestDate && <p className="text-destructive text-xs mt-1">{errors.secondHarvestDate.message}</p>}
+                  <div className="flex items-center space-x-2">
+                    <div className="w-9 h-9"></div> {/* Spacer */}
+                    <input type="date" id="second-harvest-date" {...register("secondHarvestDate")} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
+                  </div>
+                  {errors.secondHarvestDate && <p className="text-destructive text-xs mt-1 ml-11">{errors.secondHarvestDate.message}</p>}
                 </div>
               )}
             </div>
