@@ -217,30 +217,24 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
 
   if (!isOpen) return null;
 
-  const FormRow = ({ label, htmlFor, error, children, hasIcon = false }) => {
-    const childArray = React.Children.toArray(children);
-    const icon = hasIcon ? childArray[0] : null;
-    const input = hasIcon ? childArray[1] : children;
-
-    return (
-      <div className="grid grid-cols-[44px,1fr] items-center gap-x-2">
-        <div className="col-start-2">
-          <label htmlFor={htmlFor} className="block text-sm font-medium text-muted-foreground -mb-1">
-            {label}
-          </label>
-        </div>
-        <div className="h-9 w-9 flex items-center justify-center">
-          {icon}
-        </div>
-        <div className="mt-1">
-          {input}
-        </div>
-        <div className="col-start-2">
-          {error && <p className="text-destructive text-xs mt-1">{error.message}</p>}
-        </div>
+  const FormRow = ({ label, htmlFor, error, children, hasIcon = false }) => (
+    <div className="grid grid-cols-[44px,1fr] items-center gap-x-2">
+      <div className="col-start-2">
+        <label htmlFor={htmlFor} className="block text-sm font-medium text-muted-foreground -mb-1">
+          {label}
+        </label>
       </div>
-    );
-  };
+      <div className="h-9 w-9 flex items-center justify-center">
+        {hasIcon && children[0]}
+      </div>
+      <div className="mt-1">
+        {hasIcon ? children[1] : children}
+      </div>
+      <div className="col-start-2">
+        {error && <p className="text-destructive text-xs mt-1">{error.message}</p>}
+      </div>
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
