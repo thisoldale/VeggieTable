@@ -4,6 +4,7 @@ from sqlalchemy import desc, inspect
 from typing import Optional, List, Type
 from datetime import datetime
 from models import Base
+import recurrence
 
 import models, schemas
 
@@ -17,7 +18,8 @@ def _get_garden_plan_load_options() -> List:
     """Returns common SQLAlchemy load options for GardenPlan queries."""
     return [
         joinedload(models.GardenPlan.plantings),
-        joinedload(models.GardenPlan.tasks)
+        joinedload(models.GardenPlan.tasks),
+        joinedload(models.GardenPlan.recurring_tasks)
     ]
 
 # --- Plant CRUD ---
@@ -189,6 +191,63 @@ def delete_planting_by_id(db: Session, planting_id: int):
         return True
     return False
 
+# --- Recurring Task CRUD ---
+def get_recurring_task_by_id(db: Session, recurring_task_id: int):
+    return db.query(models.RecurringTask).options(joinedload(models.RecurringTask.tasks)).filter(models.RecurringTask.id == recurring_task_id).first()
+
+def create_recurring_task(db: Session, recurring_task: schemas.RecurringTaskCreate):
+    """
+    Creates a new recurring task series and its first task instance.
+    """
+    # Create the recurring task master record
+    db_recurring_task = models.RecurringTask(
+        name=recurring_task.name,
+        description=recurring_task.description,
+        recurrence_rule=recurring_task.recurrence_rule,
+        garden_plan_id=recurring_task.garden_plan_id,
+        planting_id=recurring_task.planting_id,
+    )
+    db.add(db_recurring_task)
+    db.commit()
+    db.refresh(db_recurring_task)
+
+    # Generate the very first task instance from the specified start_date
+    first_due_date = recurrence.get_first_occurrence(recurring_task.recurrence_rule, recurring_task.start_date)
+    if first_due_date:
+        task_create = schemas.TaskCreate(
+            name=db_recurring_task.name,
+            description=db_recurring_task.description,
+            due_date=first_due_date,
+            garden_plan_id=db_recurring_task.garden_plan_id,
+            planting_id=db_recurring_task.planting_id,
+            recurring_task_id=db_recurring_task.id,
+            status=schemas.TaskStatus.PENDING,
+        )
+        create_task(db, task_create)
+
+    # Refresh again to load the new task into the relationship
+    db.refresh(db_recurring_task)
+    return db_recurring_task
+
+def update_recurring_task(db: Session, recurring_task_id: int, recurring_task_update: schemas.RecurringTaskUpdate):
+    db_recurring_task = get_recurring_task_by_id(db, recurring_task_id)
+    if db_recurring_task:
+        update_data = recurring_task_update.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_recurring_task, key, value)
+        db.commit()
+        db.refresh(db_recurring_task)
+    return db_recurring_task
+
+def delete_recurring_task(db: Session, recurring_task_id: int):
+    db_recurring_task = get_recurring_task_by_id(db, recurring_task_id)
+    if db_recurring_task:
+        # The cascade delete on the model will handle deleting associated tasks
+        db.delete(db_recurring_task)
+        db.commit()
+        return True
+    return False
+
 # --- Task CRUD ---
 def get_task_by_id(db: Session, task_id: int):
     return _get_by_id(db, models.Task, task_id)
@@ -206,11 +265,24 @@ def create_task(db: Session, task: schemas.TaskCreate):
 def update_task(db: Session, task_id: int, task_update: schemas.TaskUpdate):
     db_task = get_task_by_id(db, task_id)
     if db_task:
+        # Check if the task is being completed in this update
+        is_being_completed = (
+            task_update.status == schemas.TaskStatus.COMPLETED and
+            db_task.status != schemas.TaskStatus.COMPLETED
+        )
+
+        # Apply the update
         update_data = task_update.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(db_task, key, value)
+
         db.commit()
         db.refresh(db_task)
+
+        # If it was completed, try to generate the next task
+        if is_being_completed:
+            recurrence.generate_next_task_if_needed(db, db_task)
+
     return db_task
 
 def delete_task(db: Session, task_id: int):
