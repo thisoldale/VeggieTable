@@ -14,14 +14,15 @@ def run_verification(page: Page):
     page.get_by_label("Plan Name").fill("Recurring Task Test Plan")
     page.get_by_role("button", name="Create Plan").click()
 
-    # After creation, app redirects to home page. Sidebar is closed.
-    # 3. Open the sidebar and navigate to the Tasks page
+    # After creation, app redirects to home page.
+    # Wait for the context to update by checking for the plan name in the sidebar.
+    page.wait_for_url("**/")
     page.get_by_label("Open menu").click()
+    expect(page.get_by_role("heading", name="Recurring Task Test Plan")).to_be_visible(timeout=10000)
+
+    # 3. Navigate to the Tasks page
     page.get_by_role("link", name="Tasks").click()
-
-    # Wait for navigation to the tasks page to complete
     page.wait_for_url("**/tasks")
-
     expect(page.get_by_role("heading", name="Tasks for Recurring Task Test Plan")).to_be_visible(timeout=10000)
 
     # 4. Open the "Add Task" modal
