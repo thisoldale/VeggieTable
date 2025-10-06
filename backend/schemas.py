@@ -95,6 +95,22 @@ class TaskGroup(TaskGroupBase):
     tasks: List["Task"] = []
     model_config = ConfigDict(from_attributes=True)
 
+# --- Recurring Task Schemas ---
+class RecurringTaskBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    recurrence_rule: str # RRULE string
+
+class RecurringTaskCreate(RecurringTaskBase):
+    garden_plan_id: int
+    planting_id: Optional[int] = None
+    start_date: date
+
+class RecurringTaskUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    recurrence_rule: Optional[str] = None
+
 # --- Task Schemas ---
 class TaskBase(BaseModel):
     name: str
@@ -106,7 +122,7 @@ class TaskCreate(TaskBase):
     garden_plan_id: int
     planting_id: Optional[int] = None
     task_group_id: Optional[int] = None
-
+    recurring_task_id: Optional[int] = None
 
 class TaskUpdate(BaseModel):
     name: Optional[str] = None
@@ -115,12 +131,19 @@ class TaskUpdate(BaseModel):
     status: Optional[TaskStatus] = None
     task_group_id: Optional[int] = None
 
-
 class Task(TaskBase):
     id: int
     garden_plan_id: int
     planting_id: Optional[int] = None
     task_group_id: Optional[int] = None
+    recurring_task_id: Optional[int] = None
+    model_config = ConfigDict(from_attributes=True)
+
+class RecurringTask(RecurringTaskBase):
+    id: int
+    garden_plan_id: int
+    planting_id: Optional[int] = None
+    tasks: List[Task] = []
     model_config = ConfigDict(from_attributes=True)
 
 # --- Planting Schemas ---
@@ -138,6 +161,7 @@ class Planting(PlantBase):
     planting_method: Optional[PlantingMethod] = None
     harvest_method: Optional[HarvestMethod] = None
     tasks: List[Task] = []
+    recurring_tasks: List[RecurringTask] = []
     model_config = ConfigDict(from_attributes=True)
 
 class PlantingCreate(BaseModel):
@@ -185,4 +209,5 @@ class GardenPlan(GardenPlanBase):
     last_accessed_date: datetime
     plantings: List[Planting] = []
     tasks: List[Task] = []
+    recurring_tasks: List[RecurringTask] = []
     model_config = ConfigDict(from_attributes=True)

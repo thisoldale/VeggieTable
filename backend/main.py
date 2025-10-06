@@ -4,7 +4,7 @@ import datetime
 from zoneinfo import ZoneInfo
 import models
 from database import engine
-from routers import plants, garden_plans, plantings, tasks, task_groups
+from routers import plants, garden_plans, plantings, tasks, task_groups, recurring_tasks
 from version import __version__
 
 models.Base.metadata.create_all(bind=engine)
@@ -31,3 +31,4 @@ app.include_router(garden_plans.router)
 app.include_router(plantings.router)
 app.include_router(tasks.router)
 app.include_router(task_groups.router)
+app.include_router(recurring_tasks.router)
