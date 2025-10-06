@@ -244,36 +244,58 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-4">
             {/* Column 1: Planting Details */}
             <div className="flex flex-col space-y-4">
-              <FormRow label="Planting Method" error={errors.plantingMethod}>
-                <select {...register("plantingMethod")} className="block w-full p-2 border border-border bg-component-background rounded-md">
-                  {Object.values(PlantingMethod).map(method => (
-                    <option key={method} value={method}>{method}</option>
-                  ))}
-                </select>
-              </FormRow>
-              <FormRow label="Quantity" htmlFor="quantity" error={errors.quantity}>
-                <input type="number" id="quantity" {...register("quantity", { valueAsNumber: true })} className="block w-full p-2 border border-border bg-component-background rounded-md" min="1" />
-              </FormRow>
-              <FormRow label="Days to Maturity" htmlFor="time-to-maturity" error={errors.timeToMaturity}>
-                <input type="number" id="time-to-maturity" {...register("timeToMaturity")} className="block w-full p-2 border border-border bg-component-background rounded-md" />
-              </FormRow>
-
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground ml-11">Planting Method</label>
+                <div className="flex items-center space-x-2">
+                  <div className="w-9 h-9"></div> {/* Spacer */}
+                  <select {...register("plantingMethod")}
+                    className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md">
+                    {Object.values(PlantingMethod).map(method => (
+                      <option key={method} value={method}>{method}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label htmlFor="quantity" className="block text-sm font-medium text-muted-foreground">Quantity</label>
+                <div className="flex items-center space-x-2">
+                  <div className="w-9 h-9"></div> {/* Spacer */}
+                  <input type="number" id="quantity" {...register("quantity", { valueAsNumber: true })}
+                    className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md" min="1"
+                  />
+                </div>
+                {errors.quantity && <p className="text-destructive text-xs mt-1 ml-11">{errors.quantity.message}</p>}
+              </div>
+              <div>
+                <label htmlFor="time-to-maturity" className="block text-sm font-medium text-muted-foreground">Days to Maturity</label>
+                <div className="flex items-center space-x-2">
+                  <div className="w-9 h-9"></div> {/* Spacer */}
+                  <input type="number" id="time-to-maturity" {...register("timeToMaturity")}
+                    className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"
+                  />
+                </div>
+                {errors.timeToMaturity && <p className="text-destructive text-xs mt-1 ml-11">{errors.timeToMaturity.message}</p>}
+              </div>
               {(watch("plantingMethod") === PlantingMethod.SEED_STARTING) && (
                 <FormRow label="Days to Transplant" htmlFor="days-to-transplant" error={errors.daysToTransplant}>
                     <input type="number" id="days-to-transplant" {...register("daysToTransplant")} className="block w-full p-2 border border-border bg-component-background rounded-md" />
                 </FormRow>
               )}
               {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.DIRECT_SEEDING) && (
-                <FormRow label="Sow Date" htmlFor="sow-date" error={errors.sowDate} hasIcon={true}>
-                    <button type="button" onClick={() => setLockedField('planned_sow_date')} className="p-2 rounded-md hover:bg-interactive-hover">
+                <div>
+                  <label htmlFor="sow-date" className="block text-sm font-medium text-muted-foreground ml-11">Sow Date</label>
+                  <div className="flex items-center space-x-2">
+                    <button type="button" onClick={() => setLockedField('planned_sow_date')} className="p-2 mt-1 rounded-md hover:bg-interactive-hover">
                         {lockedField === 'planned_sow_date' ? <Lock className="h-5 w-5 text-interactive-primary" /> : <Unlock className="h-5 w-5 text-muted-foreground" />}
                     </button>
                     <input type="date" id="sow-date" {...register("sowDate")} onChange={(e) => handleDateChange('planned_sow_date', e.target.value)} className="block w-full p-2 border border-border bg-component-background rounded-md"/>
                 </FormRow>
               )}
               {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.SEEDLING) && (
-                 <FormRow label="Transplant Date" htmlFor="transplant-date" error={errors.transplantDate} hasIcon={true}>
-                    <button type="button" onClick={() => setLockedField('planned_transplant_date')} className="p-2 rounded-md hover:bg-interactive-hover">
+                <div>
+                  <label htmlFor="transplant-date" className="block text-sm font-medium text-muted-foreground ml-11">Transplant Date</label>
+                  <div className="flex items-center space-x-2">
+                    <button type="button" onClick={() => setLockedField('planned_transplant_date')} className="p-2 mt-1 rounded-md hover:bg-interactive-hover">
                         {lockedField === 'planned_transplant_date' ? <Lock className="h-5 w-5 text-interactive-primary" /> : <Unlock className="h-5 w-5 text-muted-foreground" />}
                     </button>
                     <input type="date" id="transplant-date" {...register("transplantDate")} onChange={(e) => handleDateChange('planned_transplant_date', e.target.value)} className="block w-full p-2 border border-border bg-component-background rounded-md"/>
@@ -283,15 +305,25 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
 
             {/* Column 2: Harvest Details */}
             <div className="flex flex-col space-y-4">
-               <FormRow label="Harvest Method" error={errors.harvestMethod}>
-                <select {...register("harvestMethod")} className="block w-full p-2 border border-border bg-component-background rounded-md">
-                  {Object.values(HarvestMethod).map(method => (
-                    <option key={method} value={method}>{method}</option>
-                  ))}
-                </select>
-              </FormRow>
-              <FormRow label={watchedHarvestMethod === HarvestMethod.SINGLE_HARVEST ? 'Harvest Date' : (watchedHarvestMethod === HarvestMethod.STAGGERED ? 'First Harvest' : 'Harvest Start')} htmlFor="harvest-date" error={errors.harvestDate} hasIcon={true}>
-                  <button type="button" onClick={() => setLockedField('planned_harvest_start_date')} className="p-2 rounded-md hover:bg-interactive-hover">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground ml-11">Harvest Method</label>
+                <div className="flex items-center space-x-2">
+                  <div className="w-9 h-9"></div> {/* Spacer */}
+                  <select {...register("harvestMethod")}
+                    className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md">
+                    {Object.values(HarvestMethod).map(method => (
+                      <option key={method} value={method}>{method}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label htmlFor="harvest-date" className="block text-sm font-medium text-muted-foreground ml-11">
+                  {watchedHarvestMethod === HarvestMethod.SINGLE_HARVEST ? 'Harvest Date' :
+                   (watchedHarvestMethod === HarvestMethod.STAGGERED ? 'First Harvest' : 'Harvest Start')}
+                </label>
+                <div className="flex items-center space-x-2">
+                  <button type="button" onClick={() => setLockedField('planned_harvest_start_date')} className="p-2 mt-1 rounded-md hover:bg-interactive-hover">
                     {lockedField === 'planned_harvest_start_date' ? <Lock className="h-5 w-5 text-interactive-primary" /> : <Unlock className="h-5 w-5 text-muted-foreground" />}
                   </button>
                   <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => handleDateChange('planned_harvest_start_date', e.target.value)} className="block w-full p-2 border border-border bg-component-background rounded-md"/>
