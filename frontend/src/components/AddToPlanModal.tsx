@@ -253,13 +253,16 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
             {/* Column 1: Planting Details */}
             <div className="flex flex-col space-y-4">
               <div>
-                <label className="block text-sm font-medium text-muted-foreground">Planting Method</label>
-                <select {...register("plantingMethod")}
-                  className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md">
-                  {Object.values(PlantingMethod).map(method => (
-                    <option key={method} value={method}>{method}</option>
-                  ))}
-                </select>
+                <label className="block text-sm font-medium text-muted-foreground ml-11">Planting Method</label>
+                <div className="flex items-center space-x-2">
+                  <div className="w-9 h-9"></div> {/* Spacer */}
+                  <select {...register("plantingMethod")}
+                    className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md">
+                    {Object.values(PlantingMethod).map(method => (
+                      <option key={method} value={method}>{method}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div>
                 <label htmlFor="quantity" className="block text-sm font-medium text-muted-foreground">Quantity</label>
@@ -297,7 +300,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
               )}
               {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.DIRECT_SEEDING) && (
                 <div>
-                  <label htmlFor="sow-date" className="block text-sm font-medium text-muted-foreground">Sow Date</label>
+                  <label htmlFor="sow-date" className="block text-sm font-medium text-muted-foreground ml-11">Sow Date</label>
                   <div className="flex items-center space-x-2">
                     <button type="button" onClick={() => setLockedField('planned_sow_date')} className="p-2 mt-1 rounded-md hover:bg-interactive-hover">
                         {lockedField === 'planned_sow_date' ? <Lock className="h-5 w-5 text-interactive-primary" /> : <Unlock className="h-5 w-5 text-muted-foreground" />}
@@ -309,7 +312,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
               )}
               {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.SEEDLING) && (
                 <div>
-                  <label htmlFor="transplant-date" className="block text-sm font-medium text-muted-foreground">Transplant Date</label>
+                  <label htmlFor="transplant-date" className="block text-sm font-medium text-muted-foreground ml-11">Transplant Date</label>
                   <div className="flex items-center space-x-2">
                     <button type="button" onClick={() => setLockedField('planned_transplant_date')} className="p-2 mt-1 rounded-md hover:bg-interactive-hover">
                         {lockedField === 'planned_transplant_date' ? <Lock className="h-5 w-5 text-interactive-primary" /> : <Unlock className="h-5 w-5 text-muted-foreground" />}
@@ -324,16 +327,19 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
             {/* Column 2: Harvest Details */}
             <div className="flex flex-col space-y-4">
               <div>
-                <label className="block text-sm font-medium text-muted-foreground">Harvest Method</label>
-                <select {...register("harvestMethod")}
-                  className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md">
-                  {Object.values(HarvestMethod).map(method => (
-                    <option key={method} value={method}>{method}</option>
-                  ))}
-                </select>
+                <label className="block text-sm font-medium text-muted-foreground ml-11">Harvest Method</label>
+                <div className="flex items-center space-x-2">
+                  <div className="w-9 h-9"></div> {/* Spacer */}
+                  <select {...register("harvestMethod")}
+                    className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md">
+                    {Object.values(HarvestMethod).map(method => (
+                      <option key={method} value={method}>{method}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div>
-                <label htmlFor="harvest-date" className="block text-sm font-medium text-muted-foreground">
+                <label htmlFor="harvest-date" className="block text-sm font-medium text-muted-foreground ml-11">
                   {watchedHarvestMethod === HarvestMethod.SINGLE_HARVEST ? 'Harvest Date' :
                    (watchedHarvestMethod === HarvestMethod.STAGGERED ? 'First Harvest' : 'Harvest Start')}
                 </label>
