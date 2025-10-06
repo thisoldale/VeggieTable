@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RRule, rrulestr } from 'rrule';
+import { RRule, rrulestr, RRuleOptions } from 'rrule';
 
 interface RecurrenceEditorProps {
   value: string; // RRULE string
@@ -9,10 +9,10 @@ interface RecurrenceEditorProps {
 const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) => {
   const [freq, setFreq] = useState(RRule.WEEKLY);
   const [interval, setInterval] = useState(1);
-  // Use simple numbers for byday (0=Sun, 1=Mon, etc.)
   const [byday, setByday] = useState<number[]>([new Date().getDay()]);
   const [until, setUntil] = useState<Date | null>(null);
 
+  // Effect to parse incoming RRULE string
   useEffect(() => {
     if (value) {
       try {
@@ -37,31 +37,53 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
     }
   }, [value]);
 
+  // Effect to rebuild the RRULE string when settings change
   useEffect(() => {
-    if (freq === RRule.WEEKLY && byday.length === 0) {
-      return;
-    }
-
-    const options: any = {
+    const options: Partial<RRuleOptions> = {
       freq,
       interval,
       dtstart: new Date(),
     };
-    if (freq === RRule.WEEKLY) {
-      options.byday = byday;
-    }
+
     if (until) {
       options.until = until;
     }
-    const newRule = new RRule(options);
-    onChange(newRule.toString());
+
+    if (freq === RRule.WEEKLY) {
+      if (byday && byday.length > 0) {
+        options.byday = byday;
+      } else {
+        return;
+      }
+    }
+
+    try {
+      const newRule = new RRule(options as RRuleOptions);
+      onChange(newRule.toString());
+    } catch (e) {
+      console.error("Failed to generate RRULE. Options:", options, "Error:", e);
+    }
   }, [freq, interval, byday, until, onChange]);
+
+  // FINAL FIX: Effect to reset byday when frequency is not weekly
+  useEffect(() => {
+    if (freq !== RRule.WEEKLY) {
+      // Reset byday to a default state when not in weekly mode to avoid invalid options
+      setByday([]);
+    } else {
+      // If switching back to weekly, ensure at least one day is selected
+      if (byday.length === 0) {
+        setByday([new Date().getDay()]);
+      }
+    }
+  }, [freq]);
+
 
   const handleWeekdayToggle = (day: number) => {
     setByday(prev => {
       const isSelected = prev.includes(day);
       if (isSelected) {
-        if (prev.length === 1) return prev; // Prevent unselecting the last day
+        if (prev.length === 1) return prev;
         return prev.filter(d => d !== day);
       } else {
         return [...prev, day];
@@ -70,12 +92,8 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
   };
 
   const weekdayOptions = [
-    { label: 'Sun', value: 0 },
-    { label: 'Mon', value: 1 },
-    { label: 'Tue', value: 2 },
-    { label: 'Wed', value: 3 },
-    { label: 'Thu', value: 4 },
-    { label: 'Fri', value: 5 },
+    { label: 'Sun', value: 0 }, { label: 'Mon', value: 1 }, { label: 'Tue', value: 2 },
+    { label: 'Wed', value: 3 }, { label: 'Thu', value: 4 }, { label: 'Fri', value: 5 },
     { label: 'Sat', value: 6 },
   ];
 
