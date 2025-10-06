@@ -99,17 +99,21 @@ class TaskGroup(TaskGroupBase):
 class RecurringTaskBase(BaseModel):
     name: str
     description: Optional[str] = None
-    recurrence_rule: str # RRULE string
+    recurrence_rule: str  # RRULE string
+    recurrence_end_date: Optional[date] = None
 
 class RecurringTaskCreate(RecurringTaskBase):
     garden_plan_id: int
     planting_id: Optional[int] = None
     start_date: date
+    exdates: Optional[List[date]] = []
 
 class RecurringTaskUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     recurrence_rule: Optional[str] = None
+    recurrence_end_date: Optional[date] = None
+    exdates: Optional[List[date]] = None
 
 # --- Task Schemas ---
 class TaskBase(BaseModel):

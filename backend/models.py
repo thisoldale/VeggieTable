@@ -1,6 +1,6 @@
 # backend/models.py
 # Removed PlantingGroup and added quantity to Planting.
-from sqlalchemy import Boolean, Integer, String, Date, Float, ForeignKey, Enum, DateTime, func
+from sqlalchemy import Boolean, Integer, String, Date, Float, ForeignKey, Enum, DateTime, func, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional, List
 from datetime import datetime
@@ -192,6 +192,8 @@ class RecurringTask(Base):
 
     # --- Recurrence Info ---
     recurrence_rule: Mapped[str] = mapped_column(String) # Storing the RRULE string
+    recurrence_end_date: Mapped[Optional[datetime]] = mapped_column(Date, nullable=True)
+    exdates: Mapped[Optional[List[datetime]]] = mapped_column(JSON, nullable=True) # List of exception dates
 
     # --- Relationships ---
     garden_plan: Mapped["GardenPlan"] = relationship(back_populates="recurring_tasks")

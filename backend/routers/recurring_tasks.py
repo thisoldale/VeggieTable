@@ -44,6 +44,20 @@ def update_recurring_task_endpoint(recurring_task_id: int, recurring_task_update
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Recurring task not found")
     return updated_recurring_task
 
+
+@router.put("/recurring-tasks/{recurring_task_id}/instance/{task_id}", response_model=schemas.Task)
+def update_task_instance_endpoint(recurring_task_id: int, task_id: int, task_update: schemas.TaskUpdate, db: Session = Depends(get_db)):
+    """
+    Update a single instance of a recurring task.
+    This action detaches the task from the series, making it a standalone task.
+    The original series will generate a new task for the original due date if another
+    task in the series is completed.
+    """
+    updated_task = crud.update_task_instance(db, recurring_task_id=recurring_task_id, task_id=task_id, task_update=task_update)
+    if updated_task is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task instance not found or not part of the specified recurring series")
+    return updated_task
+
 @router.delete("/recurring-tasks/{recurring_task_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_recurring_task_endpoint(recurring_task_id: int, db: Session = Depends(get_db)):
     """
@@ -51,4 +65,14 @@ def delete_recurring_task_endpoint(recurring_task_id: int, db: Session = Depends
     """
     if not crud.delete_recurring_task(db, recurring_task_id=recurring_task_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Recurring task not found")
-    return
+
+
+@router.delete("/recurring-tasks/{recurring_task_id}/instance/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_task_instance_endpoint(recurring_task_id: int, task_id: int, db: Session = Depends(get_db)):
+    """
+    Delete a single instance of a recurring task.
+    This adds the task's due date to the parent's `exdates` list
+    and then deletes the individual task.
+    """
+    if not crud.delete_task_instance(db, recurring_task_id=recurring_task_id, task_id=task_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task instance or recurring series not found")
