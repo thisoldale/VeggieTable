@@ -89,6 +89,8 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
   const watchedTimeToMaturity = watch('timeToMaturity');
   const watchedDaysToTransplant = watch('daysToTransplant');
   const previousPlantingMethod = usePrevious(watchedPlantingMethod);
+  const previousTimeToMaturity = usePrevious(watchedTimeToMaturity);
+  const previousDaysToTransplant = usePrevious(watchedDaysToTransplant);
 
   useEffect(() => {
     if (!previousPlantingMethod || previousPlantingMethod === watchedPlantingMethod) return;
@@ -104,7 +106,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
       planned_sow_date: sowDate,
       planned_transplant_date: transplantDate,
       planned_harvest_start_date: harvestDate,
-      time_to_maturity: watchedTimeToMaturity,
+      time_to_maturity_override: watchedTimeToMaturity,
       days_to_transplant_high: watchedDaysToTransplant,
     };
     const newDates = calculateDates(currentValues, lockedField, watchedPlantingMethod);
@@ -112,6 +114,27 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
     setValue('transplantDate', newDates.planned_transplant_date || '');
     setValue('harvestDate', newDates.planned_harvest_start_date || '');
   }, [watchedPlantingMethod, previousPlantingMethod, setValue, watchedDates, watchedTimeToMaturity, watchedDaysToTransplant, lockedField]);
+
+  useEffect(() => {
+    // This effect handles date recalculation when days to maturity/transplant change.
+    if (previousTimeToMaturity === undefined || previousDaysToTransplant === undefined) return;
+    if (previousTimeToMaturity === watchedTimeToMaturity && previousDaysToTransplant === watchedDaysToTransplant) return;
+
+    const [sowDate, transplantDate, harvestDate] = watchedDates;
+    const currentValues = {
+        planned_sow_date: sowDate,
+        planned_transplant_date: transplantDate,
+        planned_harvest_start_date: harvestDate,
+        time_to_maturity_override: watchedTimeToMaturity,
+        days_to_transplant_high: watchedDaysToTransplant,
+    };
+
+    const newDates = calculateDates(currentValues, lockedField, watchedPlantingMethod);
+    if (newDates.planned_sow_date !== sowDate) setValue('sowDate', newDates.planned_sow_date || '');
+    if (newDates.planned_transplant_date !== transplantDate) setValue('transplantDate', newDates.planned_transplant_date || '');
+    if (newDates.planned_harvest_start_date !== harvestDate) setValue('harvestDate', newDates.planned_harvest_start_date || '');
+
+  }, [watchedTimeToMaturity, watchedDaysToTransplant, previousTimeToMaturity, previousDaysToTransplant, setValue, watchedDates, lockedField, watchedPlantingMethod]);
 
   const handleDateChange = (field: LockedField, value: string) => {
     setLockedField(field);
@@ -121,7 +144,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
         planned_sow_date: field === 'planned_sow_date' ? value : sowDate,
         planned_transplant_date: field === 'planned_transplant_date' ? value : transplantDate,
         planned_harvest_start_date: field === 'planned_harvest_start_date' ? value : harvestDate,
-        time_to_maturity: watchedTimeToMaturity,
+        time_to_maturity_override: watchedTimeToMaturity,
         days_to_transplant_high: watchedDaysToTransplant,
     };
     const newDates = calculateDates(currentValues, field, watchedPlantingMethod);
