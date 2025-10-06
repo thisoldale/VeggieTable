@@ -93,7 +93,6 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
   useEffect(() => {
     if (!previousPlantingMethod || previousPlantingMethod === watchedPlantingMethod) return;
 
-    // Set default lock based on new planting method
     if (watchedPlantingMethod === PlantingMethod.SEEDLING) {
       setLockedField('planned_transplant_date');
     } else {
@@ -101,7 +100,6 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
     }
 
     const [sowDate, transplantDate, harvestDate] = watchedDates;
-
     const currentValues = {
       planned_sow_date: sowDate,
       planned_transplant_date: transplantDate,
@@ -109,20 +107,15 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
       time_to_maturity: watchedTimeToMaturity,
       days_to_transplant_high: watchedDaysToTransplant,
     };
-
     const newDates = calculateDates(currentValues, lockedField, watchedPlantingMethod);
-
     setValue('sowDate', newDates.planned_sow_date || '');
     setValue('transplantDate', newDates.planned_transplant_date || '');
     setValue('harvestDate', newDates.planned_harvest_start_date || '');
-
   }, [watchedPlantingMethod, previousPlantingMethod, setValue, watchedDates, watchedTimeToMaturity, watchedDaysToTransplant, lockedField]);
-
 
   const handleDateChange = (field: LockedField, value: string) => {
     setLockedField(field);
     setValue(field === 'planned_sow_date' ? 'sowDate' : field === 'planned_transplant_date' ? 'transplantDate' : 'harvestDate', value);
-
     const [sowDate, transplantDate, harvestDate] = watchedDates;
     const currentValues = {
         planned_sow_date: field === 'planned_sow_date' ? value : sowDate,
@@ -131,18 +124,10 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
         time_to_maturity: watchedTimeToMaturity,
         days_to_transplant_high: watchedDaysToTransplant,
     };
-
     const newDates = calculateDates(currentValues, field, watchedPlantingMethod);
-
-    if (newDates.planned_sow_date !== sowDate) {
-        setValue('sowDate', newDates.planned_sow_date || '');
-    }
-    if (newDates.planned_transplant_date !== transplantDate) {
-        setValue('transplantDate', newDates.planned_transplant_date || '');
-    }
-    if (newDates.planned_harvest_start_date !== harvestDate) {
-        setValue('harvestDate', newDates.planned_harvest_start_date || '');
-    }
+    if (newDates.planned_sow_date !== sowDate) setValue('sowDate', newDates.planned_sow_date || '');
+    if (newDates.planned_transplant_date !== transplantDate) setValue('transplantDate', newDates.planned_transplant_date || '');
+    if (newDates.planned_harvest_start_date !== harvestDate) setValue('harvestDate', newDates.planned_harvest_start_date || '');
   };
 
   const parseDays = (timeValue: string | number | null | undefined): number | null => {
@@ -158,7 +143,6 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
       if (initialAction && initialAction !== 'harvest') {
         defaultPlantingMethod = initialAction;
       }
-
       const defaults: Partial<PlantingFormData> = {
         quantity: 1,
         plantingMethod: defaultPlantingMethod,
@@ -171,12 +155,9 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
         harvestEndDate: '',
         secondHarvestDate: '',
       };
-      
       let anchorField: LockedField = 'planned_sow_date';
-
       if (initialDate) {
         const dateStr = format(initialDate, 'yyyy-MM-dd');
-
         if (initialAction === 'harvest') {
             defaults.harvestDate = dateStr;
             anchorField = 'planned_harvest_start_date';
@@ -187,9 +168,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
             defaults.sowDate = dateStr;
             anchorField = 'planned_sow_date';
         }
-
         setLockedField(anchorField);
-
         const currentValues = {
             planned_sow_date: defaults.sowDate,
             planned_transplant_date: defaults.transplantDate,
@@ -198,24 +177,19 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
             days_to_transplant_high: defaults.daysToTransplant,
         };
         const newDates = calculateDates(currentValues, anchorField, defaultPlantingMethod);
-
         if(newDates.planned_sow_date) defaults.sowDate = newDates.planned_sow_date;
         if(newDates.planned_transplant_date) defaults.transplantDate = newDates.planned_transplant_date;
         if(newDates.planned_harvest_start_date) defaults.harvestDate = newDates.planned_harvest_start_date;
-
       } else {
-        // Set default lock based on planting method when no initial date is provided
         if (defaultPlantingMethod === PlantingMethod.SEEDLING) {
           setLockedField('planned_transplant_date');
         } else {
           setLockedField('planned_sow_date');
         }
       }
-
       reset(defaults);
     }
   }, [isOpen, plant, reset, initialDate, initialAction]);
-
 
   const onSubmit = async (data: PlantingFormData) => {
     try {
@@ -235,7 +209,6 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
           status: PlantingStatus.PLANNED,
         }
       }).unwrap();
-      
       onPlantingAdd();
     } catch (err) {
       console.error('Failed to add planting:', err);
@@ -243,6 +216,25 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
   };
 
   if (!isOpen) return null;
+
+  const FormRow = ({ label, htmlFor, error, children, hasIcon = false }) => (
+    <div className="grid grid-cols-[44px,1fr] items-center gap-x-2">
+      <div className="col-start-2">
+        <label htmlFor={htmlFor} className="block text-sm font-medium text-muted-foreground -mb-1">
+          {label}
+        </label>
+      </div>
+      <div className="h-9 w-9 flex items-center justify-center">
+        {hasIcon && children[0]}
+      </div>
+      <div className="mt-1">
+        {hasIcon ? children[1] : children}
+      </div>
+      <div className="col-start-2">
+        {error && <p className="text-destructive text-xs mt-1">{error.message}</p>}
+      </div>
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -285,18 +277,9 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
                 {errors.timeToMaturity && <p className="text-destructive text-xs mt-1 ml-11">{errors.timeToMaturity.message}</p>}
               </div>
               {(watch("plantingMethod") === PlantingMethod.SEED_STARTING) && (
-                <div>
-                    <label htmlFor="days-to-transplant" className="block text-sm font-medium text-muted-foreground">Days to Transplant</label>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-9 h-9"></div> {/* Spacer */}
-                      <input
-                          type="number"
-                          id="days-to-transplant"
-                          {...register("daysToTransplant")}
-                          className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"
-                      />
-                    </div>
-                </div>
+                <FormRow label="Days to Transplant" htmlFor="days-to-transplant" error={errors.daysToTransplant}>
+                    <input type="number" id="days-to-transplant" {...register("daysToTransplant")} className="block w-full p-2 border border-border bg-component-background rounded-md" />
+                </FormRow>
               )}
               {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.DIRECT_SEEDING) && (
                 <div>
@@ -305,10 +288,8 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
                     <button type="button" onClick={() => setLockedField('planned_sow_date')} className="p-2 mt-1 rounded-md hover:bg-interactive-hover">
                         {lockedField === 'planned_sow_date' ? <Lock className="h-5 w-5 text-interactive-primary" /> : <Unlock className="h-5 w-5 text-muted-foreground" />}
                     </button>
-                    <input type="date" id="sow-date" {...register("sowDate")} onChange={(e) => handleDateChange('planned_sow_date', e.target.value)} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
-                  </div>
-                  {errors.sowDate && <p className="text-destructive text-xs mt-1 ml-11">{errors.sowDate.message}</p>}
-                </div>
+                    <input type="date" id="sow-date" {...register("sowDate")} onChange={(e) => handleDateChange('planned_sow_date', e.target.value)} className="block w-full p-2 border border-border bg-component-background rounded-md"/>
+                </FormRow>
               )}
               {(watch("plantingMethod") === PlantingMethod.SEED_STARTING || watch("plantingMethod") === PlantingMethod.SEEDLING) && (
                 <div>
@@ -317,10 +298,8 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
                     <button type="button" onClick={() => setLockedField('planned_transplant_date')} className="p-2 mt-1 rounded-md hover:bg-interactive-hover">
                         {lockedField === 'planned_transplant_date' ? <Lock className="h-5 w-5 text-interactive-primary" /> : <Unlock className="h-5 w-5 text-muted-foreground" />}
                     </button>
-                    <input type="date" id="transplant-date" {...register("transplantDate")} onChange={(e) => handleDateChange('planned_transplant_date', e.target.value)} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
-                  </div>
-                  {errors.transplantDate && <p className="text-destructive text-xs mt-1 ml-11">{errors.transplantDate.message}</p>}
-                </div>
+                    <input type="date" id="transplant-date" {...register("transplantDate")} onChange={(e) => handleDateChange('planned_transplant_date', e.target.value)} className="block w-full p-2 border border-border bg-component-background rounded-md"/>
+                </FormRow>
               )}
             </div>
 
@@ -347,29 +326,17 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
                   <button type="button" onClick={() => setLockedField('planned_harvest_start_date')} className="p-2 mt-1 rounded-md hover:bg-interactive-hover">
                     {lockedField === 'planned_harvest_start_date' ? <Lock className="h-5 w-5 text-interactive-primary" /> : <Unlock className="h-5 w-5 text-muted-foreground" />}
                   </button>
-                  <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => handleDateChange('planned_harvest_start_date', e.target.value)} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
-                </div>
-                {errors.harvestDate && <p className="text-destructive text-xs mt-1 ml-11">{errors.harvestDate.message}</p>}
-              </div>
+                  <input type="date" id="harvest-date" {...register("harvestDate")} onChange={(e) => handleDateChange('planned_harvest_start_date', e.target.value)} className="block w-full p-2 border border-border bg-component-background rounded-md"/>
+              </FormRow>
               {(watchedHarvestMethod === HarvestMethod.CONTINUOUS || watchedHarvestMethod === HarvestMethod.CUT_AND_COME_AGAIN) && (
-                <div>
-                  <label htmlFor="harvest-end-date" className="block text-sm font-medium text-muted-foreground">Harvest End</label>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-9 h-9"></div> {/* Spacer */}
-                    <input type="date" id="harvest-end-date" {...register("harvestEndDate")} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
-                  </div>
-                  {errors.harvestEndDate && <p className="text-destructive text-xs mt-1 ml-11">{errors.harvestEndDate.message}</p>}
-                </div>
+                <FormRow label="Harvest End" htmlFor="harvest-end-date" error={errors.harvestEndDate}>
+                  <input type="date" id="harvest-end-date" {...register("harvestEndDate")} className="block w-full p-2 border border-border bg-component-background rounded-md"/>
+                </FormRow>
               )}
               {watchedHarvestMethod === HarvestMethod.STAGGERED && (
-                <div>
-                  <label htmlFor="second-harvest-date" className="block text-sm font-medium text-muted-foreground">Second Harvest</label>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-9 h-9"></div> {/* Spacer */}
-                    <input type="date" id="second-harvest-date" {...register("secondHarvestDate")} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
-                  </div>
-                  {errors.secondHarvestDate && <p className="text-destructive text-xs mt-1 ml-11">{errors.secondHarvestDate.message}</p>}
-                </div>
+                <FormRow label="Second Harvest" htmlFor="second-harvest-date" error={errors.secondHarvestDate}>
+                  <input type="date" id="second-harvest-date" {...register("secondHarvestDate")} className="block w-full p-2 border border-border bg-component-background rounded-md"/>
+                </FormRow>
               )}
             </div>
           </div>
