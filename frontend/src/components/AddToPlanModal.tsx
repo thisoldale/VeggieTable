@@ -265,7 +265,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
                 </div>
               </div>
               <div>
-                <label htmlFor="quantity" className="block text-sm font-medium text-muted-foreground ml-11">Quantity</label>
+                <label htmlFor="quantity" className="block text-sm font-medium text-muted-foreground">Quantity</label>
                 <div className="flex items-center space-x-2">
                   <div className="w-9 h-9"></div> {/* Spacer */}
                   <input type="number" id="quantity" {...register("quantity", { valueAsNumber: true })}
@@ -275,7 +275,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
                 {errors.quantity && <p className="text-destructive text-xs mt-1 ml-11">{errors.quantity.message}</p>}
               </div>
               <div>
-                <label htmlFor="time-to-maturity" className="block text-sm font-medium text-muted-foreground ml-11">Days to Maturity</label>
+                <label htmlFor="time-to-maturity" className="block text-sm font-medium text-muted-foreground">Days to Maturity</label>
                 <div className="flex items-center space-x-2">
                   <div className="w-9 h-9"></div> {/* Spacer */}
                   <input type="number" id="time-to-maturity" {...register("timeToMaturity")}
@@ -286,7 +286,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
               </div>
               {(watch("plantingMethod") === PlantingMethod.SEED_STARTING) && (
                 <div>
-                    <label htmlFor="days-to-transplant" className="block text-sm font-medium text-muted-foreground ml-11">Days to Transplant</label>
+                    <label htmlFor="days-to-transplant" className="block text-sm font-medium text-muted-foreground">Days to Transplant</label>
                     <div className="flex items-center space-x-2">
                       <div className="w-9 h-9"></div> {/* Spacer */}
                       <input
@@ -353,7 +353,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
               </div>
               {(watchedHarvestMethod === HarvestMethod.CONTINUOUS || watchedHarvestMethod === HarvestMethod.CUT_AND_COME_AGAIN) && (
                 <div>
-                  <label htmlFor="harvest-end-date" className="block text-sm font-medium text-muted-foreground ml-11">Harvest End</label>
+                  <label htmlFor="harvest-end-date" className="block text-sm font-medium text-muted-foreground">Harvest End</label>
                   <div className="flex items-center space-x-2">
                     <div className="w-9 h-9"></div> {/* Spacer */}
                     <input type="date" id="harvest-end-date" {...register("harvestEndDate")} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
@@ -363,7 +363,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
               )}
               {watchedHarvestMethod === HarvestMethod.STAGGERED && (
                 <div>
-                  <label htmlFor="second-harvest-date" className="block text-sm font-medium text-muted-foreground ml-11">Second Harvest</label>
+                  <label htmlFor="second-harvest-date" className="block text-sm font-medium text-muted-foreground">Second Harvest</label>
                   <div className="flex items-center space-x-2">
                     <div className="w-9 h-9"></div> {/* Spacer */}
                     <input type="date" id="second-harvest-date" {...register("secondHarvestDate")} className="mt-1 block w-full p-2 border border-border bg-component-background rounded-md"/>
