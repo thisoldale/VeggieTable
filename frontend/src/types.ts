@@ -95,10 +95,23 @@ export interface Task {
     garden_plan_id: number;
     planting_id?: number | null;
     task_group_id?: number | null;
+    recurring_task_id?: number | null;
     name: string;
     description?: string | null;
     due_date?: string | null;
     status: TaskStatus;
+}
+
+export interface RecurringTask {
+  id: number;
+  garden_plan_id: number;
+  planting_id?: number;
+  name: string;
+  description?: string;
+  recurrence_rule: string;
+  recurrence_end_date?: string;
+  exdates?: string[];
+  tasks: Task[];
 }
 
 // Planting now has all the fields of a Plant, plus its own specific fields.
@@ -115,6 +128,7 @@ export interface Planting extends Plant {
     planting_method?: PlantingMethod | null;
     harvest_method?: HarvestMethod | null;
     tasks: Task[];
+    recurring_tasks: RecurringTask[];
 }
 
 export interface PlantingCreatePayload {
@@ -139,6 +153,7 @@ export interface GardenPlan {
     last_accessed_date: string;
     plantings: Planting[];
     tasks: Task[];
+    recurring_tasks: RecurringTask[];
 }
 
 export type AppContextType = {
