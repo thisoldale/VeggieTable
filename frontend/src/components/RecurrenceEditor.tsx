@@ -12,7 +12,6 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
   const [byday, setByday] = useState<number[]>([new Date().getDay()]);
   const [until, setUntil] = useState<Date | null>(null);
 
-  // Effect to parse incoming RRULE string
   useEffect(() => {
     if (value) {
       try {
@@ -24,6 +23,8 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
           if (options.byday !== null && options.byday !== undefined) {
              const days = Array.isArray(options.byday) ? options.byday : [options.byday];
              setByday(days);
+          } else {
+             setByday([]);
           }
           if (options.until) {
             const utcDate = options.until;
@@ -37,7 +38,6 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
     }
   }, [value]);
 
-  // Effect to rebuild the RRULE string when settings change
   useEffect(() => {
     const options: Partial<RRuleOptions> = {
       freq,
@@ -50,11 +50,11 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
     }
 
     if (freq === RRule.WEEKLY) {
-      if (byday && byday.length > 0) {
-        options.byday = byday;
-      } else {
+      if (byday.length === 0) {
+        // Don't generate an invalid rule for weekly if no days are selected
         return;
       }
+      options.byday = byday;
     }
 
     try {
@@ -65,19 +65,17 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
     }
   }, [freq, interval, byday, until, onChange]);
 
-  // FINAL FIX: Effect to reset byday when frequency is not weekly
-  useEffect(() => {
-    if (freq !== RRule.WEEKLY) {
-      // Reset byday to a default state when not in weekly mode to avoid invalid options
+  const handleFrequencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newFreq = parseInt(e.target.value, 10);
+    setFreq(newFreq);
+    // Co-locate state updates to prevent race conditions
+    if (newFreq !== RRule.WEEKLY) {
       setByday([]);
     } else {
-      // If switching back to weekly, ensure at least one day is selected
-      if (byday.length === 0) {
-        setByday([new Date().getDay()]);
-      }
+      // When switching back to weekly, ensure a day is selected
+      setByday([new Date().getDay()]);
     }
-  }, [freq]);
-
+  };
 
   const handleWeekdayToggle = (day: number) => {
     setByday(prev => {
@@ -110,7 +108,7 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
         />
         <select
           value={freq}
-          onChange={(e) => setFreq(parseInt(e.target.value, 10))}
+          onChange={handleFrequencyChange}
           className="p-1 border border-border rounded-md bg-background"
         >
           <option value={RRule.DAILY}>Day(s)</option>
