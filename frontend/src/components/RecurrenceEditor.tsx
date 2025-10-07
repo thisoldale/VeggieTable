@@ -38,6 +38,9 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
   }, [value]);
 
   useEffect(() => {
+    // This effect is responsible for creating the RRULE string whenever the recurrence options change.
+
+    // Prevent creating a rule with an empty `byday` for weekly recurrence, which is invalid.
     if (freq === RRule.WEEKLY && byday.length === 0) {
       return;
     }
@@ -46,15 +49,28 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
       freq,
       interval,
       dtstart: new Date(),
+      // Pass until and byday so they are in the object, then we can conditionally delete them.
+      until,
+      byday,
     };
-    if (freq === RRule.WEEKLY) {
-      options.byday = byday;
+
+    // This is the critical fix. We explicitly delete `byday` if the frequency is not weekly.
+    // This prevents a race condition where a stale `byday` value from a previous render
+    // could exist when the frequency has changed to non-weekly, causing the RRule constructor to fail.
+    if (freq !== RRule.WEEKLY) {
+      delete options.byday;
     }
-    if (until) {
-      options.until = until;
+
+    if (!until) {
+      delete options.until;
     }
-    const newRule = new RRule(options);
-    onChange(newRule.toString());
+
+    try {
+      const newRule = new RRule(options);
+      onChange(newRule.toString());
+    } catch (e) {
+      console.error("Error creating RRule:", e, "with options:", options);
+    }
   }, [freq, interval, byday, until, onChange]);
 
   const handleWeekdayToggle = (day: number) => {
