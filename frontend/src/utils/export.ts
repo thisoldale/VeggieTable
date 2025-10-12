@@ -1,5 +1,5 @@
 // This file will contain the export functionality for garden plans.
-import { Planting, PlantingStatus } from '../types';
+import { Planting, PlantingStatus, CsvExportSchema } from '../schemas';
 import Papa from 'papaparse';
 
 function downloadFile(content: string, fileName: string, contentType: string) {
@@ -18,21 +18,14 @@ function downloadFile(content: string, fileName: string, contentType: string) {
  * @param planName - The name of the garden plan, used for the filename.
  */
 export const exportToCsv = (plantings: Planting[], planName: string) => {
-  const dataToExport = plantings.map(p => ({
-    library_plant_id: p.library_plant_id,
-    plant_name: p.plant_name,
-    variety_name: p.variety_name || '',
-    quantity: p.quantity,
-    status: p.status,
-    planting_method: p.planting_method || '',
-    planned_sow_date: p.planned_sow_date || '',
-    planned_transplant_date: p.planned_transplant_date || '',
-    planned_harvest_start_date: p.planned_harvest_start_date || '',
-    time_to_maturity_override: p.time_to_maturity_override || '',
-  }));
-
-  const csv = Papa.unparse(dataToExport);
-  downloadFile(csv, `${planName.replace(/ /g, '_')}.csv`, 'text/csv;charset=utf-8;');
+  try {
+    const dataToExport = CsvExportSchema.parse(plantings);
+    const csv = Papa.unparse(dataToExport);
+    downloadFile(csv, `${planName.replace(/ /g, '_')}.csv`, 'text/csv;charset=utf-8;');
+  } catch (error) {
+    console.error("Failed to parse plantings for CSV export:", error);
+    // Optionally, show a notification to the user
+  }
 };
 
 /**
