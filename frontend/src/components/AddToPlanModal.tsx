@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { GardenPlan, Plant, PlantingMethod, PlantingStatus, HarvestMethod } from '../types';
+import { PlantingFormSchema, PlantingFormData, GardenPlan, Plant, PlantingMethod, PlantingStatus, HarvestMethod } from '../schemas';
 import { useAddPlantingMutation } from '../store/plantApi';
 import { format } from 'date-fns';
 import { calculateDates } from '../utils/dateCalculations';
@@ -18,52 +17,6 @@ function usePrevious<T>(value: T): T | undefined {
   return ref.current;
 }
 
-const plantingSchema = z.object({
-  quantity: z.number().min(1, 'Quantity must be at least 1'),
-  plantingMethod: z.nativeEnum(PlantingMethod),
-  harvestMethod: z.nativeEnum(HarvestMethod),
-  sowDate: z.string().optional(),
-  transplantDate: z.string().optional(),
-  harvestDate: z.string().optional(),
-  harvestEndDate: z.string().optional(),
-  secondHarvestDate: z.string().optional(),
-  timeToMaturity: z.string().regex(/^\d*$/, "Must be a number").optional(),
-  daysToTransplant: z.string().regex(/^\d*$/, "Must be a number").optional(),
-}).refine(data => {
-    if (data.sowDate && data.transplantDate) {
-        return new Date(data.transplantDate) >= new Date(data.sowDate);
-    }
-    return true;
-}, {
-    message: "Transplant date must be after sow date.",
-    path: ["transplantDate"],
-}).refine(data => {
-    if (data.transplantDate && data.harvestDate) {
-        return new Date(data.harvestDate) >= new Date(data.transplantDate);
-    }
-    return true;
-}, {
-    message: "Harvest date must be after transplant date.",
-    path: ["harvestDate"],
-}).refine(data => {
-    if (data.harvestDate && data.harvestEndDate) {
-        return new Date(data.harvestEndDate) >= new Date(data.harvestDate);
-    }
-    return true;
-}, {
-    message: "Harvest end date must be after harvest start date.",
-    path: ["harvestEndDate"],
-}).refine(data => {
-    if (data.harvestDate && data.secondHarvestDate) {
-        return new Date(data.secondHarvestDate) >= new Date(data.harvestDate);
-    }
-    return true;
-}, {
-    message: "Second harvest date must be after first harvest date.",
-    path: ["secondHarvestDate"],
-});
-
-type PlantingFormData = z.infer<typeof plantingSchema>;
 
 interface AddToPlanModalProps {
   isOpen: boolean;
@@ -80,7 +33,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
   const [lockedField, setLockedField] = useState<LockedField>('planned_sow_date');
 
   const { register, handleSubmit, watch, setValue, formState: { errors }, reset } = useForm<PlantingFormData>({
-    resolver: zodResolver(plantingSchema),
+    resolver: zodResolver(PlantingFormSchema),
   });
 
   const watchedDates = watch(['sowDate', 'transplantDate', 'harvestDate']);

@@ -1,20 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { RRule, rrulestr, Weekday } from 'rrule';
-
-// Define a more comprehensive state structure for recurrence options
-interface RecurrenceOptions {
-  freq: number;
-  interval: number;
-  byday: number[] | null; // For weekly and daily (weekdays)
-  bymonthday: number | null; // For monthly on a specific date
-  bysetpos: number | null; // For monthly/yearly on a relative day (e.g., second Tuesday)
-  bymonth: number | null; // For yearly
-  count: number | null;
-  until: Date | null;
-  endType: 'never' | 'date' | 'count';
-  dailyOption: 'everyday' | 'weekdays';
-  monthlyOption: 'day_of_month' | 'day_of_week';
-}
+import { RecurrenceOptionsSchema, RecurrenceOptions } from '../schemas';
 
 interface RecurrenceEditorProps {
   value: string; // RRULE string
@@ -83,11 +69,15 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
 
   // Effect to generate RRULE string when options change
   useEffect(() => {
-    const { freq, interval, byday, bymonthday, bysetpos, bymonth, count, until, endType, dailyOption, monthlyOption } = options;
-
-    if (freq === RRule.WEEKLY && (!byday || byday.length === 0)) {
+    const result = RecurrenceOptionsSchema.safeParse(options);
+    if (!result.success) {
+      // For now, we'll log the errors. In a more advanced implementation,
+      // you might show these errors in the UI.
+      console.error("Recurrence validation error:", result.error.flatten());
       return;
     }
+
+    const { freq, interval, byday, bymonthday, bysetpos, bymonth, count, until, endType, dailyOption, monthlyOption } = result.data;
 
     const rruleOptions: any = {
       freq,

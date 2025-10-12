@@ -1,33 +1,39 @@
-import { Planting, PlantingMethod } from '../types';
+import { Planting, PlantingMethod, DaysSchema } from '../schemas';
+import { z } from 'zod';
 import { add, sub } from 'date-fns';
 
-const parseDays = (days: string | number | null | undefined): number | null => {
-    if (days === null || days === undefined) return null;
-    if (typeof days === 'number') {
-        return days;
-    }
-    if (typeof days === 'string') {
-        if (days.trim() === '') return null;
-        if (days.includes('-')) {
-            const parts = days.split('-').map(d => parseInt(d.trim(), 10));
-            if (parts.length !== 2 || parts.some(isNaN)) return null;
-            return Math.round((parts[0] + parts[1]) / 2);
-        }
-        const num = parseInt(days, 10);
-        return isNaN(num) ? null : num;
-    }
-    return null;
-};
+const DateCalculationInputSchema = z.object({
+    planting: z.object({
+        time_to_maturity_override: DaysSchema.optional(),
+        time_to_maturity: DaysSchema.optional(),
+        days_to_transplant_high: DaysSchema.optional(),
+        planned_sow_date: z.string().optional(),
+        planned_transplant_date: z.string().optional(),
+        planned_harvest_start_date: z.string().optional(),
+    }),
+    changedField: z.string(),
+    plantingMethod: z.nativeEnum(PlantingMethod).optional(),
+});
+
 
 export const calculateDates = (
     planting: Partial<Planting>,
     changedField: string,
     plantingMethod?: PlantingMethod
 ): { planned_sow_date?: string; planned_transplant_date?: string; planned_harvest_start_date?: string } => {
-    const timeToMaturity = parseDays(planting.time_to_maturity_override ?? planting.time_to_maturity);
-    const daysToTransplant = parseDays(planting.days_to_transplant_high);
 
-    if (timeToMaturity === null) return {};
+    const validationResult = DateCalculationInputSchema.safeParse({ planting, changedField, plantingMethod });
+    if (!validationResult.success) {
+        console.error("Invalid input for calculateDates:", validationResult.error);
+        return {};
+    }
+
+    const { planting: validatedPlanting } = validationResult.data;
+
+    const timeToMaturity = validatedPlanting.time_to_maturity_override ?? validatedPlanting.time_to_maturity;
+    const daysToTransplant = validatedPlanting.days_to_transplant_high;
+
+    if (timeToMaturity === null || timeToMaturity === undefined) return {};
 
     let sowDate: Date | undefined;
     let transplantDate: Date | undefined;
