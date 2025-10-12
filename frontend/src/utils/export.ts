@@ -1,5 +1,5 @@
 // This file will contain the export functionality for garden plans.
-import { Planting, PlantingStatus, CsvExportSchema } from '../schemas';
+import { Planting, PlantingStatusSchema, CsvExportSchema } from '../schemas';
 import Papa from 'papaparse';
 
 function downloadFile(content: string, fileName: string, contentType: string) {
@@ -36,12 +36,12 @@ export const exportToCsv = (plantings: Planting[], planName: string) => {
 export const exportToHtml = (planName: string, plantings: Planting[]) => {
   // Separate plantings for Harvest section
   const harvestPlantings = plantings.filter(p =>
-    p.status === PlantingStatus.HARVESTING || p.status === PlantingStatus.DONE
+    p.status === PlantingStatusSchema.enum.Harvesting || p.status === PlantingStatusSchema.enum.Done
   );
 
   // Other plantings, sorted by planned sow date
   const regularPlantings = plantings
-    .filter(p => p.status !== PlantingStatus.HARVESTING && p.status !== PlantingStatus.DONE)
+    .filter(p => p.status !== PlantingStatusSchema.enum.Harvesting && p.status !== PlantingStatusSchema.enum.Done)
     .sort((a, b) => {
       if (a.planned_sow_date && b.planned_sow_date) {
         return new Date(a.planned_sow_date).getTime() - new Date(b.planned_sow_date).getTime();
