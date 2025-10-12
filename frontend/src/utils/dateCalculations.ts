@@ -1,4 +1,4 @@
-import { Planting, PlantingMethod, DaysSchema } from '../schemas';
+import { Planting, PlantingMethodSchema, DaysSchema, PlantingMethod } from '../schemas';
 import { z } from 'zod';
 import { add, sub } from 'date-fns';
 
@@ -12,7 +12,7 @@ const DateCalculationInputSchema = z.object({
         planned_harvest_start_date: z.string().optional(),
     }),
     changedField: z.string(),
-    plantingMethod: z.nativeEnum(PlantingMethod).optional(),
+    plantingMethod: PlantingMethodSchema.optional(),
 });
 
 
@@ -50,25 +50,25 @@ export const calculateDates = (
     }
 
     if (sowDate && !isNaN(sowDate.getTime())) {
-        if (plantingMethod === PlantingMethod.DIRECT_SEEDING) {
+        if (plantingMethod === PlantingMethodSchema.enum['Direct Seeding']) {
             harvestDate = add(sowDate, { days: timeToMaturity });
-        } else if (plantingMethod === PlantingMethod.SEED_STARTING && daysToTransplant !== null) {
+        } else if (plantingMethod === PlantingMethodSchema.enum['Seed Starting'] && daysToTransplant !== null) {
             transplantDate = add(sowDate, { days: daysToTransplant });
             harvestDate = add(transplantDate, { days: timeToMaturity });
         }
     } else if (transplantDate && !isNaN(transplantDate.getTime())) {
-        if (plantingMethod === PlantingMethod.SEED_STARTING || plantingMethod === PlantingMethod.SEEDLING) {
+        if (plantingMethod === PlantingMethodSchema.enum['Seed Starting'] || plantingMethod === PlantingMethodSchema.enum.Seedling) {
             harvestDate = add(transplantDate, { days: timeToMaturity });
-            if (plantingMethod === PlantingMethod.SEED_STARTING && daysToTransplant !== null) {
+            if (plantingMethod === PlantingMethodSchema.enum['Seed Starting'] && daysToTransplant !== null) {
                 sowDate = sub(transplantDate, { days: daysToTransplant });
             }
         }
     } else if (harvestDate && !isNaN(harvestDate.getTime())) {
-        if (plantingMethod === PlantingMethod.DIRECT_SEEDING) {
+        if (plantingMethod === PlantingMethodSchema.enum['Direct Seeding']) {
             sowDate = sub(harvestDate, { days: timeToMaturity });
-        } else if (plantingMethod === PlantingMethod.SEED_STARTING || plantingMethod === PlantingMethod.SEEDLING) {
+        } else if (plantingMethod === PlantingMethodSchema.enum['Seed Starting'] || plantingMethod === PlantingMethodSchema.enum.Seedling) {
             transplantDate = sub(harvestDate, { days: timeToMaturity });
-            if (plantingMethod === PlantingMethod.SEED_STARTING && daysToTransplant !== null) {
+            if (plantingMethod === PlantingMethodSchema.enum['Seed Starting'] && daysToTransplant !== null) {
                 sowDate = sub(transplantDate, { days: daysToTransplant });
             }
         }

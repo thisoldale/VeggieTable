@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PlantingFormSchema, PlantingFormData, GardenPlan, Plant, PlantingMethod, PlantingStatus, HarvestMethod } from '../schemas';
+import { PlantingFormSchema, PlantingFormData, GardenPlan, Plant, PlantingMethodSchema, PlantingStatusSchema, HarvestMethodSchema, PlantingMethod } from '../schemas';
 import { useAddPlantingMutation } from '../store/plantApi';
 import { format } from 'date-fns';
 import { calculateDates } from '../utils/dateCalculations';
@@ -48,7 +48,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
   useEffect(() => {
     if (!previousPlantingMethod || previousPlantingMethod === watchedPlantingMethod) return;
 
-    if (watchedPlantingMethod === PlantingMethod.SEEDLING) {
+    if (watchedPlantingMethod === PlantingMethodSchema.enum.Seedling) {
       setLockedField('planned_transplant_date');
     } else {
       setLockedField('planned_sow_date');
@@ -115,14 +115,14 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
 
   useEffect(() => {
     if (isOpen && plant) {
-      let defaultPlantingMethod = PlantingMethod.SEED_STARTING;
+      let defaultPlantingMethod = PlantingMethodSchema.enum['Seed Starting'];
       if (initialAction && initialAction !== 'harvest') {
-        defaultPlantingMethod = initialAction;
+        defaultPlantingMethod = initialAction as PlantingMethod;
       }
       const defaults: Partial<PlantingFormData> = {
         quantity: 1,
         plantingMethod: defaultPlantingMethod,
-        harvestMethod: HarvestMethod.SINGLE_HARVEST,
+        harvestMethod: HarvestMethodSchema.enum['Single Harvest'],
         timeToMaturity: String(parseDays(plant.time_to_maturity) || ''),
         daysToTransplant: String(parseDays(plant.days_to_transplant_high) || ''),
         sowDate: '',
@@ -137,7 +137,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
         if (initialAction === 'harvest') {
             defaults.harvestDate = dateStr;
             anchorField = 'planned_harvest_start_date';
-        } else if (defaultPlantingMethod === PlantingMethod.SEEDLING) {
+        } else if (defaultPlantingMethod === PlantingMethodSchema.enum.Seedling) {
             defaults.transplantDate = dateStr;
             anchorField = 'planned_transplant_date';
         } else {
@@ -157,7 +157,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
         if(newDates.planned_transplant_date) defaults.transplantDate = newDates.planned_transplant_date;
         if(newDates.planned_harvest_start_date) defaults.harvestDate = newDates.planned_harvest_start_date;
       } else {
-        if (defaultPlantingMethod === PlantingMethod.SEEDLING) {
+        if (defaultPlantingMethod === PlantingMethodSchema.enum.Seedling) {
           setLockedField('planned_transplant_date');
         } else {
           setLockedField('planned_sow_date');
@@ -182,7 +182,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
           planned_harvest_start_date: data.harvestDate || undefined,
           planned_harvest_end_date: data.harvestEndDate || undefined,
           planned_second_harvest_date: data.secondHarvestDate || undefined,
-          status: PlantingStatus.PLANNED,
+          status: PlantingStatusSchema.enum.Planned,
         }
       }).unwrap();
       onPlantingAdd();
@@ -216,7 +216,7 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
     plantingMethod: (
       <FormRow label="Planting Method" error={errors.plantingMethod}>
         <select {...register("plantingMethod")} className="block w-full p-2 border border-border bg-component-background rounded-md">
-          {Object.values(PlantingMethod).map(method => (
+          {Object.values(PlantingMethodSchema.enum).map(method => (
             <option key={method} value={method}>{method}</option>
           ))}
         </select>
@@ -256,14 +256,14 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
     harvestMethod: (
       <FormRow label="Harvest Method" error={errors.harvestMethod}>
         <select {...register("harvestMethod")} className="block w-full p-2 border border-border bg-component-background rounded-md">
-          {Object.values(HarvestMethod).map(method => (
+          {Object.values(HarvestMethodSchema.enum).map(method => (
             <option key={method} value={method}>{method}</option>
           ))}
         </select>
       </FormRow>
     ),
     harvestDate: (
-      <FormRow label={watchedHarvestMethod === HarvestMethod.SINGLE_HARVEST ? 'Harvest Date' : (watchedHarvestMethod === HarvestMethod.STAGGERED ? 'First Harvest' : 'Harvest Start')} htmlFor="harvest-date" error={errors.harvestDate} hasIcon={true}>
+      <FormRow label={watchedHarvestMethod === HarvestMethodSchema.enum['Single Harvest'] ? 'Harvest Date' : (watchedHarvestMethod === HarvestMethodSchema.enum.Staggered ? 'First Harvest' : 'Harvest Start')} htmlFor="harvest-date" error={errors.harvestDate} hasIcon={true}>
         <button type="button" onClick={() => setLockedField('planned_harvest_start_date')} className="p-2 rounded-md hover:bg-interactive-hover">
           {lockedField === 'planned_harvest_start_date' ? <Lock className="h-5 w-5 text-interactive-primary" /> : <Unlock className="h-5 w-5 text-muted-foreground" />}
         </button>
@@ -283,21 +283,21 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
   };
 
   const fieldLayouts = {
-    [PlantingMethod.DIRECT_SEEDING]: {
+    [PlantingMethodSchema.enum['Direct Seeding']]: {
       column1: ['plantingMethod', 'quantity', 'sowDate'],
       column2: ['daysToMaturity', 'harvestMethod', 'harvestDate'],
     },
-    [PlantingMethod.SEED_STARTING]: {
+    [PlantingMethodSchema.enum['Seed Starting']]: {
       column1: ['plantingMethod', 'quantity', 'sowDate', 'daysToTransplant'],
       column2: ['transplantDate', 'daysToMaturity', 'harvestMethod', 'harvestDate'],
     },
-    [PlantingMethod.SEEDLING]: {
+    [PlantingMethodSchema.enum.Seedling]: {
       column1: ['plantingMethod', 'quantity', 'transplantDate'],
       column2: ['daysToMaturity', 'harvestMethod', 'harvestDate'],
     },
   };
 
-  const currentLayout = fieldLayouts[watchedPlantingMethod] || fieldLayouts[PlantingMethod.DIRECT_SEEDING];
+  const currentLayout = fieldLayouts[watchedPlantingMethod] || fieldLayouts[PlantingMethodSchema.enum['Direct Seeding']];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -310,8 +310,8 @@ const AddToPlanModal: React.FC<AddToPlanModalProps> = ({ isOpen, onClose, plant,
             </div>
             <div className="flex flex-col space-y-4">
               {currentLayout.column2.map(fieldName => formFields[fieldName])}
-              {(watchedHarvestMethod === HarvestMethod.CONTINUOUS || watchedHarvestMethod === HarvestMethod.CUT_AND_COME_AGAIN) && formFields.harvestEndDate}
-              {watchedHarvestMethod === HarvestMethod.STAGGERED && formFields.secondHarvestDate}
+              {(watchedHarvestMethod === HarvestMethodSchema.enum.Continuous || watchedHarvestMethod === HarvestMethodSchema.enum['Cut and Come Again']) && formFields.harvestEndDate}
+              {watchedHarvestMethod === HarvestMethodSchema.enum.Staggered && formFields.secondHarvestDate}
             </div>
           </div>
 
