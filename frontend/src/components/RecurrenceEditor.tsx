@@ -34,7 +34,7 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
     { label: 'Saturday', value: RRule.SA },
   ], []);
 
-  // Effect to parse incoming RRULE string and update state
+  // Effect to parse incoming RRULE string or set a default on mount
   useEffect(() => {
     if (value) {
       try {
@@ -68,8 +68,16 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
         console.error("Error parsing RRULE string:", e);
         // If parsing fails, maybe we should reset to a default state or clear the rule
       }
+    } else {
+      // If no value is provided, generate and propagate a default rule
+      const defaultRule = new RRule({
+        freq: options.freq,
+        interval: options.interval,
+        byday: options.byday as Weekday[],
+      });
+      onChange(defaultRule.toString());
     }
-  }, [value]);
+  }, [value, onChange]);
 
   // Effect to generate RRULE string when options change
   useEffect(() => {
