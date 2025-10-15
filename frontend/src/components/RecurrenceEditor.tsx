@@ -7,11 +7,13 @@ interface RecurrenceEditorProps {
   onChange: (value: string) => void;
 }
 
+const weekdayConstants = [RRule.SU, RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR, RRule.SA];
+
 const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) => {
   const [options, setOptions] = useState<RecurrenceOptions>({
     freq: RRule.WEEKLY,
     interval: 1,
-    byday: [new Weekday(new Date().getDay())],
+    byday: [weekdayConstants[new Date().getDay()]],
     bymonthday: 1,
     bysetpos: 1,
     bymonth: new Date().getMonth() + 1,
@@ -23,13 +25,13 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
   });
 
   const weekdayOptions = useMemo(() => [
-    { label: 'Sunday', value: RRule.SU.weekday },
-    { label: 'Monday', value: RRule.MO.weekday },
-    { label: 'Tuesday', value: RRule.TU.weekday },
-    { label: 'Wednesday', value: RRule.WE.weekday },
-    { label: 'Thursday', value: RRule.TH.weekday },
-    { label: 'Friday', value: RRule.FR.weekday },
-    { label: 'Saturday', value: RRule.SA.weekday },
+    { label: 'Sunday', value: RRule.SU },
+    { label: 'Monday', value: RRule.MO },
+    { label: 'Tuesday', value: RRule.TU },
+    { label: 'Wednesday', value: RRule.WE },
+    { label: 'Thursday', value: RRule.TH },
+    { label: 'Friday', value: RRule.FR },
+    { label: 'Saturday', value: RRule.SA },
   ], []);
 
   // Effect to parse incoming RRULE string and update state
@@ -43,7 +45,8 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
           let bydayState: Weekday[] | null = null;
           if (byday !== null && byday !== undefined) {
              const days = Array.isArray(byday) ? byday : [byday];
-             bydayState = days.map(d => (typeof d === 'number' ? new Weekday(d) : d));
+             // Convert numeric weekdays to RRule weekday constants
+             bydayState = days.map(d => weekdayConstants[d]);
           }
 
           setOptions(prev => ({
@@ -63,6 +66,7 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
         }
       } catch (e) {
         console.error("Error parsing RRULE string:", e);
+        // If parsing fails, maybe we should reset to a default state or clear the rule
       }
     }
   }, [value]);
@@ -71,8 +75,6 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
   useEffect(() => {
     const result = RecurrenceOptionsSchema.safeParse(options);
     if (!result.success) {
-      // For now, we'll log the errors. In a more advanced implementation,
-      // you might show these errors in the UI.
       console.error("Recurrence validation error:", result.error.flatten());
       return;
     }
@@ -82,7 +84,7 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
     const rruleOptions: any = {
       freq,
       interval,
-      dtstart: new Date(),
+      dtstart: new Date(), // Using current date as dtstart
     };
 
     if (endType === 'date' && until) {
@@ -90,14 +92,6 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
     } else if (endType === 'count' && count) {
       rruleOptions.count = count;
     }
-
-    // A helper to safely get byday values
-    const getByday = () => {
-        if (!byday || byday.length === 0) return null;
-        // The rrule library expects Weekday instances, not numbers
-        return byday.map(d => (typeof d === 'number' ? new Weekday(d) : d));
-    };
-
 
     switch (freq) {
       case RRule.DAILY:
@@ -115,7 +109,8 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
           rruleOptions.bymonthday = bymonthday;
         } else if (monthlyOption === 'day_of_week' && bysetpos && byday && byday.length > 0) {
           rruleOptions.bysetpos = bysetpos;
-          rruleOptions.byday = byday;
+          // Ensure byday is a single value, not an array, for this rule type
+          rruleOptions.byday = Array.isArray(byday) ? byday[0] : byday;
         }
         break;
       case RRule.YEARLY:
@@ -124,13 +119,13 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
             rruleOptions.bymonthday = bymonthday;
         } else if (monthlyOption === 'day_of_week' && bysetpos && byday && byday.length > 0) {
             rruleOptions.bysetpos = bysetpos;
-            rruleOptions.byday = byday;
+            // Ensure byday is a single value, not an array, for this rule type
+            rruleOptions.byday = Array.isArray(byday) ? byday[0] : byday;
         }
         break;
     }
 
     try {
-      console.log("rruleOptions:", rruleOptions);
       const newRule = new RRule(rruleOptions);
       onChange(newRule.toString());
     } catch (e) {
@@ -143,7 +138,7 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
   };
 
   const handleFreqChange = (newFreq: number) => {
-    const today = new Weekday(new Date().getDay());
+    const today = weekdayConstants[new Date().getDay()];
     const newOptions: Partial<RecurrenceOptions> = { freq: newFreq };
 
     // Reset options to sensible defaults when frequency changes
@@ -211,7 +206,7 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
           <span className="block mb-2">Repeat on</span>
           <div className="flex space-x-1">
             {weekdayOptions.map(day => (
-              <button key={day.value} type="button" onClick={() => handleWeekdayToggle(new Weekday(day.value))} className={`w-10 h-10 rounded-full ${options.byday?.some(d => d.weekday === day.value) ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+              <button key={day.label} type="button" onClick={() => handleWeekdayToggle(day.value)} className={`w-10 h-10 rounded-full ${options.byday?.some(d => d.weekday === day.value.weekday) ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
                 {day.label.substring(0,3)}
               </button>
             ))}
@@ -228,15 +223,15 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
                     </select>
                 </div>
             )}
-            <div><label><input type="radio" name="monthlyOption" value="day_of_month" checked={options.monthlyOption === 'day_of_month'} onChange={() => handleUpdate({ monthlyOption: 'day_of_month' })}/> On day <input type="number" min="1" max="31" value={options.bymonthday ?? 1} onChange={e => handleUpdate({ bymonthday: parseInt(e.target.value)})} className="w-14 p-1 border rounded bg-background"/></label></div>
+            <div><label><input type="radio" name="monthlyOption" value="day_of_month" checked={options.monthlyOption === 'day_of_month'} onChange={() => handleUpdate({ monthlyOption: 'day_of_month' })}/> On day <input type="number" min="1" max="31" value={options.bymonthday ?? 1} onChange={e => handleUpdate({ bymonthday: parseInt(e.target.value) || 1})} className="w-14 p-1 border rounded bg-background"/></label></div>
             <div>
                 <label className="flex items-center space-x-2"><input type="radio" name="monthlyOption" value="day_of_week" checked={options.monthlyOption === 'day_of_week'} onChange={() => handleUpdate({ monthlyOption: 'day_of_week' })}/> On the</label>
                 <div className="flex items-center space-x-2 mt-1 pl-6">
                     <select value={options.bysetpos ?? 1} onChange={e => handleUpdate({ bysetpos: parseInt(e.target.value)})} className="p-1 border rounded bg-background">
                         <option value="1">First</option><option value="2">Second</option><option value="3">Third</option><option value="4">Fourth</option><option value="-1">Last</option>
                     </select>
-                    <select value={options.byday?.[0]?.weekday ?? 0} onChange={e => handleUpdate({ byday: [new Weekday(parseInt(e.target.value))]})} className="p-1 border rounded bg-background">
-                        {weekdayOptions.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+                    <select value={options.byday?.[0]?.weekday ?? 0} onChange={e => handleUpdate({ byday: [weekdayConstants[parseInt(e.target.value)]]})} className="p-1 border rounded bg-background">
+                        {weekdayOptions.map(d => <option key={d.label} value={d.value.weekday}>{d.label}</option>)}
                     </select>
                 </div>
             </div>
