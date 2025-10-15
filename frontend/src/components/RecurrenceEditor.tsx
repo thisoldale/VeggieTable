@@ -130,6 +130,7 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
     }
 
     try {
+      console.log("rruleOptions:", rruleOptions);
       const newRule = new RRule(rruleOptions);
       onChange(newRule.toString());
     } catch (e) {
