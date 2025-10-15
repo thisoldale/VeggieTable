@@ -100,40 +100,33 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
 
 
     switch (freq) {
-        case RRule.DAILY:
-            if (dailyOption === 'weekdays') {
-                rruleOptions.byday = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR];
-            }
-            break;
-        case RRule.WEEKLY:
-            const weeklyByday = getByday();
-            if (weeklyByday) {
-                rruleOptions.byday = weeklyByday;
-            }
-            break;
-        case RRule.MONTHLY:
-            if (monthlyOption === 'day_of_month' && bymonthday) {
-                rruleOptions.bymonthday = bymonthday;
-            } else if (monthlyOption === 'day_of_week' && bysetpos) {
-                const monthlyByday = getByday();
-                if (monthlyByday) {
-                    rruleOptions.bysetpos = bysetpos;
-                    rruleOptions.byday = monthlyByday;
-                }
-            }
-            break;
-        case RRule.YEARLY:
-            rruleOptions.bymonth = bymonth;
-            if (monthlyOption === 'day_of_month' && bymonthday) {
-                rruleOptions.bymonthday = bymonthday;
-            } else if (monthlyOption === 'day_of_week' && bysetpos) {
-                const yearlyByday = getByday();
-                if (yearlyByday) {
-                    rruleOptions.bysetpos = bysetpos;
-                    rruleOptions.byday = yearlyByday;
-                }
-            }
-            break;
+      case RRule.DAILY:
+        if (dailyOption === 'weekdays') {
+          rruleOptions.byday = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR];
+        }
+        break;
+      case RRule.WEEKLY:
+        if (byday && byday.length > 0) {
+          rruleOptions.byday = byday.map(d => new Weekday(d));
+        }
+        break;
+      case RRule.MONTHLY:
+        if (monthlyOption === 'day_of_month' && bymonthday) {
+          rruleOptions.bymonthday = bymonthday;
+        } else if (monthlyOption === 'day_of_week' && bysetpos && byday && byday.length > 0) {
+          rruleOptions.bysetpos = bysetpos;
+          rruleOptions.byday = byday.map(d => new Weekday(d));
+        }
+        break;
+      case RRule.YEARLY:
+        rruleOptions.bymonth = bymonth;
+        if (monthlyOption === 'day_of_month' && bymonthday) {
+            rruleOptions.bymonthday = bymonthday;
+        } else if (monthlyOption === 'day_of_week' && bysetpos && byday && byday.length > 0) {
+            rruleOptions.bysetpos = bysetpos;
+            rruleOptions.byday = byday.map(d => new Weekday(d));
+        }
+        break;
     }
 
     try {
