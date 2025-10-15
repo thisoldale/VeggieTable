@@ -242,7 +242,7 @@ export type PlantingFormData = z.infer<typeof PlantingFormSchema>;
 export const RecurrenceOptionsSchema = z.object({
   freq: z.number(),
   interval: z.number().min(1),
-  byday: z.array(z.number()).nullable(),
+  byday: z.any().nullable(),
   bymonthday: z.number().nullable(),
   bysetpos: z.number().nullable(),
   bymonth: z.number().nullable(),
