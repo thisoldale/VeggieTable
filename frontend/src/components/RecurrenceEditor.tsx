@@ -91,6 +91,14 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
       rruleOptions.count = count;
     }
 
+    // A helper to safely get byday values
+    const getByday = () => {
+        if (!byday || byday.length === 0) return null;
+        // The rrule library expects Weekday instances, not numbers
+        return byday.map(d => (typeof d === 'number' ? new Weekday(d) : d));
+    };
+
+
     switch (freq) {
       case RRule.DAILY:
         if (dailyOption === 'weekdays') {
