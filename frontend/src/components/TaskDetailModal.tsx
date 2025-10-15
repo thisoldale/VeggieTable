@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Dialog, Transition } from '@headlessui/react';
-import { RRule } from 'rrule';
 import { Task, TaskStatus } from '../types';
 import {
   useUpdateTaskMutation,
@@ -225,28 +224,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
                       {/* Recurrence Section */}
                       {isCreateMode && (
                         <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id="isRecurring"
-                            checked={isRecurring}
-                            onChange={(e) => {
-                              const checked = e.target.checked;
-                              setIsRecurring(checked);
-                              // When enabling, set a default rule. When disabling, clear it.
-                              if (checked) {
-                                  // This default matches the initial state of the RecurrenceEditor
-                                  const defaultRule = new RRule({
-                                      freq: RRule.WEEKLY,
-                                      interval: 1,
-                                      byday: [RRule.MO], // Default to Monday
-                                  });
-                                  setRrule(defaultRule.toString());
-                              } else {
-                                  setRrule('');
-                              }
-                            }}
-                            className="h-4 w-4 text-primary border-border rounded focus:ring-ring"
-                          />
+                          <input type="checkbox" id="isRecurring" checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} className="h-4 w-4 text-primary border-border rounded focus:ring-ring"/>
                           <label htmlFor="isRecurring" className="ml-2 text-sm font-medium text-foreground">This is a recurring task</label>
                         </div>
                       )}
