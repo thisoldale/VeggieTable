@@ -99,7 +99,7 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
         break;
       case RRule.WEEKLY:
         if (byday && byday.length > 0) {
-          rruleOptions.byday = byday;
+          rruleOptions.byday = byday.map(d => new Weekday(d));
         }
         break;
       case RRule.MONTHLY:
