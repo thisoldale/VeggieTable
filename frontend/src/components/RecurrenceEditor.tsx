@@ -38,12 +38,12 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
       try {
         const rule = rrulestr(value);
         if (rule instanceof RRule) {
-          const { freq, interval, until, count, byweekday, bymonthday, bysetpos, bymonth } = rule.options;
+          const { freq, interval, until, count, byday, bymonthday, bysetpos, bymonth } = rule.options;
 
-          let byweekdayState: Weekday[] | null = null;
-          if (byweekday !== null && byweekday !== undefined) {
-             const days = Array.isArray(byweekday) ? byweekday : [byweekday];
-             byweekdayState = days.map(d => (typeof d === 'number' ? new Weekday(d) : d));
+          let bydayState: Weekday[] | null = null;
+          if (byday !== null && byday !== undefined) {
+             const days = Array.isArray(byday) ? byday : [byday];
+             bydayState = days.map(d => (typeof d === 'number' ? new Weekday(d) : d));
           }
 
           setOptions(prev => ({
@@ -52,12 +52,12 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
             interval,
             until: until ? new Date(until.getUTCFullYear(), until.getUTCMonth(), until.getUTCDate()) : null,
             count: count ?? null,
-            byweekday: byweekdayState,
+            byday: bydayState,
             bymonthday: bymonthday ?? prev.bymonthday,
             bysetpos: (Array.isArray(bysetpos) ? bysetpos[0] : bysetpos) ?? prev.bysetpos,
             bymonth: (Array.isArray(bymonth) ? bymonth[0] : bymonth) ?? prev.bymonth,
             endType: until ? 'date' : count ? 'count' : 'never',
-            dailyOption: byweekdayState?.length === 5 ? 'weekdays' : 'everyday',
+            dailyOption: bydayState?.length === 5 ? 'weekdays' : 'everyday',
             monthlyOption: bysetpos ? 'day_of_week' : 'day_of_month',
           }));
         }
