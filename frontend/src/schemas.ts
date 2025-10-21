@@ -251,6 +251,16 @@ export const RecurrenceOptionsSchema = z.object({
   endType: z.enum(['never', 'date', 'count']),
   dailyOption: z.enum(['everyday', 'weekdays']),
   monthlyOption: z.enum(['day_of_month', 'day_of_week']),
+}).refine(data => {
+    // Add complex validation logic here as needed.
+    // For example, ensure byweekday is set for weekly recurrences.
+    if (data.freq === 2 && (!data.byweekday || data.byweekday.length === 0)) { // RRule.WEEKLY = 2
+        return false;
+    }
+    return true;
+}, {
+    message: "For weekly recurrences, at least one day must be selected.",
+    path: ["byweekday"],
 });
 
 export type RecurrenceOptions = z.infer<typeof RecurrenceOptionsSchema>;
