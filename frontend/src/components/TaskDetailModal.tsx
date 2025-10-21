@@ -234,7 +234,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
                               if (checked) {
                                 // Set a hardcoded default RRULE string.
                                 // This corresponds to a weekly rule, which is the default in the editor.
-                                setRrule('FREQ=WEEKLY;INTERVAL=1;BYDAY=MO');
+                                setRrule('FREQ=WEEKLY;INTERVAL=1;BYWEEKDAY=MO');
                               } else {
                                 setRrule('');
                               }
