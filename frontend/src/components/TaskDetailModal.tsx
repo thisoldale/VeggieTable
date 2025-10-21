@@ -224,7 +224,23 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
                       {/* Recurrence Section */}
                       {isCreateMode && (
                         <div className="flex items-center">
-                          <input type="checkbox" id="isRecurring" checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} className="h-4 w-4 text-primary border-border rounded focus:ring-ring"/>
+                          <input
+                            type="checkbox"
+                            id="isRecurring"
+                            checked={isRecurring}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setIsRecurring(checked);
+                              if (checked) {
+                                // Set a hardcoded default RRULE string.
+                                // This corresponds to a weekly rule, which is the default in the editor.
+                                setRrule('FREQ=WEEKLY;INTERVAL=1;BYDAY=MO');
+                              } else {
+                                setRrule('');
+                              }
+                            }}
+                            className="h-4 w-4 text-primary border-border rounded focus:ring-ring"
+                          />
                           <label htmlFor="isRecurring" className="ml-2 text-sm font-medium text-foreground">This is a recurring task</label>
                         </div>
                       )}
