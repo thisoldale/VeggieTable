@@ -239,21 +239,24 @@ export const PlantingFormSchema = z.object({
 export type PlantingFormData = z.infer<typeof PlantingFormSchema>;
 
 // Schema for the RecurrenceEditor component state
+const WeekdaySchema = z.object({
+    weekday: z.number().min(0).max(6),
+    n: z.number().optional(),
+});
+
 export const RecurrenceOptionsSchema = z.object({
-  freq: z.number(),
-  interval: z.number().min(1),
-  byweekday: z.any().nullable(),
-  bymonthday: z.number().nullable(),
-  bysetpos: z.number().nullable(),
-  bymonth: z.number().nullable(),
-  count: z.number().nullable(),
-  until: z.date().nullable(),
-  endType: z.enum(['never', 'date', 'count']),
-  dailyOption: z.enum(['everyday', 'weekdays']),
-  monthlyOption: z.enum(['day_of_month', 'day_of_week']),
+    freq: z.number(),
+    interval: z.number().min(1),
+    byweekday: z.array(WeekdaySchema).nullable(),
+    bymonthday: z.number().nullable(),
+    bysetpos: z.number().nullable(),
+    bymonth: z.number().nullable(),
+    count: z.number().nullable(),
+    until: z.date().nullable(),
+    endType: z.enum(['never', 'date', 'count']),
+    dailyOption: z.enum(['everyday', 'weekdays']),
+    monthlyOption: z.enum(['day_of_month', 'day_of_week']),
 }).refine(data => {
-    // Add complex validation logic here as needed.
-    // For example, ensure byweekday is set for weekly recurrences.
     if (data.freq === 2 && (!data.byweekday || data.byweekday.length === 0)) { // RRule.WEEKLY = 2
         return false;
     }
@@ -261,6 +264,22 @@ export const RecurrenceOptionsSchema = z.object({
 }, {
     message: "For weekly recurrences, at least one day must be selected.",
     path: ["byweekday"],
+}).refine(data => {
+    if ((data.freq === 3 || data.freq === 4) && data.monthlyOption === 'day_of_week') {
+        return data.byweekday && data.byweekday.length === 1;
+    }
+    return true;
+}, {
+    message: "For this monthly option, exactly one day must be selected.",
+    path: ["byweekday"],
+}).refine(data => {
+    if ((data.freq === 3 || data.freq === 4) && data.monthlyOption === 'day_of_month') {
+        return data.bymonthday !== null;
+    }
+    return true;
+}, {
+    message: "For this monthly option, a day of the month must be provided.",
+    path: ["bymonthday"],
 });
 
 export type RecurrenceOptions = z.infer<typeof RecurrenceOptionsSchema>;
