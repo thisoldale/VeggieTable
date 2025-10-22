@@ -81,9 +81,11 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
         // A more complete implementation would fetch the RecurringTask details to get the full rule
         setIsRecurring(!!task.recurring_task_id);
         if (task.recurring_task_id) {
-            // In a real app, you'd fetch the recurring task details here
-            // For now, we'll just allow creating a new rule if they edit the series.
-            setRrule('');
+            // TODO: Fetch the full recurring_task object to get the recurrence_rule string
+            // This is a placeholder. A proper implementation would look like:
+            // const recurringTaskDetails = useGetRecurringTaskQuery(task.recurring_task_id);
+            // setRrule(recurringTaskDetails.data?.recurrence_rule || '');
+            setRrule(''); // For now, default to empty to allow editing
         }
       }
     }
@@ -234,7 +236,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
                               if (checked) {
                                 // Set a hardcoded default RRULE string.
                                 // This corresponds to a weekly rule, which is the default in the editor.
-                                setRrule('FREQ=WEEKLY;INTERVAL=1;BYDAY=MO');
+                                setRrule('FREQ=WEEKLY;INTERVAL=1;BYWEEKDAY=MO');
                               } else {
                                 setRrule('');
                               }
