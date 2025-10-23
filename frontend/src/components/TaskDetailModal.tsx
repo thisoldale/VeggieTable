@@ -7,18 +7,11 @@ import { Task, TaskStatus } from '../types';
 import {
   useUpdateTaskMutation,
   useAddTaskMutation,
-  useAddRecurringTaskMutation,
   useDeleteTaskMutation,
-  useDeleteRecurringTaskMutation,
-  useDeleteTaskInstanceMutation,
-  useUpdateRecurringTaskMutation,
-  useUpdateTaskInstanceMutation
 } from '../store/plantApi';
 import { usePlan } from '../context/PlanContext';
 import { format } from 'date-fns';
 import RecurrenceEditor from './RecurrenceEditor';
-import DeleteRecurringTaskDialog from './DeleteRecurringTaskDialog';
-import UpdateRecurringTaskDialog from './UpdateRecurringTaskDialog';
 import { Trash2 } from 'lucide-react';
 
 const taskSchema = z.object({
@@ -26,6 +19,7 @@ const taskSchema = z.object({
   description: z.string().optional(),
   due_date: z.string().optional(),
   status: z.nativeEnum(TaskStatus),
+  recurrence_rule: z.string().optional(),
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -41,22 +35,14 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
   const { activePlan } = usePlan();
   const [updateTask] = useUpdateTaskMutation();
   const [addTask] = useAddTaskMutation();
-  const [addRecurringTask] = useAddRecurringTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
-  const [deleteRecurringTask] = useDeleteRecurringTaskMutation();
-  const [deleteTaskInstance] = useDeleteTaskInstanceMutation();
-  const [updateRecurringTask] = useUpdateRecurringTaskMutation();
-  const [updateTaskInstance] = useUpdateTaskInstanceMutation();
 
   const isCreateMode = !task;
 
   const [isRecurring, setIsRecurring] = useState(false);
   const [rrule, setRrule] = useState('');
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
-  const [formData, setFormData] = useState<TaskFormData | null>(null);
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<TaskFormData>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
   });
 
@@ -68,6 +54,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
           description: '',
           due_date: initialDate ? format(initialDate, 'yyyy-MM-dd') : '',
           status: TaskStatus.PENDING,
+          recurrence_rule: '',
         });
         setIsRecurring(false);
         setRrule('');
@@ -77,111 +64,39 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
           description: task.description || '',
           due_date: task.due_date ? format(new Date(task.due_date + 'T00:00:00'), 'yyyy-MM-dd') : '',
           status: task.status,
+          recurrence_rule: task.recurrence_rule || '',
         });
-        // A more complete implementation would fetch the RecurringTask details to get the full rule
-        setIsRecurring(!!task.recurring_task_id);
-        if (task.recurring_task_id) {
-            // TODO: Fetch the full recurring_task object to get the recurrence_rule string
-            // This is a placeholder. A proper implementation would look like:
-            // const recurringTaskDetails = useGetRecurringTaskQuery(task.recurring_task_id);
-            // setRrule(recurringTaskDetails.data?.recurrence_rule || '');
-            setRrule(''); // For now, default to empty to allow editing
-        }
+        setIsRecurring(!!task.recurrence_rule);
+        setRrule(task.recurrence_rule || '');
       }
     }
   }, [task, isCreateMode, isOpen, reset, initialDate]);
 
   const handleFormSubmit = async (data: TaskFormData) => {
-    if (isCreateMode) {
-      handleCreate(data);
-    } else {
-      handleUpdate(data);
-    }
-  };
-
-  const handleCreate = async (data: TaskFormData) => {
     if (!activePlan) return;
-    if (isRecurring) {
-      if (!data.due_date) {
-        alert("Please select a start date for the recurring task.");
-        return;
-      }
-      await addRecurringTask({
-        name: data.name,
-        description: data.description,
-        garden_plan_id: activePlan.id,
-        recurrence_rule: rrule,
-        start_date: data.due_date,
-      }).unwrap();
-    } else {
-      await addTask({
-        ...data,
-        garden_plan_id: activePlan.id,
-        due_date: data.due_date || undefined,
-      }).unwrap();
+
+    const taskData = {
+      ...data,
+      garden_plan_id: activePlan.id,
+      due_date: data.due_date || undefined,
+      recurrence_rule: isRecurring ? rrule : undefined,
+    };
+
+    if (isCreateMode) {
+      await addTask(taskData).unwrap();
+    } else if (task) {
+      await updateTask({ id: task.id, ...taskData }).unwrap();
     }
-    onClose();
-  };
 
-  const handleUpdate = (data: TaskFormData) => {
-    if (!task) return;
-    setFormData(data); // Store form data to use after dialog confirmation
-    if (task.recurring_task_id) {
-      setShowUpdateDialog(true);
-    } else {
-      // It's a non-recurring task, update directly
-      updateTask({ id: task.id, ...data, due_date: data.due_date || undefined });
-      onClose();
-    }
-  };
-
-  const executeUpdateInstance = async () => {
-    if (!task || !formData || !task.recurring_task_id) return;
-    await updateTaskInstance({
-      recurring_task_id: task.recurring_task_id,
-      task_id: task.id,
-      task_update: { ...formData, due_date: formData.due_date || undefined }
-    }).unwrap();
-    setShowUpdateDialog(false);
-    onClose();
-  };
-
-  const executeUpdateSeries = async () => {
-    if (!task || !formData || !task.recurring_task_id) return;
-    await updateRecurringTask({
-      id: task.recurring_task_id,
-      name: formData.name,
-      description: formData.description,
-      recurrence_rule: rrule, // Assumes rrule state is updated for series edit
-    }).unwrap();
-    setShowUpdateDialog(false);
     onClose();
   };
 
   const handleDelete = () => {
     if (!task) return;
-    if (task.recurring_task_id) {
-      setShowDeleteDialog(true);
-    } else {
-      if (window.confirm('Are you sure you want to delete this task?')) {
-        deleteTask(task.id);
-        onClose();
-      }
+    if (window.confirm('Are you sure you want to delete this task?')) {
+      deleteTask(task.id);
+      onClose();
     }
-  };
-
-  const executeDeleteInstance = async () => {
-    if (!task || !task.recurring_task_id) return;
-    await deleteTaskInstance({ recurring_task_id: task.recurring_task_id, task_id: task.id }).unwrap();
-    setShowDeleteDialog(false);
-    onClose();
-  };
-
-  const executeDeleteSeries = async () => {
-    if (!task || !task.recurring_task_id) return;
-    await deleteRecurringTask(task.recurring_task_id).unwrap();
-    setShowDeleteDialog(false);
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -224,39 +139,27 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
                       </div>
 
                       {/* Recurrence Section */}
-                      {isCreateMode && (
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id="isRecurring"
-                            checked={isRecurring}
-                            onChange={(e) => {
-                              const checked = e.target.checked;
-                              setIsRecurring(checked);
-                              if (checked) {
-                                // Set a hardcoded default RRULE string.
-                                // This corresponds to a weekly rule, which is the default in the editor.
-                                setRrule('FREQ=WEEKLY;INTERVAL=1;BYWEEKDAY=MO');
-                              } else {
-                                setRrule('');
-                              }
-                            }}
-                            className="h-4 w-4 text-primary border-border rounded focus:ring-ring"
-                          />
-                          <label htmlFor="isRecurring" className="ml-2 text-sm font-medium text-foreground">This is a recurring task</label>
-                        </div>
-                      )}
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id="isRecurring"
+                          checked={isRecurring}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setIsRecurring(checked);
+                            if (checked) {
+                              setRrule('FREQ=WEEKLY;INTERVAL=1;BYWEEKDAY=MO');
+                            } else {
+                              setRrule('');
+                            }
+                          }}
+                          className="h-4 w-4 text-primary border-border rounded focus:ring-ring"
+                        />
+                        <label htmlFor="isRecurring" className="ml-2 text-sm font-medium text-foreground">This is a recurring task</label>
+                      </div>
 
-                      {(isCreateMode && isRecurring) && (
+                      {isRecurring && (
                         <RecurrenceEditor value={rrule} onChange={setRrule} />
-                      )}
-
-                      {!isCreateMode && task?.recurring_task_id && (
-                          <div className="p-3 bg-secondary/20 border border-border rounded-md">
-                            <p className="text-sm text-foreground font-semibold">This is a recurring task.</p>
-                            <p className="text-xs text-muted-foreground mb-3">To change the recurrence rule, edit the entire series.</p>
-                             <RecurrenceEditor value={rrule} onChange={setRrule} />
-                          </div>
                       )}
                     </div>
 
@@ -285,20 +188,6 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
           </div>
         </Dialog>
       </Transition>
-
-      <DeleteRecurringTaskDialog
-        isOpen={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
-        onDeleteInstance={executeDeleteInstance}
-        onDeleteSeries={executeDeleteSeries}
-      />
-
-      <UpdateRecurringTaskDialog
-        isOpen={showUpdateDialog}
-        onClose={() => setShowUpdateDialog(false)}
-        onUpdateInstance={executeUpdateInstance}
-        onUpdateSeries={executeUpdateSeries}
-      />
     </>
   );
 };

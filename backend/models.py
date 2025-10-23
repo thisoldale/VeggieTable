@@ -73,7 +73,6 @@ class GardenPlan(Base):
     
     plantings: Mapped[List["Planting"]] = relationship(back_populates="garden_plan", cascade="all, delete-orphan")
     tasks: Mapped[List["Task"]] = relationship(back_populates="garden_plan", cascade="all, delete-orphan")
-    recurring_tasks: Mapped[List["RecurringTask"]] = relationship(back_populates="garden_plan", cascade="all, delete-orphan")
 
 class PlantingMethod(str, enum.Enum):
     SEED_STARTING = "Seed Starting"
@@ -168,7 +167,6 @@ class Planting(Base):
     # --- Relationships ---
     garden_plan: Mapped["GardenPlan"] = relationship(back_populates="plantings")
     tasks: Mapped[List["Task"]] = relationship(back_populates="planting", cascade="all, delete-orphan")
-    recurring_tasks: Mapped[List["RecurringTask"]] = relationship(back_populates="planting", cascade="all, delete-orphan")
 
 class TaskStatus(str, enum.Enum):
     PENDING = "Pending"
@@ -180,39 +178,23 @@ class TaskGroup(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     tasks: Mapped[List["Task"]] = relationship(back_populates="task_group")
 
-class RecurringTask(Base):
-    __tablename__ = "recurring_tasks"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    garden_plan_id: Mapped[int] = mapped_column(ForeignKey("garden_plans.id", ondelete="CASCADE"))
-    planting_id: Mapped[Optional[int]] = mapped_column(ForeignKey("plantings.id", ondelete="CASCADE"), nullable=True)
-
-    # --- Template fields for the tasks ---
-    name: Mapped[str] = mapped_column(String)
-    description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-
-    # --- Recurrence Info ---
-    recurrence_rule: Mapped[str] = mapped_column(String) # Storing the RRULE string
-    recurrence_end_date: Mapped[Optional[datetime]] = mapped_column(Date, nullable=True)
-    exdates: Mapped[Optional[List[datetime]]] = mapped_column(JSON, nullable=True) # List of exception dates
-
-    # --- Relationships ---
-    garden_plan: Mapped["GardenPlan"] = relationship(back_populates="recurring_tasks")
-    planting: Mapped[Optional["Planting"]] = relationship(back_populates="recurring_tasks")
-    tasks: Mapped[List["Task"]] = relationship(back_populates="recurring_task", cascade="all, delete-orphan")
-
 class Task(Base):
     __tablename__ = "tasks"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     garden_plan_id: Mapped[int] = mapped_column(ForeignKey("garden_plans.id", ondelete="CASCADE"))
     planting_id: Mapped[Optional[int]] = mapped_column(ForeignKey("plantings.id"), nullable=True)
     task_group_id: Mapped[Optional[int]] = mapped_column(ForeignKey("task_groups.id"), nullable=True)
-    recurring_task_id: Mapped[Optional[int]] = mapped_column(ForeignKey("recurring_tasks.id", ondelete="CASCADE"), nullable=True)
     name: Mapped[str] = mapped_column(String)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     due_date: Mapped[Optional[datetime]] = mapped_column(Date, nullable=True)
     status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), default=TaskStatus.PENDING)
 
+    # --- Recurrence Info ---
+    recurrence_rule: Mapped[Optional[str]] = mapped_column(String, nullable=True) # Storing the RRULE string
+    recurrence_end_date: Mapped[Optional[datetime]] = mapped_column(Date, nullable=True)
+    completed_dates: Mapped[Optional[List[datetime]]] = mapped_column(JSON, nullable=True) # List of completed dates
+    exdates: Mapped[Optional[List[datetime]]] = mapped_column(JSON, nullable=True) # List of exception dates
+
     garden_plan: Mapped["GardenPlan"] = relationship(back_populates="tasks")
     planting: Mapped[Optional["Planting"]] = relationship(back_populates="tasks")
     task_group: Mapped[Optional["TaskGroup"]] = relationship(back_populates="tasks")
-    recurring_task: Mapped[Optional["RecurringTask"]] = relationship(back_populates="tasks")
