@@ -14,7 +14,7 @@ export const plantApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Plant', 'GardenPlan', 'Planting', 'Task', 'RecurringTask'], // Used for cache invalidation
+  tagTypes: ['Plant', 'GardenPlan', 'Planting', 'Task'], // Used for cache invalidation
   endpoints: (builder) => ({
     // --- Plant Library Endpoints ---
     getPlants: builder.query<Plant[], void>({
@@ -108,30 +108,13 @@ export const plantApi = createApi({
         invalidatesTags: (result, error, id) => [{ type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: 'LIST' }],
     }),
 
-    // --- Recurring Task Endpoints ---
-    addRecurringTask: builder.mutation<RecurringTask, Partial<RecurringTask> & { garden_plan_id: number }>({
-        query: (body) => ({ url: 'recurring-tasks/', method: 'POST', body }),
-        invalidatesTags: (result, error, { garden_plan_id }) => [{ type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: garden_plan_id }],
-    }),
-    updateRecurringTask: builder.mutation<RecurringTask, Partial<RecurringTask> & Pick<RecurringTask, 'id'>>({
-        query: ({ id, ...patch }) => ({ url: `recurring-tasks/${id}`, method: 'PUT', body: patch }),
-        invalidatesTags: (result, error, { id, garden_plan_id }) => [{ type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: garden_plan_id }],
-    }),
-    deleteRecurringTask: builder.mutation<{ success: boolean; id: number }, number>({
-        query: (id) => ({ url: `recurring-tasks/${id}`, method: 'DELETE' }),
-        invalidatesTags: (result, error, id) => [{ type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: 'LIST' }],
-    }),
-    deleteTaskInstance: builder.mutation<{ success: boolean }, { recurring_task_id: number; task_id: number }>({
-        query: ({ recurring_task_id, task_id }) => ({ url: `recurring-tasks/${recurring_task_id}/instance/${task_id}`, method: 'DELETE' }),
-        invalidatesTags: (result, error, { task_id }) => [{ type: 'Task', id: task_id }, { type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: 'LIST' }],
-    }),
-    updateTaskInstance: builder.mutation<Task, { recurring_task_id: number; task_id: number; task_update: Partial<Task> }>({
-        query: ({ recurring_task_id, task_id, task_update }) => ({
-            url: `recurring-tasks/${recurring_task_id}/instance/${task_id}`,
-            method: 'PUT',
-            body: task_update,
+    completeTaskOccurrence: builder.mutation<Task, { taskId: number; completionDate: string }>({
+        query: ({ taskId, completionDate }) => ({
+            url: `tasks/${taskId}/complete`,
+            method: 'POST',
+            body: { completion_date: completionDate },
         }),
-        invalidatesTags: (result, error, { task_id }) => [{ type: 'Task', id: task_id }, { type: 'Task', id: 'LIST' }, { type: 'GardenPlan', id: 'LIST' }],
+        invalidatesTags: (result, error, { taskId }) => [{ type: 'Task', id: taskId }, { type: 'Task', id: 'LIST' }],
     }),
 
     // --- Task Group Endpoints ---
@@ -178,11 +161,7 @@ export const {
   useAddTaskMutation,
   useUpdateTaskMutation,
   useDeleteTaskMutation,
-  useAddRecurringTaskMutation,
-  useUpdateRecurringTaskMutation,
-  useDeleteRecurringTaskMutation,
-  useDeleteTaskInstanceMutation,
-  useUpdateTaskInstanceMutation,
+  useCompleteTaskOccurrenceMutation,
   useUpdateTaskGroupMutation,
   useUnlinkTaskGroupMutation,
   useImportMappedPlantsMutation,

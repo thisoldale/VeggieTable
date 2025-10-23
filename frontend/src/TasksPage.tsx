@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { usePlan } from './context/PlanContext';
-import { useGetTasksForPlanQuery, useDeleteTaskMutation } from './store/plantApi';
+import { useGetTasksForPlanQuery, useDeleteTaskMutation, useCompleteTaskOccurrenceMutation } from './store/plantApi';
 import { Task, TaskStatus } from './types';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import TaskDetailModal from './components/TaskDetailModal';
@@ -12,6 +12,7 @@ const TasksPage: React.FC = () => {
     skip: !activePlan,
   });
   const [deleteTask] = useDeleteTaskMutation();
+  const [completeTaskOccurrence] = useCompleteTaskOccurrenceMutation();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -38,6 +39,12 @@ const TasksPage: React.FC = () => {
     // Note: Deletion logic for recurring tasks will be handled in a subsequent step.
     if (window.confirm('Are you sure you want to delete this task?')) {
       await deleteTask(taskId).unwrap();
+    }
+  };
+
+  const handleToggleCompletion = async (task: Task) => {
+    if (task.recurrence_rule && task.due_date) {
+      await completeTaskOccurrence({ taskId: task.id, completionDate: task.due_date }).unwrap();
     }
   };
 
@@ -117,9 +124,15 @@ const TasksPage: React.FC = () => {
                     <ul className="space-y-4">
                       {weekTasks.map(task => (
                         <li key={task.id} className="group flex items-center justify-between p-4 border border-border rounded-md hover:bg-secondary">
-                          <div className="flex items-center flex-grow cursor-pointer" onClick={() => handleEditTask(task)}>
-                            {task.recurring_task_id && <Repeat size={16} className="mr-3 text-muted-foreground" />}
-                            <div className="flex-grow">
+                          <div className="flex items-center flex-grow cursor-pointer" onClick={() => handleToggleCompletion(task)}>
+                            <input
+                              type="checkbox"
+                              checked={task.status === TaskStatus.COMPLETED}
+                              className="mr-3"
+                              readOnly
+                            />
+                            {task.recurrence_rule && <Repeat size={16} className="mr-3 text-muted-foreground" />}
+                            <div className="flex-grow" onClick={(e) => { e.stopPropagation(); handleEditTask(task); }}>
                               <p className={`font-semibold ${task.status === TaskStatus.COMPLETED ? 'line-through text-muted-foreground' : ''}`}>{task.name}</p>
                               {task.due_date && <p className="text-xs text-muted-foreground mt-1">Due: {format(new Date(task.due_date + 'T00:00:00'), 'MMM d, yyyy')}</p>}
                             </div>
@@ -146,9 +159,15 @@ const TasksPage: React.FC = () => {
                   <ul className="space-y-2">
                     {dayTasks.map(task => (
                       <li key={task.id} className="group flex items-center justify-between p-2 border border-border rounded-md hover:bg-secondary">
-                        <div className="flex items-center flex-grow cursor-pointer" onClick={() => handleEditTask(task)}>
-                           {task.recurring_task_id && <Repeat size={16} className="mr-2 text-muted-foreground" />}
-                           <div className="flex-grow">
+                        <div className="flex items-center flex-grow cursor-pointer" onClick={() => handleToggleCompletion(task)}>
+                          <input
+                            type="checkbox"
+                            checked={task.status === TaskStatus.COMPLETED}
+                            className="mr-2"
+                            readOnly
+                          />
+                           {task.recurrence_rule && <Repeat size={16} className="mr-2 text-muted-foreground" />}
+                           <div className="flex-grow" onClick={(e) => { e.stopPropagation(); handleEditTask(task); }}>
                             <p className={`font-semibold ${task.status === TaskStatus.COMPLETED ? 'line-through text-muted-foreground' : ''}`}>{task.name}</p>
                            </div>
                         </div>

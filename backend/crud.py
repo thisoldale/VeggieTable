@@ -4,7 +4,6 @@ from sqlalchemy import desc, inspect
 from typing import Optional, List, Type
 from datetime import datetime
 from models import Base
-import recurrence
 
 import models, schemas
 
@@ -18,8 +17,7 @@ def _get_garden_plan_load_options() -> List:
     """Returns common SQLAlchemy load options for GardenPlan queries."""
     return [
         joinedload(models.GardenPlan.plantings),
-        joinedload(models.GardenPlan.tasks),
-        joinedload(models.GardenPlan.recurring_tasks)
+        joinedload(models.GardenPlan.tasks)
     ]
 
 # --- Plant CRUD ---
@@ -190,114 +188,6 @@ def delete_planting_by_id(db: Session, planting_id: int):
         return True
     return False
 
-# --- Recurring Task CRUD ---
-def get_recurring_task_by_id(db: Session, recurring_task_id: int):
-    return db.query(models.RecurringTask).options(joinedload(models.RecurringTask.tasks)).filter(models.RecurringTask.id == recurring_task_id).first()
-
-def create_recurring_task(db: Session, recurring_task: schemas.RecurringTaskCreate):
-    """
-    Creates a new recurring task series and populates its initial task instances.
-    """
-    db_recurring_task = models.RecurringTask(
-        name=recurring_task.name,
-        description=recurring_task.description,
-        recurrence_rule=recurring_task.recurrence_rule,
-        recurrence_end_date=recurring_task.recurrence_end_date,
-        garden_plan_id=recurring_task.garden_plan_id,
-        planting_id=recurring_task.planting_id,
-        exdates=recurring_task.exdates or [],
-    )
-    db.add(db_recurring_task)
-    db.commit()
-
-    # Generate the initial set of tasks for the series
-    recurrence.populate_initial_tasks(db, db_recurring_task, start_date=recurring_task.start_date)
-
-    db.refresh(db_recurring_task)
-    return db_recurring_task
-
-def update_recurring_task(db: Session, recurring_task_id: int, recurring_task_update: schemas.RecurringTaskUpdate):
-    """
-    Updates a recurring task series. If the recurrence rule or end date changes,
-    it regenerates future, pending tasks.
-    """
-    db_recurring_task = get_recurring_task_by_id(db, recurring_task_id)
-    if not db_recurring_task:
-        return None
-
-    update_data = recurring_task_update.model_dump(exclude_unset=True)
-    rule_changed = 'recurrence_rule' in update_data and update_data['recurrence_rule'] != db_recurring_task.recurrence_rule
-    end_date_changed = 'recurrence_end_date' in update_data and update_data['recurrence_end_date'] != db_recurring_task.recurrence_end_date
-
-    for key, value in update_data.items():
-        setattr(db_recurring_task, key, value)
-
-    db.commit()
-
-    if rule_changed or end_date_changed:
-        recurrence.regenerate_future_tasks(db, db_recurring_task)
-
-    db.refresh(db_recurring_task)
-    return db_recurring_task
-
-def update_task_instance(db: Session, recurring_task_id: int, task_id: int, task_update: schemas.TaskUpdate):
-    """
-    Updates a single task instance, detaching it from the recurring series.
-    """
-    task = get_task_by_id(db, task_id)
-    recurring_task = get_recurring_task_by_id(db, recurring_task_id)
-
-    if not task or not recurring_task or task.recurring_task_id != recurring_task.id:
-        return None
-
-    # Add original due date to exdates to prevent it from being regenerated
-    if task.due_date:
-        if recurring_task.exdates is None:
-            recurring_task.exdates = []
-        if task.due_date not in recurring_task.exdates:
-            recurring_task.exdates.append(task.due_date)
-
-    # Detach the task from the series
-    task.recurring_task_id = None
-
-    # Apply the updates to the now-standalone task
-    update_data = task_update.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(task, key, value)
-
-    db.commit()
-    db.refresh(task)
-    return task
-
-def delete_recurring_task(db: Session, recurring_task_id: int):
-    db_recurring_task = get_recurring_task_by_id(db, recurring_task_id)
-    if db_recurring_task:
-        db.delete(db_recurring_task)
-        db.commit()
-        return True
-    return False
-
-def delete_task_instance(db: Session, recurring_task_id: int, task_id: int):
-    """
-    Deletes a single task instance from a recurring series.
-    It adds the task's due date to the parent's exdates list to prevent regeneration.
-    """
-    task = get_task_by_id(db, task_id)
-    recurring_task = get_recurring_task_by_id(db, recurring_task_id)
-
-    if not task or not recurring_task or task.recurring_task_id != recurring_task.id:
-        return False
-
-    if task.due_date:
-        if recurring_task.exdates is None:
-            recurring_task.exdates = []
-        if task.due_date not in recurring_task.exdates:
-            recurring_task.exdates.append(task.due_date)
-
-    db.delete(task)
-    db.commit()
-    return True
-
 # --- Task CRUD ---
 def get_task_by_id(db: Session, task_id: int):
     return _get_by_id(db, models.Task, task_id)
@@ -328,9 +218,17 @@ def update_task(db: Session, task_id: int, task_update: schemas.TaskUpdate):
         db.commit()
         db.refresh(db_task)
 
-        if is_being_completed:
-            recurrence.generate_next_task_if_needed(db, db_task)
+    return db_task
 
+def complete_task_occurrence(db: Session, task_id: int, completion_date: datetime.date):
+    db_task = get_task_by_id(db, task_id)
+    if db_task:
+        if db_task.completed_dates is None:
+            db_task.completed_dates = []
+        if completion_date not in db_task.completed_dates:
+            db_task.completed_dates.append(completion_date)
+        db.commit()
+        db.refresh(db_task)
     return db_task
 
 def delete_task(db: Session, task_id: int):
