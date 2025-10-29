@@ -110,6 +110,8 @@ class TaskCreate(TaskBase):
     garden_plan_id: int
     planting_id: Optional[int] = None
     task_group_id: Optional[int] = None
+    recurrence_rule: Optional[str] = None
+    recurrence_end_date: Optional[date] = None
 
 class TaskUpdate(BaseModel):
     name: Optional[str] = None

@@ -196,7 +196,8 @@ def get_tasks_for_plan(db: Session, plan_id: int, skip: int = 0, limit: int = 10
     return db.query(models.Task).filter(models.Task.garden_plan_id == plan_id).offset(skip).limit(limit).all()
 
 def create_task(db: Session, task: schemas.TaskCreate):
-    db_task = models.Task(**task.model_dump())
+    task_data = task.model_dump()
+    db_task = models.Task(**task_data)
     db.add(db_task)
     db.commit()
     db.refresh(db_task)

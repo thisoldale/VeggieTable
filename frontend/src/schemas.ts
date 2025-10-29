@@ -1,5 +1,6 @@
 // frontend/src/schemas.ts
 import { z } from 'zod';
+import { Weekday } from 'rrule';
 
 // Enums
 export const PlantingStatusSchema = z.enum([
@@ -239,10 +240,7 @@ export const PlantingFormSchema = z.object({
 export type PlantingFormData = z.infer<typeof PlantingFormSchema>;
 
 // Schema for the RecurrenceEditor component state
-const WeekdaySchema = z.object({
-    weekday: z.number().min(0).max(6),
-    n: z.number().optional(),
-});
+const WeekdaySchema = z.instanceof(Weekday);
 
 export const RecurrenceOptionsSchema = z.object({
     freq: z.number(),
