@@ -127,7 +127,11 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange, st
     try {
       console.log("rruleOptions:", rruleOptions);
       const newRule = new RRule(rruleOptions);
-      onChange(newRule.toString());
+      // Strip DTSTART from the string. The backend uses the task's due_date as the start date,
+      // and including DTSTART (which is often UTC) causes "offset-naive and offset-aware" comparison errors
+      // in the backend's python-dateutil library.
+      const ruleString = newRule.toString().split('\n').filter(line => !line.startsWith('DTSTART')).join('\n');
+      onChange(ruleString);
     } catch (e) {
       console.error("Error creating RRule:", e, "with options:", rruleOptions);
     }
