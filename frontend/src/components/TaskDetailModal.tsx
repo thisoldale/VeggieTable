@@ -148,7 +148,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
                             const checked = e.target.checked;
                             setIsRecurring(checked);
                             if (checked) {
-                              setRrule('FREQ=WEEKLY;INTERVAL=1;BYWEEKDAY=MO');
+                              setRrule('FREQ=WEEKLY;INTERVAL=1;BYDAY=MO');
                             } else {
                               setRrule('');
                             }
