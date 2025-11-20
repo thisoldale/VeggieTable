@@ -13,3 +13,9 @@ venv/
 .idea/
 .vscode/
 
+
+# Logs
+*.log
+
+# Vite temp files
+*.timestamp-*

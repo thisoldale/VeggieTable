@@ -13,7 +13,7 @@ const TasksPage: React.FC = () => {
   });
   const [deleteTask] = useDeleteTaskMutation();
   const [completeTaskOccurrence] = useCompleteTaskOccurrenceMutation();
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [viewMode, setViewMode] = useState<'weekly' | 'daily'>('weekly');
@@ -30,8 +30,8 @@ const TasksPage: React.FC = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    if(activePlan) {
-        refetch();
+    if (activePlan) {
+      refetch();
     }
   };
 
@@ -91,20 +91,20 @@ const TasksPage: React.FC = () => {
     <div className="p-4 md:p-8 bg-background text-foreground min-h-screen">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-primary">Tasks for {activePlan.name}</h1>
-            <button
-                onClick={handleOpenCreateModal}
-                className="flex items-center px-4 py-2 bg-interactive-primary text-interactive-primary-foreground rounded-md hover:bg-interactive-primary/90 transition duration-200"
-            >
-                <PlusCircle size={20} className="mr-2" />
-                Add Task
-            </button>
+          <h1 className="text-3xl font-bold text-primary">Tasks for {activePlan.name}</h1>
+          <button
+            onClick={handleOpenCreateModal}
+            className="flex items-center px-4 py-2 bg-interactive-primary text-interactive-primary-foreground rounded-md hover:bg-interactive-primary/90 transition duration-200"
+          >
+            <PlusCircle size={20} className="mr-2" />
+            Add Task
+          </button>
         </div>
 
         <h2 className="text-2xl font-semibold mb-4">Task Schedule</h2>
         <div className="flex justify-center mb-4">
-            <button onClick={() => setViewMode('weekly')} className={`px-4 py-2 rounded-l-md ${viewMode === 'weekly' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}>Weekly</button>
-            <button onClick={() => setViewMode('daily')} className={`px-4 py-2 rounded-r-md ${viewMode === 'daily' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}>Daily</button>
+          <button onClick={() => setViewMode('weekly')} className={`px-4 py-2 rounded-l-md ${viewMode === 'weekly' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}>Weekly</button>
+          <button onClick={() => setViewMode('daily')} className={`px-4 py-2 rounded-r-md ${viewMode === 'daily' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}>Daily</button>
         </div>
 
         <div className="bg-component-background p-6 rounded-lg shadow-md">
@@ -123,7 +123,7 @@ const TasksPage: React.FC = () => {
                     </h3>
                     <ul className="space-y-4">
                       {weekTasks.map(task => (
-                        <li key={task.id} className="group flex items-center justify-between p-4 border border-border rounded-md hover:bg-secondary">
+                        <li key={`${task.id}-${task.due_date}`} className="group flex items-center justify-between p-4 border border-border rounded-md hover:bg-secondary">
                           <div className="flex items-center flex-grow cursor-pointer" onClick={() => handleToggleCompletion(task)}>
                             <input
                               type="checkbox"
@@ -150,7 +150,7 @@ const TasksPage: React.FC = () => {
           )}
 
           {viewMode === 'daily' && !isLoading && (
-             Object.entries(groupTasksByDay(sortedTasks)).length > 0 ? (
+            Object.entries(groupTasksByDay(sortedTasks)).length > 0 ? (
               Object.entries(groupTasksByDay(sortedTasks)).map(([day, dayTasks]) => (
                 <div key={day} className="mb-6">
                   <h3 className="text-lg font-semibold border-b-2 border-border pb-2 mb-3">
@@ -158,7 +158,7 @@ const TasksPage: React.FC = () => {
                   </h3>
                   <ul className="space-y-2">
                     {dayTasks.map(task => (
-                      <li key={task.id} className="group flex items-center justify-between p-2 border border-border rounded-md hover:bg-secondary">
+                      <li key={`${task.id}-${task.due_date}`} className="group flex items-center justify-between p-2 border border-border rounded-md hover:bg-secondary">
                         <div className="flex items-center flex-grow cursor-pointer" onClick={() => handleToggleCompletion(task)}>
                           <input
                             type="checkbox"
@@ -166,10 +166,10 @@ const TasksPage: React.FC = () => {
                             className="mr-2"
                             readOnly
                           />
-                           {task.recurrence_rule && <Repeat size={16} className="mr-2 text-muted-foreground" />}
-                           <div className="flex-grow" onClick={(e) => { e.stopPropagation(); handleEditTask(task); }}>
+                          {task.recurrence_rule && <Repeat size={16} className="mr-2 text-muted-foreground" />}
+                          <div className="flex-grow" onClick={(e) => { e.stopPropagation(); handleEditTask(task); }}>
                             <p className={`font-semibold ${task.status === TaskStatus.COMPLETED ? 'line-through text-muted-foreground' : ''}`}>{task.name}</p>
-                           </div>
+                          </div>
                         </div>
                         <button onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }} className="text-destructive hover:text-destructive/90 text-sm font-medium ml-4">
                           <Trash2 size={20} />
@@ -183,7 +183,7 @@ const TasksPage: React.FC = () => {
           )}
         </div>
       </div>
-      <TaskDetailModal 
+      <TaskDetailModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         task={selectedTask}

@@ -5,16 +5,18 @@ import { RecurrenceOptionsSchema, RecurrenceOptions } from '../schemas';
 interface RecurrenceEditorProps {
   value: string; // RRULE string
   onChange: (value: string) => void;
+  startDate?: Date;
 }
 
-const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) => {
+const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange, startDate }) => {
+  const defaultDate = startDate || new Date();
   const [options, setOptions] = useState<RecurrenceOptions>({
     freq: RRule.WEEKLY,
     interval: 1,
-    byweekday: [new Weekday(new Date().getDay())],
-    bymonthday: 1,
+    byweekday: [new Weekday(defaultDate.getDay())],
+    bymonthday: defaultDate.getDate(),
     bysetpos: 1,
-    bymonth: new Date().getMonth() + 1,
+    bymonth: defaultDate.getMonth() + 1,
     count: 1,
     until: null,
     endType: 'never',
@@ -42,8 +44,8 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
 
           let byweekdayState: Weekday[] | null = null;
           if (byweekday !== null && byweekday !== undefined) {
-             const days = Array.isArray(byweekday) ? byweekday : [byweekday];
-             byweekdayState = days.map(d => (typeof d === 'number' ? new Weekday(d) : d));
+            const days = Array.isArray(byweekday) ? byweekday : [byweekday];
+            byweekdayState = days.map(d => (typeof d === 'number' ? new Weekday(d) : d));
           }
 
           setOptions(prev => ({
@@ -82,7 +84,7 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
     const rruleOptions: Partial<RRule.Options> = {
       freq,
       interval,
-      dtstart: new Date(),
+      dtstart: startDate || new Date(),
     };
 
     if (endType === 'date' && until) {
@@ -114,10 +116,10 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
       case RRule.YEARLY:
         rruleOptions.bymonth = bymonth;
         if (monthlyOption === 'day_of_month' && bymonthday) {
-            rruleOptions.bymonthday = bymonthday;
+          rruleOptions.bymonthday = bymonthday;
         } else if (monthlyOption === 'day_of_week' && bysetpos && byweekday && byweekday.length > 0) {
-            rruleOptions.bysetpos = bysetpos;
-            rruleOptions.byweekday = byweekday;
+          rruleOptions.bysetpos = bysetpos;
+          rruleOptions.byweekday = byweekday;
         }
         break;
     }
@@ -129,50 +131,51 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
     } catch (e) {
       console.error("Error creating RRule:", e, "with options:", rruleOptions);
     }
-  }, [options, onChange]);
+  }, [options, onChange, startDate]);
 
   const handleUpdate = (updates: Partial<RecurrenceOptions>) => {
     setOptions(prev => ({ ...prev, ...updates }));
   };
 
   const handleFreqChange = (newFreq: number) => {
-    const today = new Weekday(new Date().getDay());
+    const defaultDate = startDate || new Date();
+    const currentDay = new Weekday(defaultDate.getDay());
     let newOptions: Partial<RecurrenceOptions> = { freq: newFreq };
 
     // Reset options to sensible defaults when frequency changes
     switch (newFreq) {
-        case RRule.DAILY:
-            newOptions = { ...newOptions, byweekday: null, dailyOption: 'everyday' };
-            break;
-        case RRule.WEEKLY:
-            newOptions = { ...newOptions, byweekday: [today] };
-            break;
-        case RRule.MONTHLY:
-            newOptions = { ...newOptions, monthlyOption: 'day_of_month', byweekday: [today], bymonthday: new Date().getDate(), bysetpos: 1 };
-            break;
-        case RRule.YEARLY:
-            newOptions = { ...newOptions, monthlyOption: 'day_of_month', byweekday: [today], bymonthday: new Date().getDate(), bysetpos: 1, bymonth: new Date().getMonth() + 1 };
-            break;
+      case RRule.DAILY:
+        newOptions = { ...newOptions, byweekday: null, dailyOption: 'everyday' };
+        break;
+      case RRule.WEEKLY:
+        newOptions = { ...newOptions, byweekday: [currentDay] };
+        break;
+      case RRule.MONTHLY:
+        newOptions = { ...newOptions, monthlyOption: 'day_of_month', byweekday: [currentDay], bymonthday: defaultDate.getDate(), bysetpos: 1 };
+        break;
+      case RRule.YEARLY:
+        newOptions = { ...newOptions, monthlyOption: 'day_of_month', byweekday: [currentDay], bymonthday: defaultDate.getDate(), bysetpos: 1, bymonth: defaultDate.getMonth() + 1 };
+        break;
     }
     // Set final state in one go
     setOptions(prev => ({
-        ...prev,
-        ...newOptions,
+      ...prev,
+      ...newOptions,
     }));
   };
 
   const handleWeekdayToggle = (day: Weekday) => {
     setOptions(prev => {
-        const currentByweekday = prev.byweekday || [];
-        const isSelected = currentByweekday.some(d => d.weekday === day.weekday);
-        let newByweekday;
-        if (isSelected) {
-            if (currentByweekday.length === 1) return prev; // Prevent unselecting the last day
-            newByweekday = currentByweekday.filter(d => d.weekday !== day.weekday);
-        } else {
-            newByweekday = [...currentByweekday, day].sort((a, b) => a.weekday - b.weekday);
-        }
-        return {...prev, byweekday: newByweekday };
+      const currentByweekday = prev.byweekday || [];
+      const isSelected = currentByweekday.some(d => d.weekday === day.weekday);
+      let newByweekday;
+      if (isSelected) {
+        if (currentByweekday.length === 1) return prev; // Prevent unselecting the last day
+        newByweekday = currentByweekday.filter(d => d.weekday !== day.weekday);
+      } else {
+        newByweekday = [...currentByweekday, day].sort((a, b) => a.weekday - b.weekday);
+      }
+      return { ...prev, byweekday: newByweekday };
     });
   };
 
@@ -181,7 +184,7 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
       {/* Basic Frequency and Interval */}
       <div className="flex items-center space-x-2">
         <span>Repeat every</span>
-        <input type="number" min="1" value={options.interval} onChange={(e) => handleUpdate({ interval: parseInt(e.target.value, 10) || 1 })} className="w-16 p-1 border border-border rounded-md bg-background"/>
+        <input type="number" min="1" value={options.interval} onChange={(e) => handleUpdate({ interval: parseInt(e.target.value, 10) || 1 })} className="w-16 p-1 border border-border rounded-md bg-background" />
         <select value={options.freq} onChange={(e) => handleFreqChange(parseInt(e.target.value, 10))} className="p-1 border border-border rounded-md bg-background">
           <option value={RRule.DAILY}>Day(s)</option>
           <option value={RRule.WEEKLY}>Week(s)</option>
@@ -193,8 +196,8 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
       {/* Dynamic Options based on Frequency */}
       {options.freq === RRule.DAILY && (
         <div className="flex items-center space-x-4">
-            <label><input type="radio" name="dailyOption" value="everyday" checked={options.dailyOption === 'everyday'} onChange={() => handleUpdate({ dailyOption: 'everyday' })}/> Every day</label>
-            <label><input type="radio" name="dailyOption" value="weekdays" checked={options.dailyOption === 'weekdays'} onChange={() => handleUpdate({ dailyOption: 'weekdays' })}/> Every weekday</label>
+          <label><input type="radio" name="dailyOption" value="everyday" checked={options.dailyOption === 'everyday'} onChange={() => handleUpdate({ dailyOption: 'everyday' })} /> Every day</label>
+          <label><input type="radio" name="dailyOption" value="weekdays" checked={options.dailyOption === 'weekdays'} onChange={() => handleUpdate({ dailyOption: 'weekdays' })} /> Every weekday</label>
         </div>
       )}
       {options.freq === RRule.WEEKLY && (
@@ -203,7 +206,7 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
           <div className="flex space-x-1">
             {weekdayOptions.map(day => (
               <button key={day.value} type="button" onClick={() => handleWeekdayToggle(new Weekday(day.value))} className={`w-10 h-10 rounded-full ${options.byweekday?.some(d => d.weekday === day.value) ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                {day.label.substring(0,3)}
+                {day.label.substring(0, 3)}
               </button>
             ))}
           </div>
@@ -211,44 +214,44 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange }) 
       )}
       {(options.freq === RRule.MONTHLY || options.freq === RRule.YEARLY) && (
         <div className="space-y-2">
-            {options.freq === RRule.YEARLY && (
-                <div className="flex items-center space-x-2">
-                    <span>On</span>
-                    <select value={options.bymonth ?? 1} onChange={e => handleUpdate({ bymonth: parseInt(e.target.value) })} className="p-1 border border-border rounded-md bg-background">
-                        {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('default', { month: 'long' })}</option>)}
-                    </select>
-                </div>
-            )}
-            <div><label><input type="radio" name="monthlyOption" value="day_of_month" checked={options.monthlyOption === 'day_of_month'} onChange={() => handleUpdate({ monthlyOption: 'day_of_month', byweekday: [new Weekday(new Date().getDay())] })}/> On day <input type="number" min="1" max="31" value={options.bymonthday ?? 1} onChange={e => handleUpdate({ bymonthday: parseInt(e.target.value) || 1 })} className="w-14 p-1 border rounded bg-background"/></label></div>
-            <div>
-                <label className="flex items-center space-x-2"><input type="radio" name="monthlyOption" value="day_of_week" checked={options.monthlyOption === 'day_of_week'} onChange={() => handleUpdate({ monthlyOption: 'day_of_week' })}/> On the</label>
-                <div className="flex items-center space-x-2 mt-1 pl-6">
-                    <select value={options.bysetpos ?? 1} onChange={e => handleUpdate({ bysetpos: parseInt(e.target.value)})} className="p-1 border rounded bg-background">
-                        <option value="1">First</option><option value="2">Second</option><option value="3">Third</option><option value="4">Fourth</option><option value="-1">Last</option>
-                    </select>
-                    <select value={options.byweekday && options.byweekday.length > 0 ? options.byweekday[0].weekday : 0} onChange={e => handleUpdate({ byweekday: [new Weekday(parseInt(e.target.value))]})} className="p-1 border rounded bg-background">
-                        {weekdayOptions.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
-                    </select>
-                </div>
+          {options.freq === RRule.YEARLY && (
+            <div className="flex items-center space-x-2">
+              <span>On</span>
+              <select value={options.bymonth ?? 1} onChange={e => handleUpdate({ bymonth: parseInt(e.target.value) })} className="p-1 border border-border rounded-md bg-background">
+                {Array.from({ length: 12 }, (_, i) => <option key={i + 1} value={i + 1}>{new Date(0, i).toLocaleString('default', { month: 'long' })}</option>)}
+              </select>
             </div>
+          )}
+          <div><label><input type="radio" name="monthlyOption" value="day_of_month" checked={options.monthlyOption === 'day_of_month'} onChange={() => handleUpdate({ monthlyOption: 'day_of_month', byweekday: [new Weekday(new Date().getDay())] })} /> On day <input type="number" min="1" max="31" value={options.bymonthday ?? 1} onChange={e => handleUpdate({ bymonthday: parseInt(e.target.value) || 1 })} className="w-14 p-1 border rounded bg-background" /></label></div>
+          <div>
+            <label className="flex items-center space-x-2"><input type="radio" name="monthlyOption" value="day_of_week" checked={options.monthlyOption === 'day_of_week'} onChange={() => handleUpdate({ monthlyOption: 'day_of_week' })} /> On the</label>
+            <div className="flex items-center space-x-2 mt-1 pl-6">
+              <select value={options.bysetpos ?? 1} onChange={e => handleUpdate({ bysetpos: parseInt(e.target.value) })} className="p-1 border rounded bg-background">
+                <option value="1">First</option><option value="2">Second</option><option value="3">Third</option><option value="4">Fourth</option><option value="-1">Last</option>
+              </select>
+              <select value={options.byweekday && options.byweekday.length > 0 ? options.byweekday[0].weekday : 0} onChange={e => handleUpdate({ byweekday: [new Weekday(parseInt(e.target.value))] })} className="p-1 border rounded bg-background">
+                {weekdayOptions.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+              </select>
+            </div>
+          </div>
         </div>
       )}
 
       {/* End Condition */}
       <div className="space-y-2">
-          <span className="block text-sm font-medium">Ends</span>
-          <div className="flex items-center space-x-2">
-              <label><input type="radio" value="never" checked={options.endType === 'never'} onChange={() => handleUpdate({ endType: 'never' })}/> Never</label>
-          </div>
-          <div className="flex items-center space-x-2">
-              <label><input type="radio" value="date" checked={options.endType === 'date'} onChange={() => handleUpdate({ endType: 'date' })}/> On</label>
-              <input type="date" value={options.until ? options.until.toISOString().split('T')[0] : ''} onChange={(e) => handleUpdate({ endType: 'date', until: e.target.value ? new Date(e.target.value + 'T00:00:00') : null })} className="p-1 border rounded bg-background" disabled={options.endType !== 'date'}/>
-          </div>
-          <div className="flex items-center space-x-2">
-              <label><input type="radio" value="count" checked={options.endType === 'count'} onChange={() => handleUpdate({ endType: 'count' })}/> After</label>
-              <input type="number" min="1" value={options.count ?? 1} onChange={(e) => handleUpdate({ endType: 'count', count: parseInt(e.target.value) || 1 })} className="w-20 p-1 border rounded bg-background" disabled={options.endType !== 'count'}/>
-              <span>occurrences</span>
-          </div>
+        <span className="block text-sm font-medium">Ends</span>
+        <div className="flex items-center space-x-2">
+          <label><input type="radio" value="never" checked={options.endType === 'never'} onChange={() => handleUpdate({ endType: 'never' })} /> Never</label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <label><input type="radio" value="date" checked={options.endType === 'date'} onChange={() => handleUpdate({ endType: 'date' })} /> On</label>
+          <input type="date" value={options.until ? options.until.toISOString().split('T')[0] : ''} onChange={(e) => handleUpdate({ endType: 'date', until: e.target.value ? new Date(e.target.value + 'T00:00:00') : null })} className="p-1 border rounded bg-background" disabled={options.endType !== 'date'} />
+        </div>
+        <div className="flex items-center space-x-2">
+          <label><input type="radio" value="count" checked={options.endType === 'count'} onChange={() => handleUpdate({ endType: 'count' })} /> After</label>
+          <input type="number" min="1" value={options.count ?? 1} onChange={(e) => handleUpdate({ endType: 'count', count: parseInt(e.target.value) || 1 })} className="w-20 p-1 border rounded bg-background" disabled={options.endType !== 'count'} />
+          <span>occurrences</span>
+        </div>
       </div>
     </div>
   );

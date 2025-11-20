@@ -18,11 +18,11 @@ docker-compose down --remove-orphans
 
 REM Inform the user about the next step
 echo.
-echo [INFO] Building new images for frontend_dev and backend without using cache...
+echo [INFO] Building new images for frontend and backend without using cache...
 echo.
 
 REM Run the second command
-docker-compose build --no-cache frontend_dev backend
+docker-compose build --no-cache frontend backend
 
 REM Inform the user about the final step
 echo.
@@ -30,7 +30,7 @@ echo [INFO] Starting new containers in detached mode...
 echo.
 
 REM Run the third command
-docker-compose up -d frontend_dev backend
+docker-compose up -d frontend backend
 
 echo.
 echo [SUCCESS] Script finished. The containers should be up and running.

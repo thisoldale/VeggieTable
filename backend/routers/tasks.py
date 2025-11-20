@@ -29,11 +29,27 @@ def read_tasks_for_plan_endpoint(plan_id: int, db: Session = Depends(get_db)):
     start_date = date.today()
     end_date = start_date + timedelta(days=365)
 
-    for task in db_tasks:
-        if task.recurrence_rule:
-            all_tasks.extend(recurrence.get_occurrences(task, start_date, end_date))
-        else:
-            all_tasks.append(task)
+    try:
+        for task in db_tasks:
+            if task.recurrence_rule:
+                # print(f"Processing Task ID: {task.id}, RRULE: {task.recurrence_rule}")
+                try:
+                    all_tasks.extend(recurrence.get_occurrences(task, start_date, end_date))
+                except Exception as e:
+                    print(f"Error processing task {task.id}: {e}")
+                    # Continue processing other tasks instead of crashing
+                    # But also log to file for me to see
+                    with open("bad_tasks.log", "a") as f:
+                        f.write(f"Task ID: {task.id}, RRULE: {task.recurrence_rule}, Error: {e}\n")
+                    # Add the original task so it's not lost, even if recurrence fails
+                    all_tasks.append(task)
+            else:
+                all_tasks.append(task)
+    except Exception as e:
+        import traceback
+        with open("error.log", "w") as f:
+            f.write(traceback.format_exc())
+        raise e
 
     return all_tasks
 

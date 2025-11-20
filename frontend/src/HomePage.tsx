@@ -19,8 +19,8 @@ type CalendarItem = {
   data: Planting | Task;
 };
 
-const CalendarDay: React.FC<{ 
-  day: Date; 
+const CalendarDay: React.FC<{
+  day: Date;
   dayIndex: number; // Index of the day in the week (0-6)
   onActionSelect: (action: PlantingMethod | 'harvest' | 'task', date: Date) => void;
 }> = ({ day, dayIndex, onActionSelect }) => {
@@ -32,10 +32,10 @@ const CalendarDay: React.FC<{
       {({ open }) => (
         <>
           <Popover.Button
-    className={`w-full h-24 border-t border-r border-border p-2 flex flex-col justify-center items-center cursor-pointer transition-colors duration-150 ${open ? 'bg-primary/10' : 'hover:bg-secondary'}`}
+            className={`w-full h-24 border-t border-r border-border p-2 flex flex-col justify-center items-center cursor-pointer transition-colors duration-150 ${open ? 'bg-primary/10' : 'hover:bg-secondary'}`}
           >
-    <span className="text-xs text-muted-foreground">{format(day, 'EEE')}</span>
-    <span className={`text-2xl mt-1 ${dayIsToday ? 'font-bold text-primary' : ''}`}>
+            <span className="text-xs text-muted-foreground">{format(day, 'EEE')}</span>
+            <span className={`text-2xl mt-1 ${dayIsToday ? 'font-bold text-primary' : ''}`}>
               {format(day, 'd')}
             </span>
           </Popover.Button>
@@ -48,14 +48,14 @@ const CalendarDay: React.FC<{
             leaveFrom="opacity-100 translate-y-0"
             leaveTo="opacity-0 translate-y-1"
           >
-    <Popover.Panel className={`absolute z-10 w-48 p-2 mt-2 bg-component-background rounded-md shadow-lg ${popoverPanelClasses}`}>
-        <div className="flex flex-col space-y-1">
-            <button onClick={() => onActionSelect(PlantingMethod.DIRECT_SEEDING, day)} className="w-full text-left p-2 text-sm hover:bg-secondary rounded">Direct Seed</button>
-            <button onClick={() => onActionSelect(PlantingMethod.SEED_STARTING, day)} className="w-full text-left p-2 text-sm hover:bg-secondary rounded">Start Seeds</button>
-            <button onClick={() => onActionSelect(PlantingMethod.SEEDLING, day)} className="w-full text-left p-2 text-sm hover:bg-secondary rounded">Plant Seedling</button>
-            <button onClick={() => onActionSelect('harvest', day)} className="w-full text-left p-2 text-sm hover:bg-secondary rounded">Harvest</button>
-            <div className="border-t my-1 border-border"></div>
-            <button onClick={() => onActionSelect('task', day)} className="w-full text-left p-2 text-sm hover:bg-secondary rounded">Add Task</button>
+            <Popover.Panel className={`absolute z-10 w-48 p-2 mt-2 bg-component-background rounded-md shadow-lg ${popoverPanelClasses}`}>
+              <div className="flex flex-col space-y-1">
+                <button onClick={() => onActionSelect(PlantingMethod.DIRECT_SEEDING, day)} className="w-full text-left p-2 text-sm hover:bg-secondary rounded">Direct Seed</button>
+                <button onClick={() => onActionSelect(PlantingMethod.SEED_STARTING, day)} className="w-full text-left p-2 text-sm hover:bg-secondary rounded">Start Seeds</button>
+                <button onClick={() => onActionSelect(PlantingMethod.SEEDLING, day)} className="w-full text-left p-2 text-sm hover:bg-secondary rounded">Plant Seedling</button>
+                <button onClick={() => onActionSelect('harvest', day)} className="w-full text-left p-2 text-sm hover:bg-secondary rounded">Harvest</button>
+                <div className="border-t my-1 border-border"></div>
+                <button onClick={() => onActionSelect('task', day)} className="w-full text-left p-2 text-sm hover:bg-secondary rounded">Add Task</button>
               </div>
             </Popover.Panel>
           </Transition>
@@ -66,165 +66,165 @@ const CalendarDay: React.FC<{
 };
 
 const CalendarWeek: React.FC<{
-    week: Date;
-    tasks: Record<string, CalendarItem[]>;
-    onActionSelect: (action: PlantingMethod | 'harvest' | 'task', date: Date) => void;
-    onItemClick: (item: CalendarItem) => void;
-    onComplete: (item: CalendarItem) => void;
-    onUndo: (item: CalendarItem) => void;
-    onDelete: (item: CalendarItem) => void;
-    weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-    groupByTaskType: boolean;
+  week: Date;
+  tasks: Record<string, CalendarItem[]>;
+  onActionSelect: (action: PlantingMethod | 'harvest' | 'task', date: Date) => void;
+  onItemClick: (item: CalendarItem) => void;
+  onComplete: (item: CalendarItem) => void;
+  onUndo: (item: CalendarItem) => void;
+  onDelete: (item: CalendarItem) => void;
+  weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  groupByTaskType: boolean;
 }> = ({ week, tasks, onActionSelect, onItemClick, onComplete, onUndo, onDelete, weekStartsOn, groupByTaskType }) => {
-    const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(week, i));
-    const weeklyTasks = weekDays.flatMap(day => tasks[format(day, 'yyyy-MM-dd')] || []).sort((a, b) => a.date.getTime() - b.date.getTime());
-    const isCurrent = isSameWeek(new Date(), week, { weekStartsOn });
+  const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(week, i));
+  const weeklyTasks = weekDays.flatMap(day => tasks[format(day, 'yyyy-MM-dd')] || []).sort((a, b) => a.date.getTime() - b.date.getTime());
+  const isCurrent = isSameWeek(new Date(), week, { weekStartsOn });
 
-    const startMonth = format(week, 'MMMM');
-    const startYear = format(week, 'yyyy');
-    const endOfWeek = addDays(week, 6);
-    const endMonth = format(endOfWeek, 'MMMM');
-    const endYear = format(endOfWeek, 'yyyy');
-    const title = startMonth === endMonth
-        ? `${startMonth} ${startYear}`
-        : startYear === endYear
-            ? `${startMonth}/${endMonth} ${startYear}`
-            : `${startMonth} ${startYear}/${endMonth} ${endYear}`;
+  const startMonth = format(week, 'MMMM');
+  const startYear = format(week, 'yyyy');
+  const endOfWeek = addDays(week, 6);
+  const endMonth = format(endOfWeek, 'MMMM');
+  const endYear = format(endOfWeek, 'yyyy');
+  const title = startMonth === endMonth
+    ? `${startMonth} ${startYear}`
+    : startYear === endYear
+      ? `${startMonth}/${endMonth} ${startYear}`
+      : `${startMonth} ${startYear}/${endMonth} ${endYear}`;
 
-    const getTaskIcon = (type: CalendarItem['type']) => {
-        switch (type) {
-            case 'sow': return '🌱';
-            case 'transplant': return '🌿';
-            case 'harvest': return '🧺';
-            case 'task': return '📝';
-            default: return '•';
-        }
-    };
+  const getTaskIcon = (type: CalendarItem['type']) => {
+    switch (type) {
+      case 'sow': return '🌱';
+      case 'transplant': return '🌿';
+      case 'harvest': return '🧺';
+      case 'task': return '📝';
+      default: return '•';
+    }
+  };
 
-    const isComplete = (item: CalendarItem): boolean => {
-        if (item.type === 'task') {
-            return (item.data as Task).status === TaskStatus.COMPLETED;
-        }
-        const planting = item.data as Planting;
-        switch (item.type) {
-            case 'sow':
-                return [PlantingStatus.DIRECT_SOWN, PlantingStatus.STARTED, PlantingStatus.TRANSPLANTED, PlantingStatus.GROWING, PlantingStatus.HARVESTING, PlantingStatus.DONE].includes(planting.status);
-            case 'transplant':
-                return [PlantingStatus.TRANSPLANTED, PlantingStatus.GROWING, PlantingStatus.HARVESTING, PlantingStatus.DONE].includes(planting.status);
-            case 'harvest':
-                return [PlantingStatus.HARVESTING, PlantingStatus.DONE].includes(planting.status);
-            default:
-                return false;
-        }
-    };
+  const isComplete = (item: CalendarItem): boolean => {
+    if (item.type === 'task') {
+      return (item.data as Task).status === TaskStatus.COMPLETED;
+    }
+    const planting = item.data as Planting;
+    switch (item.type) {
+      case 'sow':
+        return [PlantingStatus.DIRECT_SOWN, PlantingStatus.STARTED, PlantingStatus.TRANSPLANTED, PlantingStatus.GROWING, PlantingStatus.HARVESTING, PlantingStatus.DONE].includes(planting.status);
+      case 'transplant':
+        return [PlantingStatus.TRANSPLANTED, PlantingStatus.GROWING, PlantingStatus.HARVESTING, PlantingStatus.DONE].includes(planting.status);
+      case 'harvest':
+        return [PlantingStatus.HARVESTING, PlantingStatus.DONE].includes(planting.status);
+      default:
+        return false;
+    }
+  };
 
-    type GroupedByDay = Record<string, {
-        Tasks: CalendarItem[];
-        Plant: CalendarItem[];
-        Harvest: CalendarItem[];
-    }>;
+  type GroupedByDay = Record<string, {
+    Tasks: CalendarItem[];
+    Plant: CalendarItem[];
+    Harvest: CalendarItem[];
+  }>;
 
-    type GroupedByType = {
-        Tasks: CalendarItem[];
-        Plant: CalendarItem[];
-        Harvest: CalendarItem[];
-    };
+  type GroupedByType = {
+    Tasks: CalendarItem[];
+    Plant: CalendarItem[];
+    Harvest: CalendarItem[];
+  };
 
-    const groupedTasks = weeklyTasks.reduce((acc, item) => {
-        const category = item.type === 'task' ? 'Tasks' : (item.type === 'harvest' ? 'Harvest' : 'Plant');
+  const groupedTasks = weeklyTasks.reduce((acc, item) => {
+    const category = item.type === 'task' ? 'Tasks' : (item.type === 'harvest' ? 'Harvest' : 'Plant');
 
-        if (groupByTaskType) {
-            const typeAcc = acc as GroupedByType;
-            if (!typeAcc[category]) {
-                typeAcc[category] = [];
-            }
-            typeAcc[category].push(item);
-        } else {
-            const dayAcc = acc as GroupedByDay;
-            const dateKey = format(item.date, 'yyyy-MM-dd');
-            if (!dayAcc[dateKey]) {
-                dayAcc[dateKey] = { 'Tasks': [], 'Plant': [], 'Harvest': [] };
-            }
-            dayAcc[dateKey][category].push(item);
-        }
-        return acc;
-    }, (groupByTaskType ? { 'Tasks': [], 'Plant': [], 'Harvest': [] } : {}) as GroupedByDay | GroupedByType);
+    if (groupByTaskType) {
+      const typeAcc = acc as GroupedByType;
+      if (!typeAcc[category]) {
+        typeAcc[category] = [];
+      }
+      typeAcc[category].push(item);
+    } else {
+      const dayAcc = acc as GroupedByDay;
+      const dateKey = format(item.date, 'yyyy-MM-dd');
+      if (!dayAcc[dateKey]) {
+        dayAcc[dateKey] = { 'Tasks': [], 'Plant': [], 'Harvest': [] };
+      }
+      dayAcc[dateKey][category].push(item);
+    }
+    return acc;
+  }, (groupByTaskType ? { 'Tasks': [], 'Plant': [], 'Harvest': [] } : {}) as GroupedByDay | GroupedByType);
 
-    const renderItem = (item: CalendarItem) => {
-        const itemIsComplete = isComplete(item);
-        return (
-            <li key={item.id} className="text-sm flex items-center justify-between p-2 rounded-md hover:bg-component-background transition-colors group">
-                <div className="flex items-center flex-grow cursor-pointer" onClick={() => itemIsComplete ? onUndo(item) : onComplete(item)}>
-                    {itemIsComplete ? <CheckSquare className="h-5 w-5 text-primary mr-3 flex-shrink-0" /> : <Square className="h-5 w-5 text-muted-foreground mr-3 flex-shrink-0" />}
-                    <div className={`flex items-baseline ${itemIsComplete ? 'line-through text-muted-foreground' : ''}`} >
-                        <span className="font-medium mr-2 text-primary">
-                            {getTaskIcon(item.type)}
-                        </span>
-                        <span onClick={(e) => { e.stopPropagation(); onItemClick(item); }} className="hover:underline">
-                            {item.name}
-                            {(item.type === 'sow' || item.type === 'transplant') && ` (${item.type})`}
-                        </span>
-                        {groupByTaskType && <span className="text-xs text-muted-foreground ml-2">({format(item.date, 'EEE, MMM d')})</span>}
-                    </div>
-                </div>
-                <div className="flex items-center space-x-2 ml-4">
-                    <button onClick={(e) => { e.stopPropagation(); onDelete(item); }} className="text-muted-foreground hover:text-interactive-destructive opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Trash2 className="h-4 w-4" />
-                    </button>
-                </div>
-            </li>
-        );
-    };
-
-
+  const renderItem = (item: CalendarItem) => {
+    const itemIsComplete = isComplete(item);
     return (
-        <div className={`mb-8 p-4 rounded-lg transition-colors duration-300 ${isCurrent ? 'bg-primary/10' : 'bg-component-background'}`}>
-            <h2 className="text-xl font-bold mb-2">{title}</h2>
-            <div className="grid grid-cols-7 border-l border-b border-border rounded-lg">
-                {weekDays.map((day, index) => (
-                    <CalendarDay key={day.toString()} day={day} dayIndex={index} onActionSelect={onActionSelect} />
-                ))}
-            </div>
-            <div className="p-4 bg-secondary border-l border-r border-b border-border rounded-b-lg -mt-2">
-                {weeklyTasks.length > 0 ? (
-                    <div className="space-y-4">
-                        {groupByTaskType ? (
-                            Object.entries(groupedTasks as GroupedByType).map(([category, items]) => {
-                                if (items.length === 0) return null;
-                                return (
-                                    <div key={category}>
-                                        <h3 className="font-semibold text-lg mb-2 text-primary">{category}</h3>
-                                        <ul className="space-y-1 ml-4">
-                                            {items.sort((a, b) => a.date.getTime() - b.date.getTime()).map(renderItem)}
-                                        </ul>
-                                    </div>
-                                );
-                            })
-                        ) : (
-                            Object.entries(groupedTasks as GroupedByDay).map(([date, categories]) => (
-                                <div key={date}>
-                                    <h3 className="font-semibold text-lg mb-2">{format(new Date(date + 'T00:00:00'), 'EEE, MMM d')}</h3>
-                                    {Object.entries(categories).map(([category, items]) => {
-                                        if (items.length === 0) return null;
-                                        return (
-                                            <div key={category} className="ml-4">
-                                                <h4 className="font-medium text-primary my-1">{category}</h4>
-                                                <ul className="space-y-1">
-                                                    {items.map(renderItem)}
-                                                </ul>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ))
-                        )}
-                    </div>
-                ) : (
-                    <p className="text-sm text-muted-foreground italic">No actions planned for this week.</p>
-                )}
-            </div>
+      <li key={item.id} className="text-sm flex items-center justify-between p-2 rounded-md hover:bg-component-background transition-colors group">
+        <div className="flex items-center flex-grow cursor-pointer" onClick={() => itemIsComplete ? onUndo(item) : onComplete(item)}>
+          {itemIsComplete ? <CheckSquare className="h-5 w-5 text-primary mr-3 flex-shrink-0" /> : <Square className="h-5 w-5 text-muted-foreground mr-3 flex-shrink-0" />}
+          <div className={`flex items-baseline ${itemIsComplete ? 'line-through text-muted-foreground' : ''}`} >
+            <span className="font-medium mr-2 text-primary">
+              {getTaskIcon(item.type)}
+            </span>
+            <span onClick={(e) => { e.stopPropagation(); onItemClick(item); }} className="hover:underline">
+              {item.name}
+              {(item.type === 'sow' || item.type === 'transplant') && ` (${item.type})`}
+            </span>
+            {groupByTaskType && <span className="text-xs text-muted-foreground ml-2">({format(item.date, 'EEE, MMM d')})</span>}
+          </div>
         </div>
+        <div className="flex items-center space-x-2 ml-4">
+          <button onClick={(e) => { e.stopPropagation(); onDelete(item); }} className="text-muted-foreground hover:text-interactive-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      </li>
     );
+  };
+
+
+  return (
+    <div className={`mb-8 p-4 rounded-lg transition-colors duration-300 ${isCurrent ? 'bg-primary/10' : 'bg-component-background'}`}>
+      <h2 className="text-xl font-bold mb-2">{title}</h2>
+      <div className="grid grid-cols-7 border-l border-b border-border rounded-lg">
+        {weekDays.map((day, index) => (
+          <CalendarDay key={day.toString()} day={day} dayIndex={index} onActionSelect={onActionSelect} />
+        ))}
+      </div>
+      <div className="p-4 bg-secondary border-l border-r border-b border-border rounded-b-lg -mt-2">
+        {weeklyTasks.length > 0 ? (
+          <div className="space-y-4">
+            {groupByTaskType ? (
+              Object.entries(groupedTasks as GroupedByType).map(([category, items]) => {
+                if (items.length === 0) return null;
+                return (
+                  <div key={category}>
+                    <h3 className="font-semibold text-lg mb-2 text-primary">{category}</h3>
+                    <ul className="space-y-1 ml-4">
+                      {items.sort((a, b) => a.date.getTime() - b.date.getTime()).map(renderItem)}
+                    </ul>
+                  </div>
+                );
+              })
+            ) : (
+              Object.entries(groupedTasks as GroupedByDay).map(([date, categories]) => (
+                <div key={date}>
+                  <h3 className="font-semibold text-lg mb-2">{format(new Date(date + 'T00:00:00'), 'EEE, MMM d')}</h3>
+                  {Object.entries(categories).map(([category, items]) => {
+                    if (items.length === 0) return null;
+                    return (
+                      <div key={category} className="ml-4">
+                        <h4 className="font-medium text-primary my-1">{category}</h4>
+                        <ul className="space-y-1">
+                          {items.map(renderItem)}
+                        </ul>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground italic">No actions planned for this week.</p>
+        )}
+      </div>
+    </div>
+  );
 };
 
 
@@ -245,7 +245,7 @@ const CalendarView: React.FC = () => {
   const [plantSelectionModalOpen, setPlantSelectionModalOpen] = useState(false);
   const [addToPlanModalOpen, setAddToPlanModalOpen] = useState(false);
   const [taskDetailModalOpen, setTaskDetailModalOpen] = useState(false);
-  
+
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedAction, setSelectedAction] = useState<PlantingMethod | 'harvest' | null>(null);
   const [plantForModal, setPlantForModal] = useState<Plant | null>(null);
@@ -303,10 +303,10 @@ const CalendarView: React.FC = () => {
           allItems.push({ id: `planting-harvest-${p.id}`, type: 'harvest', name: taskName, date: parseDate(p.planned_harvest_start_date), data: p });
         }
       });
-      
+
       (fullActivePlan.tasks || []).forEach(t => {
         if (t.due_date) {
-          allItems.push({ id: `task-${t.id}`, type: 'task', name: t.name, date: parseDate(t.due_date), data: t });
+          allItems.push({ id: `task-${t.id}-${t.due_date}`, type: 'task', name: t.name, date: parseDate(t.due_date), data: t });
         }
       });
 
@@ -338,7 +338,7 @@ const CalendarView: React.FC = () => {
     setPlantSelectionModalOpen(false);
     setAddToPlanModalOpen(true);
   };
-  
+
   const closeAddToPlanModal = () => {
     setAddToPlanModalOpen(false);
     setPlantForModal(null);
@@ -350,14 +350,14 @@ const CalendarView: React.FC = () => {
     refetch();
     closeAddToPlanModal();
   };
-  
+
   const handleItemClick = (item: CalendarItem) => {
-      if (item.type === 'task') {
-          setSelectedTask(item.data as Task);
-          setTaskDetailModalOpen(true);
-      } else {
-          navigate(`/plantings/${(item.data as Planting).id}`);
-      }
+    if (item.type === 'task') {
+      setSelectedTask(item.data as Task);
+      setTaskDetailModalOpen(true);
+    } else {
+      navigate(`/plantings/${(item.data as Planting).id}`);
+    }
   };
 
   const handleComplete = async (item: CalendarItem) => {
@@ -379,7 +379,7 @@ const CalendarView: React.FC = () => {
       toast.error("Failed to mark item as complete.");
     }
   };
-  
+
   const handleUndo = async (item: CalendarItem) => {
     try {
       if (item.type === 'task') {
@@ -419,23 +419,23 @@ const CalendarView: React.FC = () => {
     <div className="p-4 md:px-8">
       {weeks.map(week => (
         <CalendarWeek
-            key={week.toString()}
-            week={week}
-            tasks={tasks}
-            onActionSelect={handleActionSelect}
-            onItemClick={handleItemClick}
-            onComplete={handleComplete}
-            onUndo={handleUndo}
-            onDelete={handleDelete}
-            weekStartsOn={settings.weekStartsOn}
-            groupByTaskType={settings.groupByTaskType}
+          key={week.toString()}
+          week={week}
+          tasks={tasks}
+          onActionSelect={handleActionSelect}
+          onItemClick={handleItemClick}
+          onComplete={handleComplete}
+          onUndo={handleUndo}
+          onDelete={handleDelete}
+          weekStartsOn={settings.weekStartsOn}
+          groupByTaskType={settings.groupByTaskType}
         />
       ))}
       <div ref={handleObserver} className="h-10">
         <p className="text-center py-4 text-gray-500">Loading more...</p>
       </div>
 
-      <PlantSelectionModal 
+      <PlantSelectionModal
         isOpen={plantSelectionModalOpen}
         onClose={() => setPlantSelectionModalOpen(false)}
         onSelectPlant={handlePlantSelected}
@@ -443,17 +443,17 @@ const CalendarView: React.FC = () => {
 
       {plantForModal && fullActivePlan && (
         <AddToPlanModal
-            isOpen={addToPlanModalOpen}
-            onClose={closeAddToPlanModal}
-            plant={plantForModal}
-            gardenPlan={fullActivePlan}
-            onPlantingAdd={handlePlantingsAdded}
-            initialDate={selectedDate}
-            initialAction={selectedAction}
+          isOpen={addToPlanModalOpen}
+          onClose={closeAddToPlanModal}
+          plant={plantForModal}
+          gardenPlan={fullActivePlan}
+          onPlantingAdd={handlePlantingsAdded}
+          initialDate={selectedDate}
+          initialAction={selectedAction}
         />
       )}
-      
-      <TaskDetailModal 
+
+      <TaskDetailModal
         isOpen={taskDetailModalOpen}
         onClose={() => setTaskDetailModalOpen(false)}
         task={selectedTask}
@@ -469,37 +469,37 @@ const HomePage: React.FC = () => {
 
   // This query will only run if there's no activePlan in the context yet.
   const { data: mostRecentPlan, isLoading, isError } = useGetMostRecentGardenPlanQuery(undefined, {
-      skip: !!activePlan,
+    skip: !!activePlan,
   });
 
   useEffect(() => {
-      // If we fetch a plan, set it as active.
-      if (mostRecentPlan) {
-          setActivePlan(mostRecentPlan);
-      }
+    // If we fetch a plan, set it as active.
+    if (mostRecentPlan) {
+      setActivePlan(mostRecentPlan);
+    }
   }, [mostRecentPlan, setActivePlan]);
 
   // While fetching the initial plan, show a loading state.
   if (isLoading) {
-      return <div className="p-8 text-center">Loading your garden...</div>;
+    return <div className="p-8 text-center">Loading your garden...</div>;
   }
 
   // If a plan is now active in the context (either from before or from our fetch),
   // we can show the calendar.
   if (activePlan) {
-      return <CalendarView />;
+    return <CalendarView />;
   }
 
   // If there's no active plan and we didn't fetch one (or the fetch resulted in no plan),
   // then we show the welcome message to create a plan.
   return (
-      <div className="p-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-700 dark:text-gray-200 mb-4">Welcome to Your Digital Garden</h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">It looks like you don't have any garden plans yet. Let's create one!</p>
-          <Link to="/plans" className="px-6 py-3 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-colors">
-              Create a Plan
-          </Link>
-      </div>
+    <div className="p-8 text-center">
+      <h1 className="text-2xl font-bold text-gray-700 dark:text-gray-200 mb-4">Welcome to Your Digital Garden</h1>
+      <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">It looks like you don't have any garden plans yet. Let's create one!</p>
+      <Link to="/plans" className="px-6 py-3 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-colors">
+        Create a Plan
+      </Link>
+    </div>
   );
 };
 

@@ -22,7 +22,7 @@ def get_occurrences(task: Task, start_date: date, end_date: date) -> List[Task]:
             continue
 
         # Create a new task instance for the occurrence
-        occurrence_task = Task.model_validate(task.model_dump())
+        occurrence_task = Task.model_validate(task)
         occurrence_task.due_date = occurrence_date
 
         # Set status to COMPLETED if the date is in completed_dates

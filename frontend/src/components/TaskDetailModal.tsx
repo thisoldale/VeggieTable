@@ -119,23 +119,23 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
                     <div className="space-y-4">
                       {/* Form fields */}
                       <div>
-                          <label htmlFor="taskNameModal" className="block text-sm font-medium text-muted-foreground mb-1">Task Name</label>
-                          <input id="taskNameModal" type="text" {...register("name")} className="w-full p-2 border border-border rounded-md bg-background text-foreground"/>
-                          {errors.name && <p className="text-destructive text-xs mt-1">{errors.name.message}</p>}
+                        <label htmlFor="taskNameModal" className="block text-sm font-medium text-muted-foreground mb-1">Task Name</label>
+                        <input id="taskNameModal" type="text" {...register("name")} className="w-full p-2 border border-border rounded-md bg-background text-foreground" />
+                        {errors.name && <p className="text-destructive text-xs mt-1">{errors.name.message}</p>}
                       </div>
                       <div>
-                          <label htmlFor="taskDescriptionModal" className="block text-sm font-medium text-muted-foreground mb-1">Description</label>
-                          <textarea id="taskDescriptionModal" {...register("description")} rows={3} className="w-full p-2 border border-border rounded-md bg-background text-foreground"/>
+                        <label htmlFor="taskDescriptionModal" className="block text-sm font-medium text-muted-foreground mb-1">Description</label>
+                        <textarea id="taskDescriptionModal" {...register("description")} rows={3} className="w-full p-2 border border-border rounded-md bg-background text-foreground" />
                       </div>
                       <div>
-                          <label htmlFor="taskDueDateModal" className="block text-sm font-medium text-muted-foreground mb-1">{isRecurring ? 'Start Date' : 'Due Date'}</label>
-                          <input id="taskDueDateModal" type="date" {...register("due_date")} className="w-full p-2 border border-border rounded-md bg-background text-foreground"/>
+                        <label htmlFor="taskDueDateModal" className="block text-sm font-medium text-muted-foreground mb-1">{isRecurring ? 'Start Date' : 'Due Date'}</label>
+                        <input id="taskDueDateModal" type="date" {...register("due_date")} className="w-full p-2 border border-border rounded-md bg-background text-foreground" />
                       </div>
                       <div className="mb-4">
-                          <label htmlFor="taskStatusModal" className="block text-sm font-medium text-muted-foreground mb-1">Status</label>
-                          <select id="taskStatusModal" {...register("status")} className="w-full p-2 border border-border rounded-md bg-component-background text-foreground">
-                              {Object.values(TaskStatus).map(status => (<option key={status} value={status}>{status}</option>))}
-                          </select>
+                        <label htmlFor="taskStatusModal" className="block text-sm font-medium text-muted-foreground mb-1">Status</label>
+                        <select id="taskStatusModal" {...register("status")} className="w-full p-2 border border-border rounded-md bg-component-background text-foreground">
+                          {Object.values(TaskStatus).map(status => (<option key={status} value={status}>{status}</option>))}
+                        </select>
                       </div>
 
                       {/* Recurrence Section */}
@@ -159,27 +159,31 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClose, task
                       </div>
 
                       {isRecurring && (
-                        <RecurrenceEditor value={rrule} onChange={setRrule} />
+                        <RecurrenceEditor
+                          value={rrule}
+                          onChange={setRrule}
+                          startDate={activePlan && activePlan.tasks.find(t => t.id === task?.id)?.due_date ? new Date(activePlan.tasks.find(t => t.id === task?.id)?.due_date + 'T00:00:00') : (document.getElementById('taskDueDateModal') as HTMLInputElement)?.value ? new Date((document.getElementById('taskDueDateModal') as HTMLInputElement).value + 'T00:00:00') : undefined}
+                        />
                       )}
                     </div>
 
                     {/* Modal Footer */}
                     <div className="flex justify-between items-center mt-6">
-                        <div>
-                          {!isCreateMode && (
-                              <button type="button" onClick={handleDelete} className="p-2 text-destructive hover:bg-destructive/10 rounded-md">
-                                  <Trash2 size={20} />
-                              </button>
-                          )}
-                        </div>
-                        <div className="flex space-x-2">
-                            <button type="button" onClick={onClose} className="px-4 py-2 bg-muted text-muted-foreground rounded-md">
-                                Cancel
-                            </button>
-                            <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground rounded-md">
-                                {isCreateMode ? 'Add Task' : 'Save Changes'}
-                            </button>
-                        </div>
+                      <div>
+                        {!isCreateMode && (
+                          <button type="button" onClick={handleDelete} className="p-2 text-destructive hover:bg-destructive/10 rounded-md">
+                            <Trash2 size={20} />
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex space-x-2">
+                        <button type="button" onClick={onClose} className="px-4 py-2 bg-muted text-muted-foreground rounded-md">
+                          Cancel
+                        </button>
+                        <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground rounded-md">
+                          {isCreateMode ? 'Add Task' : 'Save Changes'}
+                        </button>
+                      </div>
                     </div>
                   </form>
                 </Dialog.Panel>
