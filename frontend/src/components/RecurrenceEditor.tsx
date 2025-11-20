@@ -87,6 +87,16 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange, st
       dtstart: startDate || new Date(),
     };
 
+    // Map custom Weekday objects back to RRule Weekday constants if necessary
+    if (byweekday) {
+      // The schema returns objects like { weekday: 0 }. RRule needs [RRule.MO, ...] or similar constants/objects.
+      // RRule.MO is NOT just { weekday: 0 }, it's an instance of Weekday.
+      // However, the state `options.byweekday` already contains `Weekday` instances (from `new Weekday(d)`).
+      // But Zod might strip prototype if we are not careful? No, Zod validation passed.
+      // Let's ensure we are passing valid Weekday instances to RRule.
+      rruleOptions.byweekday = byweekday.map(d => new Weekday(d.weekday));
+    }
+
     if (endType === 'date' && until) {
       rruleOptions.until = until;
     } else if (endType === 'count' && count) {
@@ -101,36 +111,40 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange, st
         }
         break;
       case RRule.WEEKLY:
-        if (byweekday && byweekday.length > 0) {
-          rruleOptions.byweekday = byweekday;
-        }
+        // byweekday is already set in rruleOptions above if present
         break;
       case RRule.MONTHLY:
         if (monthlyOption === 'day_of_month' && bymonthday) {
           rruleOptions.bymonthday = bymonthday;
+          delete rruleOptions.byweekday; // Ensure byweekday is not set if using day_of_month
         } else if (monthlyOption === 'day_of_week' && bysetpos && byweekday && byweekday.length > 0) {
           rruleOptions.bysetpos = bysetpos;
-          rruleOptions.byweekday = byweekday;
+          // byweekday is already set
         }
         break;
       case RRule.YEARLY:
         rruleOptions.bymonth = bymonth;
         if (monthlyOption === 'day_of_month' && bymonthday) {
           rruleOptions.bymonthday = bymonthday;
+          delete rruleOptions.byweekday;
         } else if (monthlyOption === 'day_of_week' && bysetpos && byweekday && byweekday.length > 0) {
           rruleOptions.bysetpos = bysetpos;
-          rruleOptions.byweekday = byweekday;
+          // byweekday is already set
         }
         break;
     }
 
     try {
-      console.log("rruleOptions:", rruleOptions);
+      // console.log("rruleOptions:", rruleOptions);
       const newRule = new RRule(rruleOptions);
-      // Strip DTSTART from the string. The backend uses the task's due_date as the start date,
-      // and including DTSTART (which is often UTC) causes "offset-naive and offset-aware" comparison errors
-      // in the backend's python-dateutil library.
-      const ruleString = newRule.toString().split('\n').filter(line => !line.startsWith('DTSTART')).join('\n');
+      // Strip DTSTART from the string. The backend uses the task's due_date as the start date.
+      // We also strip 'RRULE:' prefix to keep it clean and avoid potential parsing issues if the backend or rrulestr behaves strictly.
+      const lines = newRule.toString().split('\n');
+      const ruleString = lines
+        .filter(line => !line.startsWith('DTSTART'))
+        .map(line => line.replace(/^RRULE:/, ''))
+        .join('\n');
+
       onChange(ruleString);
     } catch (e) {
       console.error("Error creating RRule:", e, "with options:", rruleOptions);
