@@ -48,6 +48,13 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange, st
             byweekdayState = days.map(d => (typeof d === 'number' ? new Weekday(d) : d));
           }
 
+          // Infer bysetpos from byweekday if it contains nth occurrence (e.g., +3FR)
+          let inferredSetPos = (Array.isArray(bysetpos) ? bysetpos[0] : bysetpos);
+          if (!inferredSetPos && byweekdayState) {
+            const nthDay = byweekdayState.find(d => d.n);
+            if (nthDay) inferredSetPos = nthDay.n;
+          }
+
           setOptions(prev => ({
             ...prev,
             freq,
@@ -56,11 +63,11 @@ const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onChange, st
             count: count ?? null,
             byweekday: byweekdayState,
             bymonthday: bymonthday ?? prev.bymonthday,
-            bysetpos: (Array.isArray(bysetpos) ? bysetpos[0] : bysetpos) ?? prev.bysetpos,
+            bysetpos: inferredSetPos ?? prev.bysetpos,
             bymonth: (Array.isArray(bymonth) ? bymonth[0] : bymonth) ?? prev.bymonth,
             endType: until ? 'date' : count ? 'count' : 'never',
             dailyOption: byweekdayState?.length === 5 ? 'weekdays' : 'everyday',
-            monthlyOption: bysetpos ? 'day_of_week' : 'day_of_month',
+            monthlyOption: inferredSetPos ? 'day_of_week' : 'day_of_month',
           }));
         }
       } catch (e) {
