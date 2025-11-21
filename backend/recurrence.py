@@ -10,7 +10,10 @@ def get_occurrences(task: Task, start_date: date, end_date: date) -> List[Task]:
     if not task.recurrence_rule or not task.due_date:
         return [task]
 
-    rule = rrulestr(task.recurrence_rule, dtstart=datetime.combine(task.due_date, datetime.min.time()))
+    # Sanitize rule string to remove 'Z' from UNTIL, ensuring it is treated as naive
+    # to match the naive dtstart derived from task.due_date.
+    rule_string = task.recurrence_rule.replace('Z', '')
+    rule = rrulestr(rule_string, dtstart=datetime.combine(task.due_date, datetime.min.time()))
     occurrences = []
 
     # Iterate through occurrences and create virtual tasks

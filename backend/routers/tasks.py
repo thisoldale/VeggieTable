@@ -22,12 +22,20 @@ def create_task_endpoint(task: schemas.TaskCreate, db: Session = Depends(get_db)
     return crud.create_task(db=db, task=task)
 
 @router.get("/garden-plans/{plan_id}/tasks/", response_model=List[schemas.Task])
-def read_tasks_for_plan_endpoint(plan_id: int, db: Session = Depends(get_db)):
+def read_tasks_for_plan_endpoint(
+    plan_id: int,
+    start_date: date = None,
+    end_date: date = None,
+    db: Session = Depends(get_db)
+):
     db_tasks = crud.get_tasks_for_plan(db, plan_id=plan_id)
     all_tasks = []
 
-    start_date = date.today()
-    end_date = start_date + timedelta(days=365)
+    # Default range: 1 year past to 1 year future if not provided
+    if not start_date:
+        start_date = date.today() - timedelta(days=365)
+    if not end_date:
+        end_date = date.today() + timedelta(days=365)
 
     try:
         for task in db_tasks:
